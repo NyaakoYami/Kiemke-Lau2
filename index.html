@@ -178,13 +178,8 @@
         </div>
     </div>
 
-    <!-- GAS URL Bar -->
-    <div class="gas-banner" id="gas-banner">
-        <label>☁️ Apps Script URL:</label>
-        <input type="text" id="gas-url-bar" placeholder="Dán URL Google Apps Script để bật đồng bộ tự động..." oninput="onGasUrlChange()">
-        <button class="btn btn-sync" onclick="connectGas()">Kết nối</button>
-        <button class="btn" style="background:#e5e7eb;color:#374151;" onclick="showGasSetupModal()">❓ Hướng dẫn</button>
-    </div>
+    <!-- GAS URL Bar (hidden - URL hardcoded) -->
+    <div class="gas-banner hidden" id="gas-banner"></div>
 
     <div class="dashboard-grid">
         <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-label">Tổng vị trí</div><div class="stat-value" id="stat-total">0</div></div>
@@ -302,7 +297,7 @@ const GAS_URL_KEY='floor2_gas_url';
 // ── STATE ────────────────────────────────────────────────────────
 let inventoryState={};
 let customNames={};
-let gasUrl='';
+let gasUrl='https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 let syncTimer=null;
 let isSyncing=false;
 
@@ -310,12 +305,7 @@ let isSyncing=false;
 function loadState(){
     try{const r=localStorage.getItem(STORAGE_KEY);if(r)inventoryState=JSON.parse(r);}catch(e){inventoryState={};}
     try{const r=localStorage.getItem(NAMES_KEY);if(r)customNames=JSON.parse(r);}catch(e){customNames={};}
-    try{gasUrl=localStorage.getItem(GAS_URL_KEY)||'';}catch(e){gasUrl='';}
-    if(gasUrl){
-        document.getElementById('gas-url-bar').value=gasUrl;
-        document.getElementById('gas-banner').classList.add('hidden');
-        setSyncStatus('synced','Đã kết nối');
-    }
+    setSyncStatus('synced','Đã kết nối');
 }
 
 function saveLocal(){
