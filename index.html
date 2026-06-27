@@ -7,147 +7,122 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root {
-            --bg:#f0f2f7;--surface:#fff;--surface-alt:#f8f9fc;--border:#e2e6ef;
-            --text-primary:#1a1d2e;--text-secondary:#6b7280;--text-muted:#9ca3af;
-            --blue:#3b5bdb;--blue-light:#eef2ff;--blue-dark:#2f4ac0;
-            --green:#2f9e44;--green-light:#ebfbee;
-            --red:#e03131;--red-light:#fff5f5;
-            --yellow:#f59f00;--yellow-light:#fff9db;
-            --purple:#7048e8;--pink-bg:#fff0f6;
-            --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md:0 4px 10px rgba(0,0,0,0.05);
-            --radius:6px;--radius-sm:4px;
+            --bg: #f3f4f6; --surface: #ffffff; --surface-alt: #f9fafb; --border: #e5e7eb;
+            --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
+            --blue: #2563eb; --blue-light: #eff6ff; --blue-dark: #1d4ed8;
+            --green: #10b981; --green-light: #ecfdf5;
+            --red: #ef4444; --red-light: #fef2f2;
+            --yellow: #f59e0b; --yellow-light: #fffbeb;
+            --purple: #8b5cf6; --indigo: #6366f1;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 8px; --radius-sm: 4px;
         }
-        *{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text-primary);max-height:100vh;padding:8px;font-size:12px;overflow-x:hidden;}
-        .container{max-width:100%;margin:0 auto;}
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text-primary); max-height: 100vh; padding: 6px; font-size: 11px; overflow: hidden; }
+        .container { max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; height: 98vh; }
         
-        /* Thu gọn Header để khít màn hình 20 inch */
-        .page-header{background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%);border-radius:var(--radius);padding:8px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:between;gap:10px;box-shadow:var(--shadow-sm);}
-        .page-header-left h1{color:#fff;font-size:16px;font-weight:800;letter-spacing:-0.3px;}
-        .page-header-left p{color:rgba(255,255,255,0.65);font-size:11px;margin-top:1px;}
-        .header-right{display:flex;gap:8px;align-items:center;margin-left:auto;}
-        .header-badge{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;}
-        .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:12px;}
-        .sync-status.offline{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);}
-        .autosave-badge{display:flex;align-items:center;gap:3px;font-size:11px;color:#6ee7b7;font-weight:600;}
-        .autosave-dot{width:5px;height:5px;background:#6ee7b7;border-radius:50%;}
-
-        /* Thu gọn các khối thống kê */
-        .dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
-        .detail-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
-        .stat-card{background:var(--surface);border-radius:var(--radius);padding:6px 10px;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-        .stat-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;}
-        .stat-icon.blue{background:var(--blue-light);}.stat-icon.green{background:var(--green-light);}.stat-icon.red{background:var(--red-light);}.stat-icon.yellow{background:var(--yellow-light);}.stat-icon.purple{background:#f3f0ff;}
-        .stat-info-block{display:flex;flex-direction:column;}
-        .stat-label{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-muted);line-height:1.1;}
-        .stat-value{font-size:16px;font-weight:800;color:var(--text-primary);line-height:1.2;}
-
-        /* Bảng điều khiển */
-        .controls-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:var(--shadow-sm);}
-        .search-wrap{position:relative;}
-        .search-wrap .icon{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;}
-        .search-wrap input{padding:4px 8px 4px 24px;width:200px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;outline:none;}
-        .btn-group{display:flex;gap:4px;}
-        .btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:11px;white-space:nowrap;}
-        .btn-primary{background:var(--blue);color:#fff;}
-        .btn-success{background:var(--green);color:#fff;}
-        .btn-warning{background:var(--yellow);color:#fff;}
-        .btn-danger{background:#fff;color:var(--red);border:1px solid #fca5a5;}
-        .btn-sync{background:linear-gradient(135deg,#3b5bdb,#7048e8);color:#fff;}
-
-        /* Tách biệt hàng ghế Leader phía trên cùng */
-        .leaders-row-container {
-            background: #e9ecef;
-            border-radius: var(--radius);
-            padding: 6px;
-            margin-bottom: 8px;
-            border: 1px solid #ced4da;
-        }
-        .leaders-title {
-            font-size: 11px;
-            font-weight: 700;
-            color: #495057;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .leaders-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 12px;
-        }
-
-        /* Lưới 4 cột dãy vị trí phía dưới */
-        .layout-grid{display:grid;grid-template-columns:1fr 24px 1fr 1fr 24px 1fr;gap:8px;margin-bottom:4px;}
-        .aisle{background:linear-gradient(180deg,#dee2e6,#e9ecef);display:flex;align-items:center;justify-content:center;font-weight:800;color:#adb5bd;border-radius:4px;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:2px;font-size:10px;}
+        /* HEADER UI SANG TRỌNG */
+        .page-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: var(--radius); padding: 6px 14px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-md); }
+        .page-header-left h1 { color: #ffffff; font-size: 14px; font-weight: 800; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; }
+        .page-header-left p { color: #94a3b8; font-size: 10px; margin-top: 1px; }
+        .header-right { display: flex; gap: 8px; align-items: center; }
+        .header-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 500; }
         
-        .col-wrapper{display:flex;flex-direction:column;gap:4px;}
-        .seat-column{display:flex;flex-direction:column;gap:4px;min-height:50px;max-height:58vh;overflow-y:auto;padding-right:2px;}
-        
-        /* Thiết kế hộp ghế tinh gọn để không chiếm chiều cao */
-        .seat-box{border-radius:var(--radius);padding:6px 8px;position:relative;box-shadow:var(--shadow-sm);border:1.5px solid #dee2e6;background:#fff;transition:all 0.1s;}
-        .seat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;}
-        .seat-name{font-weight:700;font-size:11px;line-height:1.2;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .rename-input{font-weight:700;font-size:11px;border:1.5px solid var(--blue);border-radius:3px;padding:0 3px;outline:none;width:100px;}
-        
-        .btn-action-group{display:flex;gap:2px;}
-        .btn-mini{padding:1px 4px;font-size:9px;border:none;border-radius:3px;cursor:pointer;font-weight:600;}
-        .btn-mini-danger{background:#e5e7eb;color:#6b7280;}.btn-mini-danger:hover{background:#fca5a5;color:var(--red);}
+        /* TRẠNG THÁI KẾT NỐI KHÔNG GÂY ỨC CHẾ */
+        .sync-status { display: flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+        .sync-status.online { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .sync-status.offline { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; cursor: pointer; }
+        .sync-status.syncing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
-        /* Lưới thiết bị cực kì gọn gàng */
-        .items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px 6px;background:rgba(255,255,255,0.8);padding:4px 6px;border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,0.03);}
-        .item-check{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:500;color:var(--text-secondary);}
-        .item-check input[type=checkbox]{cursor:pointer;width:12px;height:12px;accent-color:var(--green);}
-        .qty-input{width:24px;padding:0;font-size:9px;border:1px solid var(--border);border-radius:2px;text-align:center;}
+        /* DASHBOARD CỰC TINH GỌN */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 4px; }
+        .detail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 4px 8px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+        .stat-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .stat-icon.blue { background: var(--blue-light); color: var(--blue); }
+        .stat-icon.green { background: var(--green-light); color: var(--green); }
+        .stat-icon.red { background: var(--red-light); color: var(--red); }
+        .stat-icon.yellow { background: var(--yellow-light); color: var(--yellow); }
+        .stat-icon.purple { background: #f3e8ff; color: var(--purple); }
+        .stat-info-block { display: flex; flex-direction: column; }
+        .stat-label { font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); line-height: 1; }
+        .stat-value { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
 
-        /* Đóng gói nút hành động của cột */
-        .col-actions{display:flex;gap:4px;justify-content:center;margin-bottom:2px;}
-        .btn-col-action{padding:3px 8px;border:1px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:10px;background:var(--surface);color:var(--text-secondary);}
-        .btn-col-add:hover{border-color:var(--green);color:var(--green);background:var(--green-light);}
-        .btn-col-remove:hover{border-color:var(--red);color:var(--red);background:var(--red-light);}
+        /* THANH ĐIỀU KHIỂN */
+        .controls-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); }
+        .search-wrap { position: relative; }
+        .search-wrap input { padding: 3px 6px 3px 20px; width: 160px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 11px; outline: none; transition: all 0.2s; }
+        .search-wrap input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
+        .search-wrap::before { content: "🔍"; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--text-muted); }
+        .btn-group { display: flex; gap: 4px; }
+        .btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap; transition: all 0.1s; }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-primary:hover { background: var(--blue-dark); }
+        .btn-success { background: var(--green); color: #fff; }
+        .btn-danger { background: #fff; color: var(--red); border-color: #fca5a5; }
+        .btn-danger:hover { background: var(--red-light); }
 
-        .bottom-border-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
-        .border-wall{border:1px dashed #94a3b8;background:#f1f5f9;padding:4px;border-radius:var(--radius-sm);text-align:center;font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;}
+        /* KHU VỰC 4 GHẾ LEADER PHÍA TRÊN BIỆT LẬP */
+        .leaders-row-container { background: #f1f5f9; border-radius: var(--radius); padding: 4px; margin-bottom: 4px; border: 1px solid #cbd5e1; }
+        .leaders-title { font-size: 10px; font-weight: 700; color: #334155; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .leaders-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+        /* LƯỚI 4 CỘT CHÍNH PHÍA DƯỚI */
+        .layout-grid { display: grid; grid-template-columns: 1fr 20px 1fr 1fr 20px 1fr; gap: 4px; flex-grow: 1; }
+        .aisle { background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #9ca3af; border-radius: 4px; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 1px; font-size: 9px; user-select: none; }
+        .col-wrapper { display: flex; flex-direction: column; gap: 2px; height: 100%; }
+        .seat-column { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex-grow: 1; padding-right: 1px; max-height: 52vh; }
         
-        .highlight{border:2px solid #f59f00!important;box-shadow:0 0 0 3px rgba(245,159,0,.2)!important;}
-        
-        /* Biến màu sắc theo đúng yêu cầu nghiêm ngặt */
-        .state-full-equipped { background-color: #00EE76 !important; border-color: #00cd63 !important; }
-        .state-missing-equipment { background-color: #FF6A6A !important; border-color: #ff4d4d !important; }
-        .state-missing-equipment .seat-name, .state-full-equipped .seat-name { color: #1a1d2e !important; }
+        /* CARD CHỖ NGỒI CAO CẤP */
+        .seat-box { border-radius: var(--radius); padding: 4px 6px; position: relative; box-shadow: var(--shadow-sm); border: 1.5px solid #d1d5db; background: #fff; transition: all 0.15s ease; }
+        .seat-box:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .seat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .seat-name { font-weight: 700; font-size: 10.5px; cursor: pointer; color: var(--text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rename-input { font-weight: 700; font-size: 10px; border: 1.5px solid var(--blue); border-radius: 3px; padding: 0 2px; outline: none; width: 110px; }
+        .btn-mini { padding: 0px 3px; font-size: 8px; border: none; border-radius: 3px; cursor: pointer; background: #f3f4f6; color: #6b7280; font-weight: 700; }
+        .btn-mini:hover { background: var(--red-light); color: var(--red); }
 
-        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;}
-        .modal{background:#fff;border-radius:8px;padding:16px;width:400px;box-shadow:var(--shadow-lg);}
-        .modal h3{font-size:14px;margin-bottom:8px;}
-        .modal p, .modal-steps li{font-size:11px;color:var(--text-secondary);margin-bottom:8px;}
-        .modal-footer{display:flex;justify-content:flex-end;gap:4px;}
+        /* LƯỚI THIẾT BỊ KHÍT */
+        .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 4px; background: rgba(255,255,255,0.6); padding: 3px; border-radius: var(--radius-sm); border: 1px solid #f3f4f6; }
+        .item-check { display: flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 500; color: var(--text-secondary); }
+        .item-check input[type=checkbox] { cursor: pointer; width: 11px; height: 11px; accent-color: #059669; }
+        .qty-input { width: 18px; font-size: 8px; border: 1px solid var(--border); border-radius: 2px; text-align: center; height: 13px; }
+
+        /* HÀNH ĐỘNG ĐẦU CỘT */
+        .col-actions { display: flex; gap: 2px; justify-content: center; }
+        .btn-col-action { padding: 2px 6px; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); cursor: pointer; font-weight: 700; font-size: 9px; background: var(--surface); color: var(--text-secondary); }
+        .btn-col-action:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+        .bottom-border-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+        .border-wall { border: 1px dashed #94a3b8; background: #e2e8f0; padding: 3px; border-radius: var(--radius-sm); text-align: center; font-weight: 700; font-size: 10px; color: #475569; letter-spacing: 1px; }
+        
+        /* TRẠNG THÁI MÀU SẮC PHÂN CẤP SẾP DUYỆT */
+        .state-full-equipped { background-color: #00EE76 !important; border-color: #10b981 !important; color: #047857 !important; }
+        .state-missing-equipment { background-color: #FF6A6A !important; border-color: #ef4444 !important; color: #7f1d1d !important; }
+        .state-missing-equipment .item-check, .state-full-equipped .item-check { color: inherit !important; font-weight: 600; }
+        .highlight { border: 2px solid var(--yellow)!important; box-shadow: 0 0 0 2px var(--yellow-light)!important; }
+
+        /* THÔNG BÁO TOAST */
+        #toast { position: fixed; bottom: 15px; right: 15px; background: #1e293b; color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999; box-shadow: var(--shadow-md); }
+        #toast.show { opacity: 1; }
     </style>
 </head>
 <body>
-<div id="toast"></div>
 
-<div class="modal-overlay" id="gas-modal">
-    <div class="modal">
-        <h3>☁️ Cài đặt đồng bộ Google Sheets</h3>
-        <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/..." style="width:100%;padding:6px;border:1px solid var(--border);margin-bottom:10px;font-size:11px;">
-        <div class="modal-footer">
-            <button class="btn btn-danger" onclick="closeGasModal()">Để sau</button>
-            <button class="btn btn-sync" onclick="saveGasUrl()">☁️ Kết nối</button>
-        </div>
-    </div>
-</div>
+<div id="toast"></div>
 
 <div class="container">
     <div class="page-header">
         <div class="page-header-left">
-            <h1> Shelves 🖥️ SÀN LẦU 2 — Kiểm Kê Sơ Đồ Thiết Bị</h1>
-            <p>Hệ thống quản lý trực quan thu gọn vừa vặn màn hình 20"</p>
+            <h1>🖥️ SÀN LẦU 2 — KIỂM KÊ SƠ ĐỒ THIẾT BỊ</h1>
+            <p>Bản sửa đổi UI/UX cao cấp dành cho Quản lý - Tự động đồng bộ Google Sheets</p>
         </div>
         <div class="header-right">
-            <div class="autosave-badge"><div class="autosave-dot"></div>Tự động lưu</div>
-            <div class="sync-status offline" id="sync-status"><span id="sync-text">Chưa kết nối</span></div>
-            <span class="header-badge" id="last-saved">Chưa lưu</span>
+            <div class="sync-status offline" id="sync-status" onclick="initGasConnection()">
+                <span id="sync-dot">🔴</span> <span id="sync-text">Chưa kết nối (Click để thử lại)</span>
+            </div>
+            <span class="header-badge" id="last-saved">Chưa đồng bộ</span>
         </div>
     </div>
 
@@ -155,7 +130,7 @@
         <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-info-block"><span class="stat-label">Tổng vị trí</span><span class="stat-value" id="stat-total">0</span></div></div>
         <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info-block"><span class="stat-label">Đủ thiết bị</span><span class="stat-value" id="stat-full">0</span></div></div>
         <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info-block"><span class="stat-label">Thiếu thiết bị</span><span class="stat-value" id="stat-missing">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon yellow">📊</div><div class="stat-info-block"><span class="stat-label">Tỷ lệ hoàn thành</span><span class="stat-value" id="stat-percent">0%</span></div></div>
+        <div class="stat-card"><div class="stat-icon purple">📊</div><div class="stat-info-block"><span class="stat-label">Hiệu suất sàn</span><span class="stat-value" id="stat-percent">0%</span></div></div>
     </div>
 
     <div class="detail-grid">
@@ -170,88 +145,66 @@
 
     <div class="controls-panel">
         <div class="search-wrap">
-            <span class="icon">🔍</span>
             <input type="text" id="search-input" placeholder="Tìm kiếm nhân viên..." oninput="searchEmployee()">
         </div>
         <div class="btn-group">
-            <button class="btn btn-sync" onclick="syncNow()">☁️ Đồng bộ</button>
-            <button class="btn btn-success" onclick="exportGoogleSheets()">📊 Xuất CSV</button>
-            <button class="btn btn-primary" onclick="exportJSON()">💾 Backup</button>
-            <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset</button>
+            <button class="btn btn-primary" onclick="syncWithCloud()">☁️ Đồng bộ Ngay</button>
+            <button class="btn btn-success" onclick="exportCSV()">📊 Xuất CSV</button>
+            <button class="btn btn-danger" onclick="resetAllData()">🗑️ Reset</button>
         </div>
     </div>
 
     <div class="leaders-row-container">
-        <div class="leaders-title">👑 Ban quản lý & Vị trí đặc biệt (Phía trên tách biệt)</div>
+        <div class="leaders-title">👑 BAN QUẢN LÝ & VỊ TRÍ ĐẶC BIỆT (PHÍA TRÊN TÁCH BIỆT THỰC TẾ)</div>
         <div class="leaders-grid" id="leaders-container"></div>
     </div>
 
-    <div class="layout-grid" style="margin-bottom: 2px;">
-        <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col1')">＋ Đầu cột 1</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col1')">－ Bớt</button>
-        </div>
+    <div class="layout-grid" style="margin-bottom: 2px; flex-grow:0;">
+        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col1')">＋ Thêm Đầu Cột 1</button></div>
         <div></div>
-        <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col2a')">＋ Đầu cột 2A</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2a')">－ Bớt</button>
-        </div>
-        <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col2b')">＋ Đầu cột 2B</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2b')">－ Bớt</button>
-        </div>
+        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col2a')">＋ Thêm Đầu Cột 2A</button></div>
+        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col2b')">＋ Thêm Đầu Cột 2B</button></div>
         <div></div>
-        <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col3')">＋ Đầu cột 3</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col3')">－ Bớt</button>
-        </div>
+        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col3')">＋ Thêm Đầu Cột 3</button></div>
     </div>
 
     <div class="layout-grid" id="main-grid">
-        <div class="col-wrapper">
-            <div class="seat-column" id="col-1"></div>
-        </div>
-        <div class="aisle">LỐI ĐI</div>
-        <div class="col-wrapper">
-            <div class="seat-column" id="col-2a"></div>
-        </div>
-        <div class="col-wrapper">
-            <div class="seat-column" id="col-2b"></div>
-        </div>
-        <div class="aisle">LỐI ĐI</div>
-        <div class="col-wrapper">
-            <div class="seat-column" id="col-3"></div>
-        </div>
+        <div class="col-wrapper"><div class="seat-column" id="col-1"></div></div>
+        <div class="aisle">LỐI ĐI CHÍNH</div>
+        <div class="col-wrapper"><div class="seat-column" id="col-2a"></div></div>
+        <div class="col-wrapper"><div class="seat-column" id="col-2b"></div></div>
+        <div class="aisle">LỐI ĐI CHÍNH</div>
+        <div class="col-wrapper"><div class="seat-column" id="col-3"></div></div>
     </div>
 
     <div class="bottom-border-panel">
-        <div class="border-wall">TƯỜNG PHÒNG</div>
-        <div class="border-wall">VÁCH CỬA KÍNH</div>
+        <div class="border-wall">Khu Vực Tường / Ban công</div>
+        <div class="border-wall">Cửa Ra Vào Kính Sàn Lầu 2</div>
     </div>
 </div>
 
 <script>
-// ── KHỞI TẠO VÀ CẤU CẤU TRÚC DỮ LIỆU GỐC ───────────────────────────────────
+// Cấu hình URL Web App đã triển khai của bạn
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec";
+
 const DEFAULT_LAYOUT = {
-    leaders:[
-        {id:"L1", name:"LAN PHƯƠNG LEAD QA"},
-        {id:"L2A", name:"NGÂN SUPPORT TL (Vế Trái)"},
-        {id:"L2B", name:"KHÁC"},
-        {id:"L3", name:"TRẦN OANH - MULTI TASK TEAMLEADER"}
+    leaders: [
+        {id:"L1", name:"LAN PHƯƠNG LEAD QA"}, {id:"L2A", name:"NGÂN SUPPORT TL (Vế Trái)"},
+        {id:"L2B", name:"KHÁC"}, {id:"L3", name:"TRẦN OANH - MULTI TASK TEAMLEADER"}
     ],
-    col1:[
+    col1: [
         {id:"1_1",name:"CHỖ TRỐNG"},{id:"1_2",name:"MINH NHỰT"},{id:"1_3",name:"BẢO TRÂN"},{id:"1_4",name:"Ý NHI"},
         {id:"1_5",name:"KIM THOA"},{id:"1_6",name:"ĐOÀN PHÁT"},{id:"1_7",name:"CẨM TÚ"},{id:"1_8",name:"HOÀI THƯƠNG"}
     ],
-    col2a:[
+    col2a: [
         {id:"2a_1",name:"TRƯỜNG DUY"},{id:"2a_2",name:"THUÝ AN"},{id:"2a_3",name:"BẢO NGHI"},{id:"2a_4",name:"CHỖ TRỐNG"},
         {id:"2a_5",name:"QUỐC KHÁNH"},{id:"2a_6",name:"MỸ HUYỀN"},{id:"2a_7",name:"PHƯƠNG ANH"},{id:"2a_8",name:"CHỖ TRỐNG"}
     ],
-    col2b:[
+    col2b: [
         {id:"2b_1",name:"CHỖ TRỐNG"},{id:"2b_2",name:"NGỌC HUYỀN"},{id:"2b_3",name:"ÁI VÂN"},{id:"2b_4",name:"BĂNG NHI"},
         {id:"2b_5",name:"MINH THƯ"},{id:"2b_6",name:"THẢO VY"},{id:"2b_7",name:"TƯỜNG VY"},{id:"2b_8",name:"ĐỨC HUY"}
     ],
-    col3:[
+    col3: [
         {id:"3_1",name:"KIM NGÂN"},{id:"3_2",name:"YÊN NHI"},{id:"3_3",name:"MỸ TRANG"},{id:"3_4",name:"THÀNH ĐẠT"},
         {id:"3_5",name:"TẤN PHÁT"},{id:"3_6",name:"THANH TRÚC"},{id:"3_7",name:"CHỖ TRỐNG"},{id:"3_8",name:"CHỖ TRỐNG"}
     ]
@@ -259,101 +212,70 @@ const DEFAULT_LAYOUT = {
 
 let layoutData = {};
 let inventoryState = {};
-let gasUrl = localStorage.getItem('gas_url') || '';
 
-// Đảm bảo load cấu hình động từ LocalStorage để không bị đưa về giá trị ban đầu khi Refresh
-function loadAllStates() {
-    const savedLayout = localStorage.getItem('layout_structure');
-    if (savedLayout) {
-        layoutData = JSON.parse(savedLayout);
-    } else {
-        layoutData = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
-        saveLayoutStructure();
-    }
-
-    const savedInv = localStorage.getItem('inventory_state');
+// Tải dữ liệu từ LocalStorage để giữ nguyên cấu hình khi refresh
+function loadInitialState() {
+    const savedLayout = localStorage.getItem('luxury_layout');
+    const savedInv = localStorage.getItem('luxury_inventory');
+    
+    layoutData = savedLayout ? JSON.parse(savedLayout) : JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
     inventoryState = savedInv ? JSON.parse(savedInv) : {};
+    
+    if(!savedLayout) saveToLocalStorage();
 }
 
-function saveLayoutStructure() {
-    localStorage.setItem('layout_structure', JSON.stringify(layoutData));
+function saveToLocalStorage() {
+    localStorage.setItem('luxury_layout', JSON.stringify(layoutData));
+    localStorage.setItem('luxury_inventory', JSON.stringify(inventoryState));
 }
 
-function saveInventoryState() {
-    localStorage.setItem('inventory_state', JSON.stringify(inventoryState));
-    updateTimestamp();
-}
-
-function updateTimestamp() {
-    const d = new Date();
-    document.getElementById('last-saved').textContent = `Lưu: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
-}
-
-// ── TÍNH TOÁN LOGIC KIỂM TRA THIẾT BỊ THEO QUY TẮC SẾP YÊU CẦU ────────────────
+// Logic kiểm tra màu sắc nghiêm ngặt theo yêu cầu của Sếp
 function getSeatStatus(id, name) {
-    // Nếu chưa khởi tạo cấu hình vật tư, mặc định là trống
     if (!inventoryState[id]) {
         inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
     }
     const state = inventoryState[id];
     
-    // Điều kiện đủ bộ: Có Thùng CPU + Chuột + Tai Nghe + Phím + Màn hình 20" (và không có màn hình 24")
-    const hasFullEquipped = state.thung && state.man20 && !state.man24 && state.chuot && state.phim && state.tai;
-    
-    // Điều kiện tô đỏ: Nếu tên là "CHỖ TRỐNG" và thiếu bất kì một trong năm thiết bị trên
+    // Đủ bộ = Đầy đủ thiết bị và bắt buộc chọn Màn 20" (Màn 24" KHÔNG chọn)
+    const isFull = state.thung && state.man20 && !state.man24 && state.chuot && state.phim && state.tai;
+    // Thiếu bộ = Chỗ trống và bị khuyết bất kì thiết bị nào trong nhóm 5 món bắt buộc
     const isNameEmpty = (name && name.trim().toUpperCase() === "CHỖ TRỐNG");
-    const isMissingSomething = !state.thung || !state.man20 || !state.chuot || !state.phim || !state.tai;
-    const hasWarningRed = isNameEmpty && isMissingSomething;
-
-    if (hasFullEquipped) return 'state-full-equipped'; // Xanh lá #00EE76
-    if (hasWarningRed) return 'state-missing-equipment'; // Đỏ nổi bật #FF6A6A
+    const isMissing = !state.thung || !state.man20 || !state.chuot || !state.phim || !state.tai;
+    
+    if (isFull) return 'state-full-equipped'; // Xanh lá #00EE76
+    if (isNameEmpty && isMissing) return 'state-missing-equipment'; // Đỏ #FF6A6A
     return '';
 }
 
-// Thay đổi thiết bị đơn lẻ
-function toggleDevice(id, deviceField) {
-    if (!inventoryState[id]) inventoryState[id] = {};
-    inventoryState[id][deviceField] = !inventoryState[id][deviceField];
-    
-    // Nếu chọn Đủ bộ (Màn 20) thì tự động tắt Màn 24 và ngược lại nếu muốn
-    saveInventoryState();
+function toggleDevice(id, field) {
+    inventoryState[id][field] = !inventoryState[id][field];
+    saveToLocalStorage();
     renderAll();
+    autoCloudSync(); // Tự động đẩy lên Google Sheets
 }
 
 function changeQty(id, field, val) {
-    if (!inventoryState[id]) inventoryState[id] = {};
     inventoryState[id][field + '_qty'] = parseInt(val) || 1;
-    saveInventoryState();
+    saveToLocalStorage();
     renderAll();
+    autoCloudSync();
 }
 
-// ── QUẢN LÝ GHẾ NGỒI (CHÈN VÀO ĐẦU CỘT) ──────────────────────────────────
 function addSeatAtTop(colKey) {
     const newId = `${colKey}_${Date.now()}`;
-    // Thêm vị trí chỗ ngồi mới ở ĐẦU mảng thay vì cuối mảng
-    layoutData[colKey].unshift({
-        id: newId,
-        name: "CHỖ TRỐNG"
-    });
-    saveLayoutStructure();
+    layoutData[colKey].unshift({ id: newId, name: "CHỖ TRỐNG" });
+    inventoryState[newId] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+    saveToLocalStorage();
     renderAll();
-    showToast("Đã thêm chỗ trống vào đầu dãy", "success");
-}
-
-function removeSeat(colKey) {
-    if (layoutData[colKey].length > 0) {
-        layoutData[colKey].shift(); // Xoá ở đầu để cân xứng thao tác hoặc dùng pop tùy ý sếp
-        saveLayoutStructure();
-        renderAll();
-        showToast("Đã bớt một vị trí đầu dãy", "info");
-    }
+    autoCloudSync();
+    showToast("Đã chèn vị trí mới lên đầu cột.");
 }
 
 function startRename(id) {
-    const el = document.getElementById(`name-text-${id}`);
+    const el = document.getElementById(`name-${id}`);
     if (!el) return;
     const curName = el.textContent;
-    el.innerHTML = `<input type="text" class="rename-input" id="input-${id}" value="${curName}" onblur="finishRename('${id}')" onkeydown="handleRenameKey(event, '${id}')">`;
+    el.innerHTML = `<input type="text" class="rename-input" id="input-${id}" value="${curName}" onblur="finishRename('${id}')" onkeydown="if(event.key==='Enter')this.blur()">`;
     const input = document.getElementById(`input-${id}`);
     input.focus();
     input.select();
@@ -362,68 +284,45 @@ function startRename(id) {
 function finishRename(id) {
     const input = document.getElementById(`input-${id}`);
     if (!input) return;
-    let newName = input.value.trim();
-    if (!newName) newName = "CHỖ TRỐNG";
+    let newName = input.value.trim() || "CHỖ TRỐNG";
     
-    // Tìm trong leaders hoặc các cột để cập nhật mà không mất dữ liệu thiết bị
-    let found = false;
     for (let key in layoutData) {
         const idx = layoutData[key].findIndex(item => item.id === id);
-        if (idx !== -1) {
-            layoutData[key][idx].name = newName;
-            found = true;
-            break;
-        }
+        if (idx !== -1) { layoutData[key][idx].name = newName; break; }
     }
-    if (found) saveLayoutStructure();
+    saveToLocalStorage();
     renderAll();
+    autoCloudSync();
 }
 
-function handleRenameKey(e, id) {
-    if (e.key === 'Enter') finishRename(id);
+function clearInventory(id) {
+    inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+    saveToLocalStorage();
+    renderAll();
+    autoCloudSync();
 }
 
-// ── RENDER COMPONENT GIAO DIỆN CHÍNH XÁC VÀ TINH GỌN ───────────────────────
-function createSeatBoxHTML(seat) {
-    if (!inventoryState[seat.id]) {
-        inventoryState[seat.id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
-    }
-    const state = inventoryState[seat.id];
+// Render HTML
+function buildSeatHTML(seat) {
+    const state = inventoryState[seat.id] || { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
     const statusClass = getSeatStatus(seat.id, seat.name);
-
     return `
         <div class="seat-box ${statusClass}" id="box-${seat.id}">
             <div class="seat-header">
-                <span class="seat-name" id="name-text-${seat.id}" onclick="startRename('${seat.id}')">${seat.name}</span>
-                <div class="btn-action-group">
-                    <button class="btn-mini btn-mini-danger" onclick="clearSeatInventory('${seat.id}')" title="Xoá nhanh vật tư">✕</button>
-                </div>
+                <span class="seat-name" id="name-${seat.id}" onclick="startRename('${seat.id}')">${seat.name}</span>
+                <button class="btn-mini" onclick="clearInventory('${seat.id}')">✕</button>
             </div>
             <div class="items-grid">
+                <div class="item-check"><input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${seat.id}','thung')"><span>CPU</span></div>
+                <div class="item-check"><input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${seat.id}','tai')"><span>Tai nghe</span></div>
+                <div class="item-check"><input type="checkbox" ${state.man20?'checked':''} onchange="toggleDevice('${seat.id}','man20')"><span style="color:var(--purple);font-weight:700;">Màn 20"</span></div>
+                <div class="item-check"><input type="checkbox" ${state.man24?'checked':''} onchange="toggleDevice('${seat.id}','man24')"><span>Màn 24"</span></div>
                 <div class="item-check">
-                    <input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${seat.id}','thung')">
-                    <span>CPU</span>
-                </div>
-                <div class="item-check">
-                    <input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${seat.id}','tai')">
-                    <span>Tai nghe</span>
-                </div>
-                <div class="item-check">
-                    <input type="checkbox" ${state.man20?'checked':''} onchange="toggleDevice('${seat.id}','man20')">
-                    <span style="font-weight:700;color:var(--purple);">Màn 20"</span>
-                </div>
-                <div class="item-check">
-                    <input type="checkbox" ${state.man24?'checked':''} onchange="toggleDevice('${seat.id}','man24')">
-                    <span style="font-weight:500;color:var(--text-primary);">Màn 24"</span>
-                </div>
-                <div class="item-check">
-                    <input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${seat.id}','chuot')">
-                    <span>Chuột</span>
+                    <input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${seat.id}','chuot')"><span>Chuột</span>
                     <input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${seat.id}','chuot',this.value)">
                 </div>
                 <div class="item-check">
-                    <input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${seat.id}','phim')">
-                    <span>Phím</span>
+                    <input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${seat.id}','phim')"><span>Phím</span>
                     <input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${seat.id}','phim',this.value)">
                 </div>
             </div>
@@ -432,141 +331,157 @@ function createSeatBoxHTML(seat) {
 }
 
 function renderAll() {
-    // 1. Render khu vực Leader biệt lập phía trên cùng
-    const leadContainer = document.getElementById('leaders-container');
-    leadContainer.innerHTML = '';
-    layoutData.leaders.forEach(lead => {
-        leadContainer.innerHTML += createSeatBoxHTML(lead);
+    document.getElementById('leaders-container').innerHTML = layoutData.leaders.map(buildSeatHTML).join('');
+    ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+        const domId = k === 'col1'?'col-1': k==='col2a'?'col-2a': k==='col2b'?'col-2b':'col-3';
+        document.getElementById(domId).innerHTML = layoutData[k].map(buildSeatHTML).join('');
     });
-
-    // 2. Render 4 cột dãy vị trí phía dưới
-    ['col1', 'col2a', 'col2b', 'col3'].forEach(colKey => {
-        const colDomId = colKey === 'col1' ? 'col-1' : colKey === 'col2a' ? 'col-2a' : colKey === 'col2b' ? 'col-2b' : 'col-3';
-        const container = document.getElementById(colDomId);
-        container.innerHTML = '';
-        layoutData[colKey].forEach(seat => {
-            container.innerHTML += createSeatBoxHTML(seat);
-        });
-    });
-
     calculateStats();
 }
 
-function clearSeatInventory(id) {
-    inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
-    saveInventoryState();
-    renderAll();
-}
-
-// ── TÍNH TOÁN THỐNG KÊ VẬT TƯ TOÀN PHÒNG MÁY ─────────────────────────────────
 function calculateStats() {
-    let totalSeats = 0, fullEquipped = 0, missingEquipment = 0, emptySeatCount = 0;
-    let tCPU = 0, tMan20 = 0, tMan24 = 0, tChuot = 0, tPhim = 0, tTai = 0;
+    let total = 0, full = 0, missing = 0, empty = 0;
+    let nThung = 0, nMan20 = 0, nMan24 = 0, nChuot = 0, nPhim = 0, nTai = 0;
 
     for (let key in layoutData) {
         layoutData[key].forEach(seat => {
-            totalSeats++;
-            const state = inventoryState[seat.id] || { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+            total++;
+            const st = inventoryState[seat.id] || {};
+            if(seat.name.toUpperCase() === "CHỖ TRỐNG") empty++;
+            if(st.thung) nThung++; if(st.man20) nMan20++; if(st.man24) nMan24++;
+            if(st.chuot) nChuot += (st.chuot_qty || 1); if(st.phim) nPhim += (st.phim_qty || 1); if(st.tai) nTai++;
             
-            if (seat.name.trim().toUpperCase() === "CHỖ TRỐNG") {
-                emptySeatCount++;
-            }
-
-            if (state.thung) tCPU++;
-            if (state.man20) tMan20++;
-            if (state.man24) tMan24++;
-            if (state.chuot) tChuot += (state.chuot_qty || 1);
-            if (state.phim) tPhim += (state.phim_qty || 1);
-            if (state.tai) tTai++;
-
             const status = getSeatStatus(seat.id, seat.name);
-            if (status === 'state-full-equipped') fullEquipped++;
-            else if (status === 'state-missing-equipment') missingEquipment++;
+            if(status === 'state-full-equipped') full++;
+            if(status === 'state-missing-equipment') missing++;
         });
     }
-
-    document.getElementById('stat-total').textContent = totalSeats;
-    document.getElementById('stat-full').textContent = fullEquipped;
-    document.getElementById('stat-missing').textContent = missingEquipment;
-    document.getElementById('stat-percent').textContent = totalSeats > 0 ? Math.round((fullEquipped / totalSeats) * 100) + '%' : '0%';
-
-    document.getElementById('count-thung').textContent = tCPU;
-    document.getElementById('count-man20').textContent = tMan20;
-    document.getElementById('count-man24').textContent = tMan24;
-    document.getElementById('count-chuot').textContent = tChuot;
-    document.getElementById('count-phim').textContent = tPhim;
-    document.getElementById('count-tai').textContent = tTai;
-    document.getElementById('count-empty-seat').textContent = emptySeatCount;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-full').textContent = full;
+    document.getElementById('stat-missing').textContent = missing;
+    document.getElementById('stat-percent').textContent = total ? Math.round((full/total)*100)+'%' : '0%';
+    document.getElementById('count-thung').textContent = nThung;
+    document.getElementById('count-man20').textContent = nMan20;
+    document.getElementById('count-man24').textContent = nMan24;
+    document.getElementById('count-chuot').textContent = nChuot;
+    document.getElementById('count-phim').textContent = nPhim;
+    document.getElementById('count-tai').textContent = nTai;
+    document.getElementById('count-empty-seat').textContent = empty;
 }
 
-// ── CHỨC NĂNG TÌM KIẾM NHÂN VIÊN ──────────────────────────────────────────
 function searchEmployee() {
     const q = document.getElementById('search-input').value.trim().toUpperCase();
     for (let key in layoutData) {
         layoutData[key].forEach(seat => {
             const el = document.getElementById(`box-${seat.id}`);
-            if (!el) return;
-            if (q && seat.name.toUpperCase().includes(q)) {
-                el.classList.add('highlight');
-            } else {
-                el.classList.remove('highlight');
-            }
+            if(el) q && seat.name.toUpperCase().includes(q) ? el.classList.add('highlight') : el.classList.remove('highlight');
         });
     }
 }
 
-// ── XUẤT CSV VÀ BACKUP HỆ THỐNG ───────────────────────────────────────────
-function exportGoogleSheets() {
-    let csv = "\uFEFFMã Ghế,Vị Trí Dãy,Tên Nhân Viên,Thùng CPU,Màn hình 20,Màn hình 24,Chuột (SL),Bàn phím (SL),Tai nghe USB\n";
+// ── ĐỒNG BỘ THỰC CHIẾN GOOGLE APPS SCRIPT (FIX LỖI CHƯA KẾT NỐI) ──────────────────
+async function initGasConnection() {
+    updateSyncStatus('syncing', 'Đang kết nối...');
+    try {
+        // Gửi một yêu cầu GET kiểm tra trạng thái Web App của bạn
+        const res = await fetch(`${GAS_URL}?action=read`, { method: 'GET', mode: 'cors' });
+        if (res.ok) {
+            const cloudData = await res.json();
+            if (cloudData && cloudData.inventoryState) {
+                inventoryState = cloudData.inventoryState;
+                if(cloudData.layoutData) layoutData = cloudData.layoutData;
+                saveToLocalStorage();
+                renderAll();
+            }
+            updateSyncStatus('online', '🟢 Đã kết nối với Cloud Sheets');
+            showToast("Đã tải dữ liệu mới nhất từ Google Sheets.");
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        updateSyncStatus('offline', '🔴 Chưa kết nối (Click để thử lại)');
+    }
+}
+
+async function syncWithCloud() {
+    updateSyncStatus('syncing', 'Đang đồng bộ dữ liệu...');
+    try {
+        const payload = {
+            action: "update",
+            layoutData: layoutData,
+            inventoryState: inventoryState,
+            timestamp: new Date().toISOString()
+        };
+        
+        const res = await fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Tránh lỗi Preflight OPTIONS trong GAS
+            body: JSON.stringify(payload)
+        });
+        
+        if(res.ok) {
+            updateSyncStatus('online', '🟢 Đã kết nối với Cloud Sheets');
+            const d = new Date();
+            document.getElementById('last-saved').textContent = `Đồng bộ: ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+            showToast("Đã ghi nhận dữ liệu lên Google Sheets thành công.");
+        } else {
+            throw new Error();
+        }
+    } catch(e) {
+        updateSyncStatus('offline', '🔴 Lỗi đồng bộ. Chưa kết nối');
+        showToast("Lỗi: Không thể gửi dữ liệu lên Google Sheets.", "warn");
+    }
+}
+
+let debounceTimer;
+function autoCloudSync() {
+    // Chống nghẽn API: Chờ người dùng thao tác xong 2 giây mới tự động lưu lên Cloud
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        syncWithCloud();
+    }, 2000);
+}
+
+function updateSyncStatus(status, text) {
+    const el = document.getElementById('sync-status');
+    el.className = `sync-status ${status}`;
+    document.getElementById('sync-text').textContent = text;
+}
+
+function exportCSV() {
+    let csv = "\uFEFFMã Ghế,Vị Trí,Tên Nhân Viên,CPU,Màn 20,Màn 24,Chuột,Bàn Phím,Tai Nghe\n";
     for (let key in layoutData) {
         layoutData[key].forEach(seat => {
             const st = inventoryState[seat.id] || {};
-            csv += `"${seat.id}","${key}","${seat.name}","${st.thung?'X':''}","${st.man20?'X':''}","${st.man24?'X':''}","${st.chuot?st.chuot_qty||1:0}","${st.phim?st.phim_qty||1:0}","${st.tai?'X':''}"\n`;
+            csv += `"${seat.id}","${key}","${seat.name}","${st.thung?'1':'0'}","${st.man20?'1':'0'}","${st.man24?'1':'0'}","${st.chuot?st.chuot_qty:0}","${st.phim?st.phim_qty:0}","${st.tai?'1':'0'}"\n`;
         });
     }
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `kiem_ke_lau_2_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("Đã tải xuống file thống kê CSV", "success");
-}
-
-function exportJSON() {
-    const backup = { layoutData, inventoryState };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `backup_so_do_${Date.now()}.json`;
+    link.download = `kiem_ke_lau_2.csv`;
     link.click();
 }
 
-function resetAllInventory() {
-    if(confirm("Bạn có chắc chắn muốn xóa hết trạng thái kiểm kê thiết bị không?")) {
-        inventoryState = {};
-        layoutData = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
-        saveLayoutStructure();
-        saveInventoryState();
+function resetAllData() {
+    if(confirm("Xác nhận đưa sơ đồ về mặc định?")) {
+        localStorage.clear();
+        loadInitialState();
         renderAll();
-        showToast("Hệ thống đã reset về trạng thái trống", "warn");
+        syncWithCloud();
     }
 }
 
-// ── TOAST MESSAGES ───────────────────────────────────────────────────────
-function showToast(msg, type = 'info') {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = 'show ' + type;
-    setTimeout(() => { t.className = ''; }, 2500);
+function showToast(msg) {
+    const t = document.getElementById('toast'); t.textContent = msg; t.className = 'show';
+    setTimeout(() => t.className = '', 2000);
 }
 
-function closeGasModal() { document.getElementById('gas-modal').style.display = 'none'; }
-function syncNow() { showToast("Tính năng đồng bộ Google Sheets đang chờ cấu hình", "info"); }
-
-// Khởi chạy hệ thống liên tục
-loadAllStates();
+// Khởi chạy
+loadInitialState();
 renderAll();
+initGasConnection(); // Tự động kết nối khi vừa mở trang
 </script>
 </body>
 </html>
