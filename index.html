@@ -25,7 +25,6 @@
             --yellow: #f59f00;
             --yellow-light: #fff9db;
             --purple: #7048e8;
-            --pink-bg: #fff0f6;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
             --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
             --shadow-lg: 0 10px 30px rgba(0,0,0,0.10);
@@ -33,14 +32,13 @@
             --radius-sm: 8px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 20px; padding-bottom: 80px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 20px; padding-bottom: 40px; }
         .container { max-width: 1640px; margin: 0 auto; }
         
         /* Header */
-        .page-header { background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 60%, #3b5bdb 100%); border-radius: 14px; padding: 28px 36px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow-lg); }
+        .page-header { background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 60%, #3b5bdb 100%); border-radius: 14px; padding: 24px 32px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow-lg); }
         .page-header-left h1 { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
         .page-header-left p { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 4px; }
-        .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .header-badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         
         /* Dashboard Stats */
@@ -75,7 +73,7 @@
         /* Seat Box Styling */
         .seat-box { background: var(--surface); border-radius: var(--radius); padding: 12px; position: relative; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: all 0.2s ease; }
         
-        /* Màu sắc Trạng thái Mới áp dụng chuẩn đồ họa */
+        /* Trạng thái màu sắc chuẩn hóa */
         .seat-box.full-equipped-20 { background-color: #e8f5e9 !important; border: 2px solid #2e7d32 !important; box-shadow: 0 4px 10px rgba(46,125,50,0.1); }
         .seat-box.full-equipped-20 .seat-name { color: #1b5e20 !important; }
         
@@ -104,17 +102,16 @@
         .btn-mini-danger { background: #e5e7eb; color: #6b7280; }
         .btn-mini-danger:hover { background: #fca5a5; color: var(--red); }
 
-        /* Footer & Deploy Link Config */
-        .footer-panel { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .deploy-url-wrap { width: 100%; max-width: 650px; background: var(--surface); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
-        .deploy-url-wrap label { font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; }
-        .deploy-url-input-group { display: flex; gap: 8px; }
-        .deploy-url-input-group input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; outline: none; font-family: monospace; }
-        .copyright { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 8px; letter-spacing: 0.5px; }
+        /* Footer, Chữ ký & Deploy URL Config */
+        .footer-panel { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 25px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .copyright { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; }
+        
+        .deploy-url-wrap-bottom { display: flex; align-items: center; gap: 8px; background: rgba(238, 242, 255, 0.6); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%; max-width: 580px; }
+        .deploy-url-wrap-bottom label { font-size: 11px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+        .deploy-url-wrap-bottom input { flex: 1; padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 11px; outline: none; font-family: monospace; background: #fff; }
 
         #toast { position: fixed; bottom: 28px; right: 28px; background: #1a1d2e; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-lg); display: none; z-index: 9999; }
         #toast.show { display: block; animation: fadeInUp 0.3s ease; }
-        
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -182,49 +179,38 @@
     </div>
     
     <div class="footer-panel">
-        <div class="deploy-url-wrap">
-            <label for="gas-url-bottom">🔗 ĐƯỜNG DẪN TRIỂN KHAI APPS SCRIPT (WEB APP URL):</label>
-            <div class="deploy-url-input-group">
-                <input type="text" id="gas-url-bottom" placeholder="https://script.google.com/macros/s/.../exec" onchange="updateDeployUrl(this.value)">
-                <button class="btn btn-primary" style="padding: 0 14px;" onclick="showToast('💾 Đã ghi nhận URL cấu hình mới!','success')">Lưu cấu hình</button>
-            </div>
+        <div class="copyright">Đặng Công Chính - ShopeeFood</div>
+        
+        <div class="deploy-url-wrap-bottom">
+            <label for="gas-url-bottom">🔗 Web App URL:</label>
+            <input type="text" id="gas-url-bottom" placeholder="https://script.google.com/macros/s/.../exec" onchange="updateDeployUrl(this.value)">
         </div>
-        <div class="copyright">Đặng Công Chính - ShopeeFood © 2026</div>
     </div>
 </div>
 
 <script>
-    // ── DATABASE CONFIGURATION ───────────────────────────────────────
-    let layoutData = {
-        col1: [],
-        col2a: [],
-        col2b: [],
-        col3: []
-    };
-
-    const colMeta = {
-        col1: { domId: 'col-1', prefix: 'C1' },
-        col2a: { domId: 'col-2a', prefix: 'C2A' },
-        col2b: { domId: 'col-2b', prefix: 'C2B' },
-        col3: { domId: 'col-3', prefix: 'C3' }
-    };
-
+    // ── DATA STRUCTURE & METADATA ────────────────────────────────────
+    let layoutData = { col1: [], col2a: [], col2b: [], col3: [] };
     let columnOrder = { col1: [], col2a: [], col2b: [], col3: [] };
     let inventoryState = {};
     let customNames = {};
     let gasUrl = 'https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 
-    const STORAGE_KEY = 'floor2_inventory_v4_sys';
+    const colMeta = {
+        col1: { domId: 'col-1', prefix: '1' },
+        col2a: { domId: 'col-2a', prefix: '2a' },
+        col2b: { domId: 'col-2b', prefix: '2b' },
+        col3: { domId: 'col-3', prefix: '3' }
+    };
 
-    // ── INITIALIZATION ──────────────────────────────────────────────
+    const STORAGE_KEY = 'floor2_inventory_v5_prod';
+
+    // DỮ LIỆU BACKUP ĐÃ ĐƯỢC TÍCH HỢP ĐỂ TỰ ĐỘNG KHÔI PHỤC KHI KHỞI CHẠY CHƯƠNG TRÌNH
+    const hardcodedBackup =;
+
+    // ── STORAGE MANAGEMENT ──────────────────────────────────────────
     function saveLocal() {
-        const payload = {
-            columnOrder,
-            layoutData,
-            inventoryState,
-            customNames,
-            gasUrl
-        };
+        const payload = { columnOrder, layoutData, inventoryState, customNames, gasUrl };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         document.getElementById('last-saved').textContent = 'Đã lưu: ' + new Date().toLocaleTimeString();
         calculateStats();
@@ -239,57 +225,82 @@
                 if (data.layoutData) layoutData = data.layoutData;
                 if (data.inventoryState) inventoryState = data.inventoryState;
                 if (data.customNames) customNames = data.customNames;
-                if (data.gasUrl) {
-                    gasUrl = data.gasUrl;
-                    document.getElementById('gas-url-bottom').value = gasUrl;
-                }
+                if (data.gasUrl) gasUrl = data.gasUrl;
             } catch (e) {
-                console.error("Lỗi parse LocalStorage, đang thiết lập cấu trúc trống.", e);
+                console.error("Lỗi đọc LocalStorage, khôi phục từ backup.", e);
+                restoreFromBackupData(hardcodedBackup);
             }
         } else {
-            // Khởi tạo 4 vị trí mẫu ban đầu cho trực quan
-            ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
-                const id = colMeta[k].prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*100);
-                layoutData[k].push({ id: id, name: 'Vị trí trống' });
-                columnOrder[k].push(id);
-                initSeatState(id);
-            });
-            document.getElementById('gas-url-bottom').value = gasUrl;
-            saveLocal();
+            // Chưa có dữ liệu -> Tự động kích hoạt khôi phục trực tiếp từ File kiểm kê tài sản hệ thống
+            restoreFromBackupData(hardcodedBackup);
         }
+        document.getElementById('gas-url-bottom').value = gasUrl;
+    }
+
+    // Bộ chuyển đổi cấu trúc thông minh từ file v3 sang v5 phân tách màn hình
+    function restoreFromBackupData(backup) {
+        if (!backup || !backup.columnOrder || !backup.data) return;
+        
+        // Khôi phục thứ tự cột
+        ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+            columnOrder[k] = [...backup.columnOrder[k]];
+            layoutData[k] = backup.columnOrder[k].map(id => {
+                let name = "Vị trí " + id;
+                if (id.includes('blank')) name = "Chỗ trống";
+                return { id: id, name: name };
+            });
+        });
+
+        // Ánh xạ dữ liệu thiết bị và chuyển đổi trường màn hình cũ
+        Object.keys(backup.data).forEach(id => {
+            const oldSeat = backup.data[id];
+            // Ánh xạ chuyển đổi `man` cũ thành `man20` để giữ nguyên trạng thái đủ bộ của bạn
+            inventoryState[id] = {
+                thung: oldSeat.thung || false,
+                man20: oldSeat.man || false, 
+                man24: false,
+                chuot: oldSeat.chuot || false,
+                chuot_qty: oldSeat.chuot_qty || 1,
+                phim: oldSeat.phim || false,
+                phim_qty: oldSeat.phim_qty || 1,
+                tai: oldSeat.tai || false
+            };
+        });
+
+        saveLocal();
+        showToast('⚙️ Đã khôi phục toàn bộ vị trí & thiết bị thành công!', 'success');
     }
 
     function updateDeployUrl(val) {
         gasUrl = val.trim();
         saveLocal();
-        showToast('🔗 Đã cập nhật URL Deploy thành công!', 'success');
+        showToast('🔗 Đã ghi nhận Link Triển khai Web App!', 'success');
     }
 
     function initSeatState(id) {
         if (!inventoryState[id]) {
             inventoryState[id] = {
-                thung: false,
-                man20: false,
-                man24: false,
+                thung: false, man20: false, man24: false,
                 chuot: false, chuot_qty: 1,
-                phim: false, phim_qty: 1,
-                tai: false
+                phim: false, phim_qty: 1, tai: false
             };
         }
     }
 
-    // ── RENDER ENGINE ────────────────────────────────────────────────
+    // ── RENDER CORE ENGINE ───────────────────────────────────────────
     function renderColumn(colKey) {
         const meta = colMeta[colKey];
         const colEl = document.getElementById(meta.domId);
         colEl.innerHTML = '';
         
-        columnOrder[colKey].forEach(id => {
-            const seat = layoutData[colKey].find(s => s.id === id);
-            if (seat) {
-                colEl.appendChild(createSeatBoxElement(seat, colKey));
-            }
-        });
+        if (columnOrder[colKey]) {
+            columnOrder[colKey].forEach(id => {
+                const seat = layoutData[colKey].find(s => s.id === id);
+                if (seat) {
+                    colEl.appendChild(createSeatBoxElement(seat, colKey));
+                }
+            });
+        }
     }
 
     function createSeatBoxElement(seat, colKey) {
@@ -298,16 +309,15 @@
         const state = inventoryState[id];
         const displayName = customNames[id] || seat.name;
 
-        // Định nghĩa kiểm tra Logic màu sắc cảnh báo theo yêu cầu:
-        // Đủ bộ = Thùng, Chuột, Phím, Tai, và Màn 20 (Màn 24 hủy chọn) -> Màu xanh lá đậm
-        // Ngược lại nếu thiếu bất kỳ cái nào trong 5 cái lõi trên -> Màu đỏ nổi bật
+        // Logic kiểm tra trạng thái màu sắc theo yêu cầu:
+        // Đủ bộ = Thùng, Chuột, Phím, Tai và Màn hình 20" (Màn 24" bỏ chọn) -> Màu xanh lá đậm
         const hasCore = state.thung && state.chuot && state.phim && state.tai && state.man20;
         
         let stateClass = '';
         if (hasCore && !state.man24) {
             stateClass = 'full-equipped-20';
         } else if (!hasCore) {
-            stateClass = 'missing-equipped';
+            stateClass = 'missing-equipped'; // Thiếu bất kỳ thành phần cốt lõi nào -> Tô màu đỏ
         }
 
         const box = document.createElement('div');
@@ -359,7 +369,7 @@
         calculateStats();
     }
 
-    // ── LOGIC OPERATIONS ────────────────────────────────────────────
+    // ── INTERACTIVE CONTROLS ─────────────────────────────────────────
     function toggleDevice(id, key, colKey) {
         inventoryState[id][key] = !inventoryState[id][key];
         saveLocal();
@@ -371,41 +381,40 @@
         saveLocal();
     }
 
-    // Thiết lập tính năng "Đủ bộ" thông minh theo đúng mô tả của bạn
+    // Tính năng Đủ bộ tự động
     function selectFullKit(id, colKey) {
         inventoryState[id].thung = true;
         inventoryState[id].man20 = true;
-        inventoryState[id].man24 = false; // Ngoại trừ Màn hình 24"
+        inventoryState[id].man24 = false; // Ngoại trừ màn hình 24"
         inventoryState[id].chuot = true;
         inventoryState[id].phim = true;
         inventoryState[id].tai = true;
         
         saveLocal();
         renderColumn(colKey);
-        showToast('✨ Đã thiết lập cấu hình Đủ bộ chuẩn!', 'success');
+        showToast('✨ Đã thiết lập cấu hình Đủ bộ!', 'success');
     }
 
-    // Thêm vị trí mới vào ĐẦU danh sách hàng đợi của cột
+    // Thêm vị trí mới vào đầu danh sách
     function addSeatTop(colKey) {
         const meta = colMeta[colKey];
         const nextId = meta.prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 100);
         
-        // Chèn vào đầu mảng cấu trúc dữ liệu
         layoutData[colKey].unshift({ id: nextId, name: 'Vị trí mới' });
         columnOrder[colKey].unshift(nextId);
         
         initSeatState(nextId);
         saveLocal();
         renderColumn(colKey);
-        showToast('➕ Đã chèn thêm chỗ ngồi mới ở đầu cột', 'success');
+        showToast('➕ Đã thêm vị trí mới lên trên đầu cột', 'success');
     }
 
     function removeSeatTop(colKey) {
         if(columnOrder[colKey].length === 0) {
-            showToast('⚠️ Cột này hiện đang rỗng!', 'warn');
+            showToast('静态 Cột hiện đang trống!', 'warn');
             return;
         }
-        if(confirm('Bạn có chắc chắn muốn xóa vị trí ở ĐẦU TIÊN của cột này không?')) {
+        if(confirm('Bạn có muốn xóa vị trí ở ĐẦU TIÊN của cột này không?')) {
             const removedId = columnOrder[colKey].shift();
             layoutData[colKey] = layoutData[colKey].filter(s => s.id !== removedId);
             delete inventoryState[removedId];
@@ -413,7 +422,7 @@
             
             saveLocal();
             renderColumn(colKey);
-            showToast('➖ Đã gỡ bỏ vị trí đầu tiên', 'info');
+            showToast('➖ Đã xóa vị trí đầu tiên', 'info');
         }
     }
 
@@ -426,7 +435,7 @@
             
             saveLocal();
             renderColumn(colKey);
-            showToast('🗑️ Đã xóa vị trí chỉ định', 'info');
+            showToast('🗑️ Đã xóa vị trí', 'info');
         }
     }
 
@@ -445,11 +454,7 @@
             if (finished) return;
             finished = true;
             const newVal = input.value.trim();
-            if (newVal) {
-                customNames[id] = newVal;
-            } else {
-                customNames[id] = 'Vị trí trống';
-            }
+            customNames[id] = newVal ? newVal : 'Vị trí trống';
             saveLocal();
             renderColumn(colKey);
         }
@@ -465,25 +470,22 @@
         input.focus();
     }
 
-    // ── CALCULATION & METRICS ────────────────────────────────────────
+    // ── DATA ANALYSIS & METRICS ──────────────────────────────────────
     function calculateStats() {
-        let total = 0;
-        let fullKitCount = 0;
-        let missingKitCount = 0;
+        let total = 0, fullKitCount = 0, missingKitCount = 0;
 
         ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
-            columnOrder[k].forEach(id => {
-                total++;
-                const state = inventoryState[id];
-                if(state) {
-                    const hasCore = state.thung && state.chuot && state.phim && state.tai && state.man20;
-                    if(hasCore && !state.man24) {
-                        fullKitCount++;
-                    } else {
-                        missingKitCount++;
+            if (columnOrder[k]) {
+                columnOrder[k].forEach(id => {
+                    total++;
+                    const state = inventoryState[id];
+                    if(state) {
+                        const hasCore = state.thung && state.chuot && state.phim && state.tai && state.man20;
+                        if(hasCore && !state.man24) fullKitCount++;
+                        else missingKitCount++;
                     }
-                }
-            });
+                });
+            }
         });
 
         document.getElementById('stat-total').textContent = total;
@@ -520,16 +522,15 @@
 
     function exportJSON() {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return showToast('Không có dữ liệu lưu trữ để export!', 'warn');
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(raw);
         const dl = document.createElement('a');
         dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", `Backup_KiemKe_Floor2_${new Date().toISOString().slice(0,10)}.json`);
+        dl.setAttribute("download", `Backup_KiemKe_Lau2_v5.json`);
         dl.click();
     }
 
     function resetAllInventory() {
-        if(confirm('CẢNH BÁO: Hành động này sẽ dọn sạch toàn bộ dữ liệu cấu hình hiện tại về mặc định. Tiến hành?')) {
+        if(confirm('Bạn có chắc muốn dọn sạch toàn bộ dữ liệu kiểm kê hiện tại?')) {
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
         }
@@ -537,25 +538,25 @@
 
     async function syncNow() {
         if(!gasUrl || gasUrl.includes('...')) {
-            showToast('⚠️ Vui lòng cấu hình URL Apps Script Web App ở cuối trang trước!', 'warn');
+            showToast('⚠️ Vui lòng điền Web App URL hợp lệ ở chân trang!', 'warn');
             return;
         }
         showToast('☁️ Đang đồng bộ dữ liệu đám mây...', 'info');
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            const response = await fetch(gasUrl, {
+            await fetch(gasUrl, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: raw
             });
-            showToast('✅ Đã gửi lệnh đồng bộ lên Google Sheets!', 'success');
+            showToast('✅ Đã gửi lệnh đồng bộ lên Google Sheets thành công!', 'success');
         } catch(e) {
-            showToast('❌ Lỗi kết nối không phản hồi. Hãy kiểm tra lại URL.', 'warn');
+            showToast('❌ Đồng bộ thất bại. Kiểm tra lại URL triển khai.', 'warn');
         }
     }
 
-    // Khởi chạy tiến trình nạp dữ liệu
+    // Run Engine
     loadState();
     renderAll();
 </script>
