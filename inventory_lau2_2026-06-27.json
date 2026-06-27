@@ -1,0 +1,1764 @@
+﻿{
+  "columnOrder": {
+    "col1": [
+      "1_1",
+      "1_2",
+      "1_3",
+      "1_4",
+      "1_5",
+      "1_blank1",
+      "1_6",
+      "1_7",
+      "1_8",
+      "1_9",
+      "1_10",
+      "1_11",
+      "1_blank2",
+      "1_12",
+      "1_13",
+      "1_14",
+      "1_15",
+      "1_16",
+      "1_17",
+      "1_18"
+    ],
+    "col2a": [
+      "2a_1",
+      "2a_2",
+      "2a_3",
+      "2a_4",
+      "2a_5",
+      "2a_6",
+      "2a_7",
+      "2a_8",
+      "2a_9",
+      "2a_10",
+      "2a_11",
+      "2a_12",
+      "2a_13",
+      "2a_14",
+      "2a_15",
+      "2a_16",
+      "2a_17",
+      "2a_18",
+      "2a_19",
+      "2a_20"
+    ],
+    "col2b": [
+      "2b_1",
+      "2b_2",
+      "2b_3",
+      "2b_4",
+      "2b_5",
+      "2b_6",
+      "2b_7",
+      "2b_8",
+      "2b_9",
+      "2b_10",
+      "2b_11",
+      "2b_12",
+      "2b_13",
+      "2b_14",
+      "2b_15",
+      "2b_16",
+      "2b_17",
+      "2b_18",
+      "2b_19",
+      "2b_20"
+    ],
+    "col3": [
+      "C3_1782579850790",
+      "3_1",
+      "3_2",
+      "3_3",
+      "3_4",
+      "3_5",
+      "3_blank1",
+      "3_6",
+      "3_7",
+      "3_8",
+      "3_9",
+      "3_10",
+      "3_11",
+      "3_blank2",
+      "3_12",
+      "3_13",
+      "3_14",
+      "3_15",
+      "3_16",
+      "3_17",
+      "3_18"
+    ]
+  },
+  "layoutData": {
+    "leaders": [
+      {
+        "id": "L1",
+        "name": "A",
+        "count": "18",
+        "targetId": "leader-header-1",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "L2A",
+        "name": "B",
+        "count": "20",
+        "targetId": "leader-header-2a",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "L2B",
+        "name": "C",
+        "count": "20",
+        "targetId": "leader-header-2b",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "L3",
+        "name": "D",
+        "count": "19",
+        "targetId": "leader-header-3",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      }
+    ],
+    "col1": [
+      {
+        "id": "1_1",
+        "name": "CHá»– TRá»NG",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_2",
+        "name": "MINH NHá»°T",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_3",
+        "name": "ÄAN VY",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_4",
+        "name": "LONG NHÃ‚N",
+        "fill": "fill-green",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_5",
+        "name": "TÃN PHÃšC",
+        "fill": "fill-green",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_blank1",
+        "name": "",
+        "fill": "empty-space",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_6",
+        "name": "TRá»°C",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_7",
+        "name": "THáº®NG",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_8",
+        "name": "KIM NGÃ‚N",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_9",
+        "name": "NHáº¬T KHÃNH",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_10",
+        "name": "PHÃš SÄ¨ SENIOR",
+        "fill": "fill-yellow",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_11",
+        "name": "CHÃNH SENIOR",
+        "fill": "fill-yellow",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_blank2",
+        "name": "",
+        "fill": "empty-space",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_12",
+        "name": "PT - PHÆ¯Æ NG THáº¢O",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_13",
+        "name": "TÃ‚N TÃ€I",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_14",
+        "name": "TUáº¤N ANH",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_15",
+        "name": "QUANG Háº¬U",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_16",
+        "name": "MINH HOÃ€NG",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_17",
+        "name": "CHá»– TRá»NG",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      },
+      {
+        "id": "1_18",
+        "name": "TOÃ€N",
+        "fill": "fill-purple",
+        "team": "LAN_PHUONG"
+      }
+    ],
+    "col2a": [
+      {
+        "id": "2a_1",
+        "name": "CHá»– TRá»NG",
+        "fill": "fill-red",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_2",
+        "name": "PT - KIM NGÃ‚N",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_3",
+        "name": "CHá»– TRá»NG",
+        "fill": "fill-red",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_4",
+        "name": "PT - NHá»Š Cáº®M",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_5",
+        "name": "PT - DIá»„M MY",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_6",
+        "name": "PT - PHá»¤NG NHI",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_7",
+        "name": "PT - TRÃ PHI",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_8",
+        "name": "THÃ€NH Äáº T",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_9",
+        "name": "THU HIá»€N",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_10",
+        "name": "HOÃ€NG Má»¸",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_11",
+        "name": "THáº¢O TRÃ‚M",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_12",
+        "name": "THá»Š THá»¦Y",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_13",
+        "name": "Ã LAN",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_14",
+        "name": "THá»ªA NGHIÃŠN",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_15",
+        "name": "NGUYá»„N NHI",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_16",
+        "name": "HUYá»€N TRANG",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_17",
+        "name": "MINH THÃI",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_18",
+        "name": "Báº¢O ANH SENIOR",
+        "fill": "fill-yellow",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_19",
+        "name": "PT - PHÆ¯Æ NG THY",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2a_20",
+        "name": "PT - LIÃŠN ANH",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      }
+    ],
+    "col2b": [
+      {
+        "id": "2b_1",
+        "name": "THIÃŠN NGÃ‚N",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_2",
+        "name": "TÃš TRINH",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_3",
+        "name": "TRUNG NGHá»Š",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_4",
+        "name": "MINH TÃ‚M",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_5",
+        "name": "MINH THÆ¯",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_6",
+        "name": "DUY KHÃNH",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_7",
+        "name": "Há»’NG Ã‚N",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_8",
+        "name": "THIÃŠN KIM",
+        "fill": "fill-yellow",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_9",
+        "name": "MINH SENIOR",
+        "fill": "fill-yellow",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_10",
+        "name": "KHÃNH LY",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_11",
+        "name": "NHáº¬T LAM",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_12",
+        "name": "HÃ‚N SENIOR",
+        "fill": "fill-yellow",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_13",
+        "name": "NGUYá»„N SENIOR",
+        "fill": "fill-yellow",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_14",
+        "name": "DIá»†U TRINH",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_15",
+        "name": "PHI PHá»¤NG",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_16",
+        "name": "PT - QUá»C THá»ŠNH",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_17",
+        "name": "PT - THU Há»’NG",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_18",
+        "name": "PT - KHOA",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_19",
+        "name": "PT - LOAN",
+        "fill": "fill-pink",
+        "team": "OTHER"
+      },
+      {
+        "id": "2b_20",
+        "name": "KIM CHI",
+        "fill": "fill-purple",
+        "team": "OTHER"
+      }
+    ],
+    "col3": [
+      {
+        "id": "C3_1782579850790",
+        "name": "Vá»‹ trÃ­ má»›i",
+        "fill": "fill-purple"
+      },
+      {
+        "id": "3_1",
+        "name": "Báº¢O NGá»ŒC",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_2",
+        "name": "HOÃ€NG KHáº¢I",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_3",
+        "name": "TRUNG HIáº¾U",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_4",
+        "name": "PT - CÃT TÆ¯á»œNG",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_5",
+        "name": "HUY HOÃ€NG",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_blank1",
+        "name": "",
+        "fill": "empty-space",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_6",
+        "name": "MINH TRÃ",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_7",
+        "name": "PT - Cáº¨M TÃš",
+        "fill": "fill-pink",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_8",
+        "name": "MINH Äáº O",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_9",
+        "name": "PT - PHÃšC Háº¬U",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_10",
+        "name": "Báº¢O AN",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_11",
+        "name": "PT - VÄ‚N VIá»†T",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_blank2",
+        "name": "",
+        "fill": "empty-space",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_12",
+        "name": "THáº¢O VI",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_13",
+        "name": "NHÆ¯ XUYáº¾N",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_14",
+        "name": "THU THáº¢O",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_15",
+        "name": "MAI XUÃ‚N",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_16",
+        "name": "THá»Š Há»’NG",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_17",
+        "name": "THá»Š QUá»²NH",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      },
+      {
+        "id": "3_18",
+        "name": "CÃ”NG HIá»†P",
+        "fill": "fill-purple",
+        "team": "TRAN_OANH"
+      }
+    ]
+  },
+  "inventoryState": {
+    "L1": {
+      "thung": false,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": true,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": false,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "L2A": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "L2B": {
+      "thung": false,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 2,
+      "phim": true,
+      "phim_qty": 2,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "L3": {
+      "thung": false,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": true,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_1": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 4,
+      "tai": false,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_2": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_3": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_4": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_5": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_6": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_7": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_8": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_9": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_10": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_11": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_12": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 2,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_13": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_14": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_15": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_16": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_17": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "1_18": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_1": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": false,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_2": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_3": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": false,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_4": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_5": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_6": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_7": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 2,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_8": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_9": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_10": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_11": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_12": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_13": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_14": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_15": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_16": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_17": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_18": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_19": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2a_20": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_1": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_2": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_3": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_4": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_5": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_6": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_7": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_8": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_9": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_10": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_11": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_12": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_13": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_14": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_15": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_16": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_17": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_18": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_19": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "2b_20": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_1": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_2": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_3": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_4": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_5": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_6": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_7": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_8": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_9": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_10": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_11": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 2,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_12": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_13": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_14": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_15": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_16": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_17": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "3_18": {
+      "thung": true,
+      "thung_qty": 1,
+      "man20": true,
+      "man24": false,
+      "chuot": true,
+      "chuot_qty": 1,
+      "phim": true,
+      "phim_qty": 1,
+      "tai": true,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    },
+    "C3_1782579850790": {
+      "thung": false,
+      "thung_qty": 1,
+      "man20": false,
+      "man24": false,
+      "chuot": false,
+      "chuot_qty": 1,
+      "phim": false,
+      "phim_qty": 1,
+      "tai": false,
+      "tai_qty": 1,
+      "laptop": false,
+      "laptop_tui": false
+    }
+  },
+  "customNames": {
+    "1_3": "ÄAN VY",
+    "1_2": "CHá»– TRá»NG",
+    "3_14": "MINH NHá»°T"
+  },
+  "gasUrl": "https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec"
+}
