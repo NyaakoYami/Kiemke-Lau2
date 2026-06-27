@@ -33,20 +33,16 @@
         .sync-status.error{background:rgba(224,49,49,0.25);color:#fca5a5;}
         .sync-status.offline{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);}
         .sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 2s infinite;}
-        
-        /* Dashboard Layout */
         .dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
         .detail-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
-        
         .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;flex-direction:column;gap:4px;transition:box-shadow .2s;}
         .stat-card:hover{box-shadow:var(--shadow-md);}
-        .stat-card.detail-card{padding:10px 12px; background: #fdfdfd;}
+        .stat-card.detail-card{padding:10px 12px;background:#fdfdfd;}
         .stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
         .stat-icon.blue{background:var(--blue-light);}.stat-icon.green{background:var(--green-light);}.stat-icon.red{background:var(--red-light);}.stat-icon.yellow{background:var(--yellow-light);}.stat-icon.purple{background:#f3f0ff;}
         .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);}
         .stat-value{font-size:24px;font-weight:800;color:var(--text-primary);line-height:1;}
-        .stat-card.detail-card .stat-value{font-size:20px; color:#2b2d42;}
-
+        .stat-card.detail-card .stat-value{font-size:20px;color:#2b2d42;}
         .controls-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:var(--shadow-sm);}
         .search-wrap{position:relative;}
         .search-wrap .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;}
@@ -64,17 +60,22 @@
         .btn-danger:hover{background:var(--red-light);transform:translateY(-1px);}
         .btn-sync{background:linear-gradient(135deg,#3b5bdb,#7048e8);color:#fff;}
         .btn-sync:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 10px rgba(59,91,219,.4);}
-        
-        .gas-banner{background:linear-gradient(135deg,#eef2ff,#f3f0ff);border:1px solid #c5b4f5;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-        .gas-banner.hidden{display:none;}
-        .layout-grid{display:grid;grid-template-columns:1fr 38px 1fr 1fr 38px 1fr;gap:12px;margin-bottom:16px;}
+        .layout-grid{display:grid;grid-template-columns:1fr 38px 1fr 1fr 38px 1fr;gap:12px;margin-bottom:4px;}
         .aisle{background:linear-gradient(180deg,#e9ecef,#dee2e6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#8a9ab0;border-radius:6px;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:4px;font-size:11px;border:1px dashed #c8d0db;}
-        .seat-column{display:flex;flex-direction:column;gap:8px;}
+        /* Column wrapper with add button */
+        .col-wrapper{display:flex;flex-direction:column;gap:0;}
+        .seat-column{display:flex;flex-direction:column;gap:8px;min-height:60px;}
         .column-main-header{border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow-sm);border:1px solid transparent;}
-        .seat-box{border-radius:var(--radius);padding:10px 12px;position:relative;box-shadow:var(--shadow-sm);border:1px solid transparent;transition:box-shadow .15s,transform .15s;}
+        /* Drag & drop styles */
+        .seat-box{border-radius:var(--radius);padding:10px 12px;position:relative;box-shadow:var(--shadow-sm);border:1px solid transparent;transition:box-shadow .15s,transform .15s;cursor:grab;}
+        .seat-box:active{cursor:grabbing;}
         .seat-box:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
-        .seat-box.empty-space{background:transparent!important;border:none!important;box-shadow:none!important;height:40px;pointer-events:none;}
+        .seat-box.empty-space{background:transparent!important;border:none!important;box-shadow:none!important;height:40px;pointer-events:none;cursor:default;}
         .seat-box.full-equipped{background-color:var(--green-light)!important;border-color:#b2f2bb!important;}
+        .seat-box.dragging{opacity:.4;transform:scale(0.97);box-shadow:none!important;}
+        .seat-box.drag-over-top{border-top:3px solid var(--blue)!important;margin-top:-1px;}
+        .seat-box.drag-over-bottom{border-bottom:3px solid var(--blue)!important;}
+        .seat-column.drop-target-empty{background:rgba(59,91,219,.07);border:2px dashed var(--blue);border-radius:var(--radius);}
         .fill-purple{background-color:#f0ebff;border-color:#c5b4f5;}
         .fill-purple .seat-name{color:var(--purple);}
         .fill-green{background-color:var(--green-light);border-color:#b2f2bb;}
@@ -86,6 +87,9 @@
         .fill-pink{background-color:var(--pink-bg);border-color:#fbb6ce;}
         .fill-pink .seat-name{color:#c2406e;}
         .seat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px;}
+        .drag-handle{cursor:grab;color:var(--text-muted);font-size:14px;padding:2px 4px;border-radius:3px;flex-shrink:0;user-select:none;}
+        .drag-handle:hover{background:rgba(0,0,0,.08);color:var(--text-secondary);}
+        .drag-handle:active{cursor:grabbing;}
         .seat-name{font-weight:700;font-size:12px;line-height:1.2;cursor:pointer;border-radius:3px;padding:1px 3px;transition:background .15s;}
         .seat-name:hover{background:rgba(0,0,0,0.06);}
         .rename-input{font-weight:700;font-size:12px;line-height:1.2;border:1.5px solid var(--blue);border-radius:4px;padding:1px 5px;font-family:inherit;outline:none;background:#fff;color:var(--text-primary);width:100%;min-width:60px;max-width:160px;}
@@ -102,6 +106,11 @@
         .item-check input[type=checkbox]{cursor:pointer;width:14px;height:14px;accent-color:var(--green);flex-shrink:0;}
         .qty-input{width:36px;padding:1px 3px;font-size:10px;border:1px solid var(--border);border-radius:3px;text-align:center;font-family:inherit;outline:none;}
         .qty-input:focus{border-color:var(--blue);}
+        /* Add / Remove seat button row */
+        .col-actions{display:flex;gap:6px;margin-top:8px;justify-content:center;}
+        .btn-col-action{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:11px;font-family:inherit;background:var(--surface);color:var(--text-secondary);transition:all .15s;}
+        .btn-col-add:hover{border-color:var(--green);color:var(--green);background:var(--green-light);}
+        .btn-col-remove:hover{border-color:var(--red);color:var(--red);background:var(--red-light);}
         .bottom-border-panel{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
         .border-wall{border:1.5px dashed #94a3b8;background:#f1f5f9;padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:700;font-size:13px;color:#64748b;letter-spacing:2px;}
         .highlight{border:2px solid #f59f00!important;box-shadow:0 0 0 4px rgba(245,159,0,.15)!important;animation:pulse-gold 1.6s infinite;}
@@ -180,8 +189,6 @@
         </div>
     </div>
 
-    <div class="gas-banner hidden" id="gas-banner"></div>
-
     <div class="dashboard-grid">
         <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-label">Tổng vị trí</div><div class="stat-value" id="stat-total">0</div></div>
         <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-label">Đủ thiết bị</div><div class="stat-value" id="stat-full">0</div></div>
@@ -206,6 +213,8 @@
         <div class="btn-group">
             <button class="btn btn-sync" onclick="syncNow()">☁️ Đồng bộ ngay</button>
             <button class="btn btn-success" onclick="exportGoogleSheets()">📊 Xuất CSV</button>
+            <button class="btn btn-success" onclick="document.getElementById('import-csv-file').click()" style="background:#1a7a34;">📥 Nhập CSV</button>
+            <input type="file" id="import-csv-file" accept=".csv" style="display:none" onchange="importCSV(event)">
             <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất backup</button>
             <button class="btn btn-warning" onclick="document.getElementById('import-file').click()">📂 Nhập backup</button>
             <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
@@ -213,18 +222,47 @@
         </div>
     </div>
 
-    <div class="layout-grid">
+    <div class="layout-grid" id="header-grid">
         <div id="leader-header-1"></div><div></div>
         <div id="leader-header-2a"></div><div id="leader-header-2b"></div>
         <div></div><div id="leader-header-3"></div>
     </div>
-    <div class="layout-grid">
-        <div class="seat-column" id="col-1"></div>
+    <!-- Column add/remove controls row -->
+    <div class="layout-grid" style="margin-bottom:8px;">
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeat('col1','fill-purple','LAN_PHUONG')">＋ Thêm chỗ</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col1')">－ Bớt chỗ</button>
+        </div>
+        <div></div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeat('col2a','fill-purple','OTHER')">＋ Thêm chỗ</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2a')">－ Bớt chỗ</button>
+        </div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeat('col2b','fill-pink','OTHER')">＋ Thêm chỗ</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2b')">－ Bớt chỗ</button>
+        </div>
+        <div></div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeat('col3','fill-pink','TRAN_OANH')">＋ Thêm chỗ</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col3')">－ Bớt chỗ</button>
+        </div>
+    </div>
+    <div class="layout-grid" id="main-grid">
+        <div class="col-wrapper">
+            <div class="seat-column" id="col-1" data-col="col1"></div>
+        </div>
         <div class="aisle">LỐI ĐI</div>
-        <div class="seat-column" id="col-2a"></div>
-        <div class="seat-column" id="col-2b"></div>
+        <div class="col-wrapper">
+            <div class="seat-column" id="col-2a" data-col="col2a"></div>
+        </div>
+        <div class="col-wrapper">
+            <div class="seat-column" id="col-2b" data-col="col2b"></div>
+        </div>
         <div class="aisle">LỐI ĐI</div>
-        <div class="seat-column" id="col-3"></div>
+        <div class="col-wrapper">
+            <div class="seat-column" id="col-3" data-col="col3"></div>
+        </div>
     </div>
     <div class="bottom-border-panel">
         <div class="border-wall">TƯỜNG</div>
@@ -242,66 +280,98 @@ const layoutData = {
         {id:"L3",  name:"TRẦN OANH - MULTI TASK TEAMLEADER",count:"19",targetId:"leader-header-3", fill:"fill-purple", team:"TRAN_OANH"}
     ],
     col1:[
-        {id:"1_1",name:"CHỖ TRỐNG",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_2",name:"MINH NHỰT",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_3",name:"ĐAN VY",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_4",name:"LONG NHÂN",fill:"fill-green", team:"LAN_PHUONG"},
-        {id:"1_5",name:"TÁN PHÚC",fill:"fill-green", team:"LAN_PHUONG"},{id:"1_blank1",name:"",fill:"empty-space"},
-        {id:"1_6",name:"TRỰC",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_7",name:"THẮNG",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_8",name:"KIM NGÂN",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_9",name:"NHẬT KHÁNH",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_10",name:"PHÚ SĨ SENIOR",fill:"fill-yellow", team:"LAN_PHUONG"},{id:"1_11",name:"CHÍNH SENIOR",fill:"fill-yellow", team:"LAN_PHUONG"},
-        {id:"1_blank2",name:"",fill:"empty-space"},{id:"1_12",name:"PT - PHƯƠNG THẢO",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_13",name:"TÂN TÀI",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_14",name:"TUẤN ANH",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_15",name:"QUANG HẬU",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_16",name:"MINH HOÀNG",fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"1_17",name:"CHỖ TRỐNG",fill:"fill-purple", team:"LAN_PHUONG"},{id:"1_18",name:"TOÀN",fill:"fill-purple", team:"LAN_PHUONG"}
+        {id:"1_1",name:"CHỖ TRỐNG",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_2",name:"MINH NHỰT",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_3",name:"ĐAN VY",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_4",name:"LONG NHÂN",fill:"fill-green",team:"LAN_PHUONG"},
+        {id:"1_5",name:"TÁN PHÚC",fill:"fill-green",team:"LAN_PHUONG"},{id:"1_blank1",name:"",fill:"empty-space"},
+        {id:"1_6",name:"TRỰC",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_7",name:"THẮNG",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_8",name:"KIM NGÂN",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_9",name:"NHẬT KHÁNH",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_10",name:"PHÚ SĨ SENIOR",fill:"fill-yellow",team:"LAN_PHUONG"},{id:"1_11",name:"CHÍNH SENIOR",fill:"fill-yellow",team:"LAN_PHUONG"},
+        {id:"1_blank2",name:"",fill:"empty-space"},{id:"1_12",name:"PT - PHƯƠNG THẢO",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_13",name:"TÂN TÀI",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_14",name:"TUẤN ANH",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_15",name:"QUANG HẬU",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_16",name:"MINH HOÀNG",fill:"fill-purple",team:"LAN_PHUONG"},
+        {id:"1_17",name:"CHỖ TRỐNG",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_18",name:"TOÀN",fill:"fill-purple",team:"LAN_PHUONG"}
     ],
     col2a:[
-        {id:"2a_1",name:"CHỖ TRỐNG",fill:"fill-red", team:"OTHER"},{id:"2a_2",name:"PT - KIM NGÂN",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_3",name:"CHỖ TRỐNG",fill:"fill-red", team:"OTHER"},{id:"2a_4",name:"PT - NHỊ CẮM",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_5",name:"PT - DIỄM MY",fill:"fill-purple", team:"OTHER"},{id:"2a_6",name:"PT - PHỤNG NHI",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_7",name:"PT - TRÍ PHI",fill:"fill-purple", team:"OTHER"},{id:"2a_8",name:"THÀNH ĐẠT",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_9",name:"THU HIỀN",fill:"fill-purple", team:"OTHER"},{id:"2a_10",name:"HOÀNG MỸ",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_11",name:"THẢO TRÂM",fill:"fill-purple", team:"OTHER"},{id:"2a_12",name:"THỊ THỦY",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_13",name:"Ý LAN",fill:"fill-purple", team:"OTHER"},{id:"2a_14",name:"THỪA NGHIÊN",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_15",name:"NGUYỄN NHI",fill:"fill-purple", team:"OTHER"},{id:"2a_16",name:"HUYỀN TRANG",fill:"fill-purple", team:"OTHER"},
-        {id:"2a_17",name:"MINH THÁI",fill:"fill-purple", team:"OTHER"},{id:"2a_18",name:"BẢO ANH SENIOR",fill:"fill-yellow", team:"OTHER"},
-        {id:"2a_19",name:"PT - PHƯƠNG THY",fill:"fill-pink", team:"OTHER"},{id:"2a_20",name:"PT - LIÊN ANH",fill:"fill-pink", team:"OTHER"}
+        {id:"2a_1",name:"CHỖ TRỐNG",fill:"fill-red",team:"OTHER"},{id:"2a_2",name:"PT - KIM NGÂN",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_3",name:"CHỖ TRỐNG",fill:"fill-red",team:"OTHER"},{id:"2a_4",name:"PT - NHỊ CẮM",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_5",name:"PT - DIỄM MY",fill:"fill-purple",team:"OTHER"},{id:"2a_6",name:"PT - PHỤNG NHI",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_7",name:"PT - TRÍ PHI",fill:"fill-purple",team:"OTHER"},{id:"2a_8",name:"THÀNH ĐẠT",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_9",name:"THU HIỀN",fill:"fill-purple",team:"OTHER"},{id:"2a_10",name:"HOÀNG MỸ",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_11",name:"THẢO TRÂM",fill:"fill-purple",team:"OTHER"},{id:"2a_12",name:"THỊ THỦY",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_13",name:"Ý LAN",fill:"fill-purple",team:"OTHER"},{id:"2a_14",name:"THỪA NGHIÊN",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_15",name:"NGUYỄN NHI",fill:"fill-purple",team:"OTHER"},{id:"2a_16",name:"HUYỀN TRANG",fill:"fill-purple",team:"OTHER"},
+        {id:"2a_17",name:"MINH THÁI",fill:"fill-purple",team:"OTHER"},{id:"2a_18",name:"BẢO ANH SENIOR",fill:"fill-yellow",team:"OTHER"},
+        {id:"2a_19",name:"PT - PHƯƠNG THY",fill:"fill-pink",team:"OTHER"},{id:"2a_20",name:"PT - LIÊN ANH",fill:"fill-pink",team:"OTHER"}
     ],
     col2b:[
-        {id:"2b_1",name:"THIÊN NGÂN",fill:"fill-pink", team:"OTHER"},{id:"2b_2",name:"TÚ TRINH",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_3",name:"TRUNG NGHỊ",fill:"fill-pink", team:"OTHER"},{id:"2b_4",name:"MINH TÂM",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_5",name:"MINH THƯ",fill:"fill-pink", team:"OTHER"},{id:"2b_6",name:"DUY KHÁNH",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_7",name:"HỒNG ÂN",fill:"fill-pink", team:"OTHER"},{id:"2b_8",name:"THIÊN KIM",fill:"fill-yellow", team:"OTHER"},
-        {id:"2b_9",name:"MINH SENIOR",fill:"fill-yellow", team:"OTHER"},{id:"2b_10",name:"KHÁNH LY",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_11",name:"NHẬT LAM",fill:"fill-pink", team:"OTHER"},{id:"2b_12",name:"HÂN SENIOR",fill:"fill-yellow", team:"OTHER"},
-        {id:"2b_13",name:"NGUYỄN SENIOR",fill:"fill-yellow", team:"OTHER"},{id:"2b_14",name:"DIỆU TRINH",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_15",name:"PHI PHỤNG",fill:"fill-pink", team:"OTHER"},{id:"2b_16",name:"PT - QUỐC THỊNH",fill:"fill-purple", team:"OTHER"},
-        {id:"2b_17",name:"PT - THU HỒNG",fill:"fill-purple", team:"OTHER"},{id:"2b_18",name:"PT - KHOA",fill:"fill-pink", team:"OTHER"},
-        {id:"2b_19",name:"PT - LOAN",fill:"fill-pink", team:"OTHER"},{id:"2b_20",name:"KIM CHI",fill:"fill-purple", team:"OTHER"}
+        {id:"2b_1",name:"THIÊN NGÂN",fill:"fill-pink",team:"OTHER"},{id:"2b_2",name:"TÚ TRINH",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_3",name:"TRUNG NGHỊ",fill:"fill-pink",team:"OTHER"},{id:"2b_4",name:"MINH TÂM",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_5",name:"MINH THƯ",fill:"fill-pink",team:"OTHER"},{id:"2b_6",name:"DUY KHÁNH",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_7",name:"HỒNG ÂN",fill:"fill-pink",team:"OTHER"},{id:"2b_8",name:"THIÊN KIM",fill:"fill-yellow",team:"OTHER"},
+        {id:"2b_9",name:"MINH SENIOR",fill:"fill-yellow",team:"OTHER"},{id:"2b_10",name:"KHÁNH LY",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_11",name:"NHẬT LAM",fill:"fill-pink",team:"OTHER"},{id:"2b_12",name:"HÂN SENIOR",fill:"fill-yellow",team:"OTHER"},
+        {id:"2b_13",name:"NGUYỄN SENIOR",fill:"fill-yellow",team:"OTHER"},{id:"2b_14",name:"DIỆU TRINH",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_15",name:"PHI PHỤNG",fill:"fill-pink",team:"OTHER"},{id:"2b_16",name:"PT - QUỐC THỊNH",fill:"fill-purple",team:"OTHER"},
+        {id:"2b_17",name:"PT - THU HỒNG",fill:"fill-purple",team:"OTHER"},{id:"2b_18",name:"PT - KHOA",fill:"fill-pink",team:"OTHER"},
+        {id:"2b_19",name:"PT - LOAN",fill:"fill-pink",team:"OTHER"},{id:"2b_20",name:"KIM CHI",fill:"fill-purple",team:"OTHER"}
     ],
     col3:[
-        {id:"3_1",name:"BẢO NGỌC",fill:"fill-pink", team:"TRAN_OANH"},{id:"3_2",name:"HOÀNG KHẢI",fill:"fill-pink", team:"TRAN_OANH"},
-        {id:"3_3",name:"TRUNG HIẾU",fill:"fill-pink", team:"TRAN_OANH"},{id:"3_4",name:"PT - CÁT TƯỜNG",fill:"fill-pink", team:"TRAN_OANH"},
-        {id:"3_5",name:"HUY HOÀNG",fill:"fill-pink", team:"TRAN_OANH"},{id:"3_blank1",name:"",fill:"empty-space"},
-        {id:"3_6",name:"MINH TRÍ",fill:"fill-pink", team:"TRAN_OANH"},{id:"3_7",name:"PT - CẨM TÚ",fill:"fill-pink", team:"TRAN_OANH"},
-        {id:"3_8",name:"MINH ĐẠO",fill:"fill-purple", team:"TRAN_OANH"},{id:"3_9",name:"PT - PHÚC HẬU",fill:"fill-purple", team:"TRAN_OANH"},
-        {id:"3_10",name:"BẢO AN",fill:"fill-purple", team:"TRAN_OANH"},{id:"3_11",name:"PT - VĂN VIỆT",fill:"fill-purple", team:"TRAN_OANH"},
-        {id:"3_blank2",name:"",fill:"empty-space"},{id:"3_12",name:"THẢO VI",fill:"fill-purple", team:"TRAN_OANH"},
-        {id:"3_13",name:"NHƯ XUYẾN",fill:"fill-purple", team:"TRAN_OANH"},{id:"3_14",name:"THU THẢO",fill:"fill-purple", team:"TRAN_OANH"},
-        {id:"3_15",name:"MAI XUÂN",fill:"fill-purple", team:"TRAN_OANH"},{id:"3_16",name:"THỊ HỒNG",fill:"fill-purple", team:"TRAN_OANH"},
-        {id:"3_17",name:"THỊ QUỲNH",fill:"fill-purple", team:"TRAN_OANH"},{id:"3_18",name:"CÔNG HIỆP",fill:"fill-purple", team:"TRAN_OANH"}
+        {id:"3_1",name:"BẢO NGỌC",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_2",name:"HOÀNG KHẢI",fill:"fill-pink",team:"TRAN_OANH"},
+        {id:"3_3",name:"TRUNG HIẾU",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_4",name:"PT - CÁT TƯỜNG",fill:"fill-pink",team:"TRAN_OANH"},
+        {id:"3_5",name:"HUY HOÀNG",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_blank1",name:"",fill:"empty-space"},
+        {id:"3_6",name:"MINH TRÍ",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_7",name:"PT - CẨM TÚ",fill:"fill-pink",team:"TRAN_OANH"},
+        {id:"3_8",name:"MINH ĐẠO",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_9",name:"PT - PHÚC HẬU",fill:"fill-purple",team:"TRAN_OANH"},
+        {id:"3_10",name:"BẢO AN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_11",name:"PT - VĂN VIỆT",fill:"fill-purple",team:"TRAN_OANH"},
+        {id:"3_blank2",name:"",fill:"empty-space"},{id:"3_12",name:"THẢO VI",fill:"fill-purple",team:"TRAN_OANH"},
+        {id:"3_13",name:"NHƯ XUYẾN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_14",name:"THU THẢO",fill:"fill-purple",team:"TRAN_OANH"},
+        {id:"3_15",name:"MAI XUÂN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_16",name:"THỊ HỒNG",fill:"fill-purple",team:"TRAN_OANH"},
+        {id:"3_17",name:"THỊ QUỲNH",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_18",name:"CÔNG HIỆP",fill:"fill-purple",team:"TRAN_OANH"}
     ]
 };
+
+// ── COLUMN META (for dynamic seats) ──────────────────────────────
+const colMeta = {
+    col1:  {domId:'col-1',  defaultFill:'fill-purple', defaultTeam:'LAN_PHUONG'},
+    col2a: {domId:'col-2a', defaultFill:'fill-purple', defaultTeam:'OTHER'},
+    col2b: {domId:'col-2b', defaultFill:'fill-pink',   defaultTeam:'OTHER'},
+    col3:  {domId:'col-3',  defaultFill:'fill-pink',   defaultTeam:'TRAN_OANH'},
+};
+
+// ── COLUMN ORDER STATE (ordered list of seat ids per col) ─────────
+let columnOrder = { col1:[], col2a:[], col2b:[], col3:[] };
 
 function getAllSeats(){
     const all=[];
     layoutData.leaders.forEach(l=>{if(l.fill!=='empty-space')all.push(l);});
-    ['col1','col2a','col2b','col3'].forEach(k=>layoutData[k].forEach(s=>{if(s.fill!=='empty-space')all.push(s);}));
+    ['col1','col2a','col2b','col3'].forEach(k=>{
+        columnOrder[k].forEach(id=>{
+            const s = findSeatById(id);
+            if(s && s.fill!=='empty-space') all.push(s);
+        });
+    });
     return all;
+}
+
+function findSeatById(id) {
+    for(const k of ['col1','col2a','col2b','col3']){
+        const found = layoutData[k].find(s=>s.id===id);
+        if(found) return found;
+    }
+    return null;
+}
+
+function getSeatColKey(id) {
+    for(const k of ['col1','col2a','col2b','col3']){
+        if(layoutData[k].find(s=>s.id===id)) return k;
+    }
+    return null;
 }
 
 // ── CONSTANTS ────────────────────────────────────────────────────
 const deviceKeys=['thung','man','chuot','phim','tai'];
-const STORAGE_KEY='floor2_inventory_v2';
-const NAMES_KEY='floor2_names_v1';
+const STORAGE_KEY='floor2_inventory_v3';
+const NAMES_KEY='floor2_names_v2';
+const ORDER_KEY='floor2_order_v2';
 const GAS_URL_KEY='floor2_gas_url';
 
 // ── STATE ────────────────────────────────────────────────────────
@@ -310,17 +380,41 @@ let customNames={};
 let gasUrl='https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 let syncTimer=null;
 let isSyncing=false;
+let dragSrcId=null;
+let dragSrcColKey=null;
 
 // ── STORAGE ──────────────────────────────────────────────────────
 function loadState(){
     try{const r=localStorage.getItem(STORAGE_KEY);if(r)inventoryState=JSON.parse(r);}catch(e){inventoryState={};}
     try{const r=localStorage.getItem(NAMES_KEY);if(r)customNames=JSON.parse(r);}catch(e){customNames={};}
+    try{
+        const r=localStorage.getItem(ORDER_KEY);
+        if(r){
+            const saved=JSON.parse(r);
+            // Validate and merge
+            ['col1','col2a','col2b','col3'].forEach(k=>{
+                if(saved[k] && Array.isArray(saved[k])) columnOrder[k]=saved[k];
+            });
+        }
+    }catch(e){}
+    // Fill missing orders from layoutData
+    ['col1','col2a','col2b','col3'].forEach(k=>{
+        if(!columnOrder[k] || columnOrder[k].length===0){
+            columnOrder[k]=layoutData[k].map(s=>s.id);
+        } else {
+            // Add any seats in layoutData that aren't tracked yet
+            layoutData[k].forEach(s=>{
+                if(!columnOrder[k].includes(s.id)) columnOrder[k].push(s.id);
+            });
+        }
+    });
     setSyncStatus('synced','Đã kết nối');
 }
 
 function saveLocal(){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
     localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
+    localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
     const now=new Date();
     document.getElementById('last-saved').textContent='Lưu lúc '+now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     calculateStats();
@@ -345,7 +439,7 @@ async function pushToCloud(){
     isSyncing=true;
     setSyncStatus('syncing','Đang đồng bộ...');
     try{
-        const payload={action:'save',data:{inventory:inventoryState,customNames:customNames}};
+        const payload={action:'save',data:{inventory:inventoryState,customNames,columnOrder}};
         await fetch(gasUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
         setSyncStatus('synced','Đã đồng bộ '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}));
     }catch(e){
@@ -374,8 +468,10 @@ function pullFromCloud(){
             if(json&&json.inventory){
                 inventoryState=json.inventory;
                 customNames=json.customNames||{};
+                if(json.columnOrder) columnOrder=json.columnOrder;
                 localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
                 localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
+                localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
                 setSyncStatus('synced','Đã đồng bộ');
                 resolve(true);
             } else {
@@ -397,22 +493,11 @@ async function syncNow(){
     else showToast('⚠️ Không thể đồng bộ. Kiểm tra URL.','warn');
 }
 
-function connectGas(){
-    const url=document.getElementById('gas-url-bar')?.value?.trim() || gasUrl;
-    if(!url){showToast('⚠️ Vui lòng cấu hình URL Apps Script','warn');return;}
-    gasUrl=url;
-    localStorage.setItem(GAS_URL_KEY,gasUrl);
-    pullFromCloud().then(ok=>{
-        if(ok){renderAll();showToast('✅ Đồng bộ thành công!','success');}
-        else pushToCloud();
-    });
-}
-
 function showGasSetupModal(){document.getElementById('gas-modal').classList.add('show');}
 function closeGasModal(){document.getElementById('gas-modal').classList.remove('show');}
 function saveGasUrl(){
     const url=document.getElementById('gas-url-input').value.trim();
-    if(url){gasUrl=url;connectGas();}
+    if(url){gasUrl=url;localStorage.setItem(GAS_URL_KEY,gasUrl);pullFromCloud().then(ok=>{if(ok){renderAll();showToast('✅ Đồng bộ thành công!','success');}else pushToCloud();});}
     closeGasModal();
 }
 
@@ -426,7 +511,6 @@ function startRename(id){
     const currentName=getDisplayName(id,defaultName);
     const input=document.createElement('input');
     input.type='text';input.value=currentName;input.className='rename-input';
-    input.title='Nhấn Enter để lưu, Esc để huỷ';
     let committed=false;
     function commit(){
         if(committed)return;committed=true;
@@ -454,11 +538,18 @@ function initSeatState(id){
     if(!inventoryState[id])inventoryState[id]={thung:false,thung_qty:1,man:false,man_qty:1,chuot:false,chuot_qty:1,phim:false,phim_qty:1,tai:false,tai_qty:1};
 }
 
-function buildItemsGridHTML(id,state, teamType){
-    const monitorLabel = (teamType === "LAN_PHUONG" || teamType === "TRAN_OANH") ? "Màn hình 24\"" : "Màn hình 20\"";
+// Monitor label: dùng monitorOverride nếu có (sau khi nhập CSV), nếu không dùng team
+function getMonitorLabel(seat){
+    if(seat && seat.monitorOverride) return seat.monitorOverride==='24' ? 'Màn hình 24"' : 'Màn hình 20"';
+    const team = typeof seat === 'string' ? seat : (seat && seat.team);
+    return (team==='LAN_PHUONG'||team==='TRAN_OANH') ? 'Màn hình 24"' : 'Màn hình 20"';
+}
+
+function buildItemsGridHTML(id,state,seatObj){
+    const monitorLabel=getMonitorLabel(seatObj);
     return `<div class="items-grid">
         <div class="item-check"><input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${id}','thung')"><span>Thùng CPU</span></div>
-        <div class="item-check"><input type="checkbox" ${state.man?'checked':''} onchange="toggleDevice('${id}','man')"><span style="font-weight:600; color:var(--purple);">${monitorLabel}</span></div>
+        <div class="item-check"><input type="checkbox" ${state.man?'checked':''} onchange="toggleDevice('${id}','man')"><span style="font-weight:600;color:var(--purple);">${monitorLabel}</span></div>
         <div class="item-check"><input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${id}','chuot')"><span>Chuột</span><input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${id}','chuot',this.value)"></div>
         <div class="item-check"><input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${id}','phim')"><span>Bàn phím</span><input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${id}','phim',this.value)"></div>
         <div class="item-check" style="grid-column:span 2"><input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${id}','tai')"><span>Tai nghe USB</span></div>
@@ -472,11 +563,21 @@ function createSeatBox(data,isLeader=false){
     const box=document.createElement('div');
     box.className=(isLeader?'column-main-header ':'' )+'seat-box '+data.fill;
     box.id='seat-box-'+data.id;
+    box.dataset.seatId=data.id;
+    if(!isLeader){
+        box.draggable=true;
+        box.addEventListener('dragstart',onDragStart);
+        box.addEventListener('dragend',onDragEnd);
+        box.addEventListener('dragover',onDragOver);
+        box.addEventListener('dragleave',onDragLeave);
+        box.addEventListener('drop',onDrop);
+    }
     if(deviceKeys.every(k=>state[k]))box.classList.add('full-equipped');
     const displayName=getDisplayName(data.id,data.name);
     const leaderMeta=isLeader?`<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Số lượng: ${data.count}</div>`:'';
     box.innerHTML=`
         <div class="seat-header">
+            <span class="drag-handle" title="Kéo để di chuyển">⠿</span>
             <div style="min-width:0;flex:1;">
                 <span class="seat-name" id="name-${data.id}" data-default="${data.name.replace(/"/g,'&quot;')}" onclick="startRename('${data.id}')" title="Click để đổi tên">${displayName}</span>
                 ${leaderMeta}
@@ -487,7 +588,7 @@ function createSeatBox(data,isLeader=false){
                 <button class="btn-mini btn-mini-danger" onclick="resetSingleSeat('${data.id}')">↩ Xóa</button>
             </div>
         </div>
-        ${buildItemsGridHTML(data.id,state, data.team)}`;
+        ${buildItemsGridHTML(data.id,state,data)}`;
     return box;
 }
 
@@ -516,51 +617,197 @@ function updateBoxStatus(id){
     else box.classList.remove('full-equipped');
 }
 
+// ── ADD / REMOVE SEATS ────────────────────────────────────────────
+let newSeatCounter=1000;
+
+function addSeat(colKey, fill, team){
+    const id='new_'+colKey+'_'+(newSeatCounter++);
+    const newSeat={id,name:'CHỖ TRỐNG MỚI',fill,team};
+    layoutData[colKey].push(newSeat);
+    columnOrder[colKey].push(id);
+    initSeatState(id);
+    const colEl=document.getElementById(colMeta[colKey].domId);
+    const box=createSeatBox(newSeat);
+    colEl.appendChild(box);
+    // Set up drop zone on column
+    setupColumnDrop(colEl);
+    saveLocal();
+    showToast('➕ Đã thêm chỗ ngồi mới','success');
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function removeSeat(colKey){
+    const order=columnOrder[colKey];
+    // Find last non-empty seat
+    for(let i=order.length-1;i>=0;i--){
+        const id=order[i];
+        const seat=findSeatById(id);
+        if(seat&&seat.fill!=='empty-space'){
+            if(!confirm(`Xoá vị trí "${getDisplayName(id,seat.name)}"?\nDữ liệu kiểm kê sẽ bị xoá.`))return;
+            // Remove from layoutData
+            const ldArr=layoutData[colKey];
+            const idx=ldArr.findIndex(s=>s.id===id);
+            if(idx!==-1)ldArr.splice(idx,1);
+            // Remove from order
+            order.splice(i,1);
+            // Remove from DOM
+            const box=document.getElementById('seat-box-'+id);
+            if(box)box.remove();
+            delete inventoryState[id];
+            delete customNames[id];
+            saveLocal();
+            showToast('➖ Đã xóa chỗ ngồi','info');
+            return;
+        }
+    }
+    showToast('⚠️ Không còn chỗ để xóa','warn');
+}
+
+// ── DRAG & DROP ────────────────────────────────────────────────────
+function onDragStart(e){
+    dragSrcId=this.dataset.seatId;
+    dragSrcColKey=getSeatColKey(dragSrcId);
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',dragSrcId);
+}
+
+function onDragEnd(e){
+    this.classList.remove('dragging');
+    document.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom');});
+    document.querySelectorAll('.drop-target-empty').forEach(el=>el.classList.remove('drop-target-empty'));
+}
+
+function onDragOver(e){
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    document.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom');});
+    const rect=this.getBoundingClientRect();
+    const midY=rect.top+rect.height/2;
+    if(e.clientY<midY) this.classList.add('drag-over-top');
+    else this.classList.add('drag-over-bottom');
+}
+
+function onDragLeave(e){
+    this.classList.remove('drag-over-top','drag-over-bottom');
+}
+
+function onDrop(e){
+    e.preventDefault();
+    this.classList.remove('drag-over-top','drag-over-bottom');
+    const targetId=this.dataset.seatId;
+    if(!dragSrcId||dragSrcId===targetId)return;
+
+    const targetColKey=getSeatColKey(targetId);
+    if(!targetColKey)return;
+
+    // Determine insert position
+    const rect=this.getBoundingClientRect();
+    const midY=rect.top+rect.height/2;
+    const insertAfter=(e.clientY>=midY);
+
+    // Move seat data between columns if needed
+    if(dragSrcColKey!==targetColKey){
+        const srcSeat=findSeatById(dragSrcId);
+        if(!srcSeat)return;
+        // Move in layoutData
+        const srcArr=layoutData[dragSrcColKey];
+        const srcIdx=srcArr.findIndex(s=>s.id===dragSrcId);
+        if(srcIdx!==-1)srcArr.splice(srcIdx,1);
+        const dstArr=layoutData[targetColKey];
+        const dstIdx=dstArr.findIndex(s=>s.id===targetId);
+        if(dstIdx!==-1)dstArr.splice(insertAfter?dstIdx+1:dstIdx,0,srcSeat);
+        else dstArr.push(srcSeat);
+        // Update team of moved seat to match destination column default team
+        srcSeat.team=colMeta[targetColKey].defaultTeam;
+    }
+
+    // Reorder in columnOrder
+    const srcOrder=columnOrder[dragSrcColKey];
+    const dstOrder=columnOrder[targetColKey];
+    const srcOIdx=srcOrder.indexOf(dragSrcId);
+    if(srcOIdx!==-1)srcOrder.splice(srcOIdx,1);
+    const dstOIdx=dstOrder.indexOf(targetId);
+    if(dstOIdx!==-1)dstOrder.splice(insertAfter?dstOIdx+1:dstOIdx,0,dragSrcId);
+    else dstOrder.push(dragSrcId);
+
+    // Re-render affected columns
+    renderColumn(dragSrcColKey);
+    if(targetColKey!==dragSrcColKey)renderColumn(targetColKey);
+
+    saveLocal();
+    showToast('↕️ Đã di chuyển vị trí','info');
+    dragSrcId=null;dragSrcColKey=null;
+}
+
+function setupColumnDrop(colEl){
+    colEl.addEventListener('dragover',e=>{
+        e.preventDefault();
+        // Only highlight if column is empty or dragging over empty space
+        if(colEl.children.length===0)colEl.classList.add('drop-target-empty');
+    });
+    colEl.addEventListener('dragleave',e=>{colEl.classList.remove('drop-target-empty');});
+    colEl.addEventListener('drop',e=>{
+        colEl.classList.remove('drop-target-empty');
+        // Drop onto empty column or after all items
+        if(!dragSrcId)return;
+        e.preventDefault();
+        const colKey=[...Object.entries(colMeta)].find(([k,v])=>v.domId===colEl.id)?.[0];
+        if(!colKey||colKey===dragSrcColKey)return;
+        const srcSeat=findSeatById(dragSrcId);
+        if(!srcSeat)return;
+        // Move in layoutData
+        const srcArr=layoutData[dragSrcColKey];
+        const srcIdx=srcArr.findIndex(s=>s.id===dragSrcId);
+        if(srcIdx!==-1)srcArr.splice(srcIdx,1);
+        layoutData[colKey].push(srcSeat);
+        srcSeat.team=colMeta[colKey].defaultTeam;
+        // Update order
+        const srcOrder=columnOrder[dragSrcColKey];
+        const si=srcOrder.indexOf(dragSrcId);
+        if(si!==-1)srcOrder.splice(si,1);
+        columnOrder[colKey].push(dragSrcId);
+        renderColumn(dragSrcColKey);
+        renderColumn(colKey);
+        saveLocal();
+        showToast('↕️ Đã di chuyển vị trí','info');
+        dragSrcId=null;dragSrcColKey=null;
+    });
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
 function calculateStats(){
-    const allSeats = getAllSeats();
-    const total = allSeats.length;
-    
-    let full = 0;
-    let totalThung = 0;
-    let totalMan20 = 0;
-    let totalMan24 = 0;
-    let totalChuot = 0;
-    let totalPhim = 0;
-    let totalTai = 0;
-
-    allSeats.forEach(seat => {
-        const s = inventoryState[seat.id];
-        if (!s) return;
-
-        if (deviceKeys.every(k => s[k])) full++;
-        
-        if (s.thung) totalThung += (s.thung_qty || 1);
-        if (s.tai) totalTai += (s.tai_qty || 1);
-        if (s.chuot) totalChuot += (s.chuot_qty || 1);
-        if (s.phim) totalPhim += (s.phim_qty || 1);
-        
-        if (s.man) {
-            if (seat.team === "LAN_PHUONG" || seat.team === "TRAN_OANH") {
-                totalMan24 += (s.man_qty || 1);
-            } else {
-                totalMan20 += (s.man_qty || 1);
-            }
+    const allSeats=getAllSeats();
+    const total=allSeats.length;
+    let full=0,totalThung=0,totalMan20=0,totalMan24=0,totalChuot=0,totalPhim=0,totalTai=0;
+    allSeats.forEach(seat=>{
+        const s=inventoryState[seat.id];
+        if(!s)return;
+        if(deviceKeys.every(k=>s[k]))full++;
+        if(s.thung)totalThung+=(s.thung_qty||1);
+        if(s.tai)totalTai+=(s.tai_qty||1);
+        if(s.chuot)totalChuot+=(s.chuot_qty||1);
+        if(s.phim)totalPhim+=(s.phim_qty||1);
+        if(s.man){
+            // Ưu tiên monitorOverride (gán khi nhập CSV) để đảm bảo thống kê đúng
+            // Nếu không có override, tính theo team mặc định
+            const is24 = seat.monitorOverride
+                ? seat.monitorOverride==='24'
+                : (seat.team==='LAN_PHUONG'||seat.team==='TRAN_OANH');
+            if(is24) totalMan24+=(s.man_qty||1);
+            else totalMan20+=(s.man_qty||1);
         }
     });
-
-    // Update Overview Header
     document.getElementById('stat-total').textContent=total;
     document.getElementById('stat-full').textContent=full;
     document.getElementById('stat-missing').textContent=total-full;
     document.getElementById('stat-percent').textContent=total>0?((full/total)*100).toFixed(1)+'%':'0%';
-
-    // Update Detailed Counter Cards
-    document.getElementById('count-thung').textContent = totalThung;
-    document.getElementById('count-man20').textContent = totalMan20;
-    document.getElementById('count-man24').textContent = totalMan24;
-    document.getElementById('count-chuot').textContent = totalChuot;
-    document.getElementById('count-phim').textContent = totalPhim;
-    document.getElementById('count-tai').textContent = totalTai;
+    document.getElementById('count-thung').textContent=totalThung;
+    document.getElementById('count-man20').textContent=totalMan20;
+    document.getElementById('count-man24').textContent=totalMan24;
+    document.getElementById('count-chuot').textContent=totalChuot;
+    document.getElementById('count-phim').textContent=totalPhim;
+    document.getElementById('count-tai').textContent=totalTai;
 }
 
 function resetAllInventory(){
@@ -593,7 +840,8 @@ function exportGoogleSheets(){
     getAllSeats().forEach(item=>{
         const s=inventoryState[item.id];if(!s)return;
         const full=deviceKeys.every(k=>s[k]),name=getDisplayName(item.id,item.name);
-        const monitorType = (item.team === "LAN_PHUONG" || item.team === "TRAN_OANH") ? "24 inch" : "20 inch";
+        const is24=item.monitorOverride ? item.monitorOverride==='24' : (item.team==='LAN_PHUONG'||item.team==='TRAN_OANH');
+        const monitorType=is24?'24 inch':'20 inch';
         rows.push([stt++,name,s.thung?'Có':'Không',s.man?'Có':'Không',s.man?monitorType:'N/A',s.chuot?'Có':'Không',s.chuot_qty||1,s.phim?'Có':'Không',s.phim_qty||1,s.tai?'Có':'Không',full?'Đủ bộ':'Thiếu']);
     });
     const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
@@ -602,7 +850,7 @@ function exportGoogleSheets(){
 }
 
 function exportJSON(){
-    const payload={version:2,exported:new Date().toISOString(),floor:'Lau2',data:inventoryState,customNames};
+    const payload={version:3,exported:new Date().toISOString(),floor:'Lau2',data:inventoryState,customNames,columnOrder};
     dlBlob(JSON.stringify(payload,null,2),'application/json',`Backup_KiemKe_Lau2_${getDateStr()}.json`);
     showToast('💾 File backup đã được tải xuống','success');
 }
@@ -616,7 +864,9 @@ function importJSON(event){
             const data=payload.data||payload;
             if(typeof data!=='object')throw new Error('Invalid');
             if(confirm(`📂 Import dữ liệu từ file "${file.name}"?\nDữ liệu hiện tại sẽ bị ghi đè.`)){
-                inventoryState=data;customNames=payload.customNames||{};
+                inventoryState=data;
+                customNames=payload.customNames||{};
+                if(payload.columnOrder)columnOrder=payload.columnOrder;
                 saveLocal();renderAll();
                 if(gasUrl)pushToCloud();
                 showToast('✅ Import thành công!','success');
@@ -624,6 +874,70 @@ function importJSON(event){
         }catch(e){alert('❌ File không hợp lệ.');}
     };
     reader.readAsText(file);event.target.value='';
+}
+
+function importCSV(event){
+    const file=event.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+        try{
+            const text=e.target.result.replace(/^\uFEFF/,''); // strip BOM
+            const lines=text.split(/\r?\n/).filter(l=>l.trim());
+            if(lines.length<2){alert('❌ File CSV không có dữ liệu.');return;}
+            function parseRow(line){
+                const cols=[];let cur='',inQ=false;
+                for(let i=0;i<line.length;i++){
+                    const ch=line[i];
+                    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+                    else if(ch===','&&!inQ){cols.push(cur);cur='';}
+                    else cur+=ch;
+                }
+                cols.push(cur);return cols;
+            }
+            const headers=parseRow(lines[0]).map(h=>h.trim().toLowerCase());
+            const iName=headers.indexOf('vị trí');
+            const iThung=headers.indexOf('thùng cpu');
+            const iMan=headers.indexOf('màn hình');
+            const iLoaiMan=headers.indexOf('loại màn hình');
+            const iChuot=headers.indexOf('chuột');
+            const iSLChuot=headers.indexOf('sl chuột');
+            const iPhim=headers.indexOf('bàn phím');
+            const iSLPhim=headers.indexOf('sl phím');
+            const iTai=headers.indexOf('tai nghe usb');
+            if(iName===-1){alert('❌ Không tìm thấy cột "Vị trí" trong file CSV.\nVui lòng dùng file CSV xuất từ hệ thống này.');return;}
+            if(!confirm(`📥 Nhập dữ liệu từ "${file.name}"?\nDữ liệu kiểm kê (checkbox) hiện tại sẽ bị ghi đè theo file CSV.`))return;
+            let updated=0;
+            for(let i=1;i<lines.length;i++){
+                const cols=parseRow(lines[i]);
+                const name=(cols[iName]||'').trim().toUpperCase();
+                if(!name)continue;
+                const seat=getAllSeats().find(s=>(getDisplayName(s.id,s.name)||'').toUpperCase()===name);
+                if(!seat)continue;
+                initSeatState(seat.id);
+                const s=inventoryState[seat.id];
+                if(iThung!==-1)s.thung=(cols[iThung]||'').trim()==='Có';
+                if(iMan!==-1)s.man=(cols[iMan]||'').trim()==='Có';
+                if(iChuot!==-1)s.chuot=(cols[iChuot]||'').trim()==='Có';
+                if(iSLChuot!==-1){const v=parseInt(cols[iSLChuot]);if(!isNaN(v)&&v>0)s.chuot_qty=v;}
+                if(iPhim!==-1)s.phim=(cols[iPhim]||'').trim()==='Có';
+                if(iSLPhim!==-1){const v=parseInt(cols[iSLPhim]);if(!isNaN(v)&&v>0)s.phim_qty=v;}
+                if(iTai!==-1)s.tai=(cols[iTai]||'').trim()==='Có';
+                // Đọc cột "Loại Màn Hình" từ CSV để xác định đúng loại màn hình
+                // thay vì tính theo team mặc định (vốn có thể sai sau khi kéo thả)
+                if(iLoaiMan!==-1){
+                    const loai=(cols[iLoaiMan]||'').trim().toLowerCase();
+                    if(loai==='24 inch') seat.monitorOverride='24';
+                    else if(loai==='20 inch') seat.monitorOverride='20';
+                    else delete seat.monitorOverride;
+                }
+                updated++;
+            }
+            saveLocal();renderAll();
+            if(gasUrl)pushToCloud();
+            showToast(`✅ Đã nhập ${updated} vị trí từ CSV`,'success');
+        }catch(err){alert('❌ Lỗi đọc file CSV: '+err.message);}
+    };
+    reader.readAsText(file,'utf-8');event.target.value='';
 }
 
 function closeCsvModal(){document.getElementById('gs-modal').classList.remove('show');}
@@ -637,13 +951,24 @@ function showToast(msg,type='info'){
 }
 
 // ── RENDER ────────────────────────────────────────────────────────
+function renderColumn(colKey){
+    const meta=colMeta[colKey];
+    const colEl=document.getElementById(meta.domId);
+    colEl.innerHTML='';
+    columnOrder[colKey].forEach(id=>{
+        const seat=findSeatById(id);
+        if(seat)colEl.appendChild(createSeatBox(seat));
+    });
+    setupColumnDrop(colEl);
+}
+
 function renderAll(){
+    // Render leader headers
     layoutData.leaders.forEach(leader=>{
         const c=document.getElementById(leader.targetId);c.innerHTML='';c.appendChild(createSeatBox(leader,true));
     });
-    [['col1','col-1'],['col2a','col-2a'],['col2b','col-2b'],['col3','col-3']].forEach(([k,id])=>{
-        const c=document.getElementById(id);c.innerHTML='';layoutData[k].forEach(item=>c.appendChild(createSeatBox(item)));
-    });
+    // Render columns
+    ['col1','col2a','col2b','col3'].forEach(k=>renderColumn(k));
     calculateStats();
 }
 
