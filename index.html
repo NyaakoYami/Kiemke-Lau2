@@ -14,124 +14,114 @@
             --red:#e03131;--red-light:#fff5f5;
             --yellow:#f59f00;--yellow-light:#fff9db;
             --purple:#7048e8;--pink-bg:#fff0f6;
-            --shadow-sm:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.04);
-            --shadow-md:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
-            --shadow-lg:0 10px 30px rgba(0,0,0,0.10);
-            --radius:10px;--radius-sm:6px;
+            --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md:0 4px 10px rgba(0,0,0,0.05);
+            --radius:6px;--radius-sm:4px;
         }
         *{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;padding:20px;}
-        .container{max-width:1640px;margin:0 auto;}
-        .page-header{background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 60%,#3b5bdb 100%);border-radius:14px;padding:28px 36px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-lg);}
-        .page-header-left h1{color:#fff;font-size:24px;font-weight:800;letter-spacing:-0.5px;}
-        .page-header-left p{color:rgba(255,255,255,0.65);font-size:13px;margin-top:4px;}
-        .header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-        .header-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;}
-        .sync-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);}
-        .sync-status.synced{background:rgba(47,158,68,0.25);color:#6ee7b7;}
-        .sync-status.syncing{background:rgba(245,159,0,0.25);color:#fcd34d;}
-        .sync-status.error{background:rgba(224,49,49,0.25);color:#fca5a5;}
-        .sync-status.offline{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5);}
-        .sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 2s infinite;}
-        .dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
-        .detail-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px;}
-        .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;flex-direction:column;gap:4px;transition:box-shadow .2s;}
-        .stat-card:hover{box-shadow:var(--shadow-md);}
-        .stat-card.detail-card{padding:10px 12px;background:#fdfdfd;}
-        .stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+        body{font-family:'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text-primary);max-height:100vh;padding:8px;font-size:12px;overflow-x:hidden;}
+        .container{max-width:100%;margin:0 auto;}
+        
+        /* Thu gọn Header để khít màn hình 20 inch */
+        .page-header{background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 100%);border-radius:var(--radius);padding:8px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:between;gap:10px;box-shadow:var(--shadow-sm);}
+        .page-header-left h1{color:#fff;font-size:16px;font-weight:800;letter-spacing:-0.3px;}
+        .page-header-left p{color:rgba(255,255,255,0.65);font-size:11px;margin-top:1px;}
+        .header-right{display:flex;gap:8px;align-items:center;margin-left:auto;}
+        .header-badge{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;}
+        .sync-status{display:flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:12px;}
+        .sync-status.offline{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);}
+        .autosave-badge{display:flex;align-items:center;gap:3px;font-size:11px;color:#6ee7b7;font-weight:600;}
+        .autosave-dot{width:5px;height:5px;background:#6ee7b7;border-radius:50%;}
+
+        /* Thu gọn các khối thống kê */
+        .dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;}
+        .detail-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;}
+        .stat-card{background:var(--surface);border-radius:var(--radius);padding:6px 10px;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+        .stat-icon{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;}
         .stat-icon.blue{background:var(--blue-light);}.stat-icon.green{background:var(--green-light);}.stat-icon.red{background:var(--red-light);}.stat-icon.yellow{background:var(--yellow-light);}.stat-icon.purple{background:#f3f0ff;}
-        .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);}
-        .stat-value{font-size:24px;font-weight:800;color:var(--text-primary);line-height:1;}
-        .stat-card.detail-card .stat-value{font-size:20px;color:#2b2d42;}
-        .controls-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:var(--shadow-sm);}
+        .stat-info-block{display:flex;flex-direction:column;}
+        .stat-label{font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text-muted);line-height:1.1;}
+        .stat-value{font-size:16px;font-weight:800;color:var(--text-primary);line-height:1.2;}
+
+        /* Bảng điều khiển */
+        .controls-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:var(--shadow-sm);}
         .search-wrap{position:relative;}
-        .search-wrap .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;}
-        .search-wrap input{padding:9px 12px 9px 34px;width:280px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--surface-alt);outline:none;transition:border-color .2s,box-shadow .2s;}
-        .search-wrap input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,91,219,.12);background:#fff;}
-        .btn-group{display:flex;gap:8px;flex-wrap:wrap;}
-        .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:13px;font-family:inherit;transition:all .15s;white-space:nowrap;}
+        .search-wrap .icon{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;}
+        .search-wrap input{padding:4px 8px 4px 24px;width:200px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;outline:none;}
+        .btn-group{display:flex;gap:4px;}
+        .btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:11px;white-space:nowrap;}
         .btn-primary{background:var(--blue);color:#fff;}
-        .btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 10px rgba(59,91,219,.3);}
         .btn-success{background:var(--green);color:#fff;}
-        .btn-success:hover{background:#258a37;transform:translateY(-1px);box-shadow:0 4px 10px rgba(47,158,68,.3);}
         .btn-warning{background:var(--yellow);color:#fff;}
-        .btn-warning:hover{background:#e08c00;transform:translateY(-1px);}
         .btn-danger{background:#fff;color:var(--red);border:1px solid #fca5a5;}
-        .btn-danger:hover{background:var(--red-light);transform:translateY(-1px);}
         .btn-sync{background:linear-gradient(135deg,#3b5bdb,#7048e8);color:#fff;}
-        .btn-sync:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 10px rgba(59,91,219,.4);}
-        .layout-grid{display:grid;grid-template-columns:1fr 38px 1fr 1fr 38px 1fr;gap:12px;margin-bottom:4px;}
-        .aisle{background:linear-gradient(180deg,#e9ecef,#dee2e6);display:flex;align-items:center;justify-content:center;font-weight:700;color:#8a9ab0;border-radius:6px;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:4px;font-size:11px;border:1px dashed #c8d0db;}
-        /* Column wrapper with add button */
-        .col-wrapper{display:flex;flex-direction:column;gap:0;}
-        .seat-column{display:flex;flex-direction:column;gap:8px;min-height:60px;}
-        .column-main-header{border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow-sm);border:1px solid transparent;}
-        /* Drag & drop styles */
-        .seat-box{border-radius:var(--radius);padding:10px 12px;position:relative;box-shadow:var(--shadow-sm);border:1px solid transparent;transition:box-shadow .15s,transform .15s;cursor:grab;}
-        .seat-box:active{cursor:grabbing;}
-        .seat-box:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
-        .seat-box.empty-space{background:transparent!important;border:none!important;box-shadow:none!important;height:40px;pointer-events:none;cursor:default;}
-        .seat-box.full-equipped{background-color:var(--green-light)!important;border-color:#b2f2bb!important;}
-        .seat-box.dragging{opacity:.4;transform:scale(0.97);box-shadow:none!important;}
-        .seat-box.drag-over-top{border-top:3px solid var(--blue)!important;margin-top:-1px;}
-        .seat-box.drag-over-bottom{border-bottom:3px solid var(--blue)!important;}
-        .seat-column.drop-target-empty{background:rgba(59,91,219,.07);border:2px dashed var(--blue);border-radius:var(--radius);}
-        .fill-purple{background-color:#f0ebff;border-color:#c5b4f5;}
-        .fill-purple .seat-name{color:var(--purple);}
-        .fill-green{background-color:var(--green-light);border-color:#b2f2bb;}
-        .fill-green .seat-name{color:var(--green);}
-        .fill-yellow{background-color:var(--yellow-light);border-color:#ffe066;}
-        .fill-yellow .seat-name{color:#b07d00;}
-        .fill-red{background-color:var(--red-light);border-color:#fca5a5;}
-        .fill-red .seat-name{color:var(--red);}
-        .fill-pink{background-color:var(--pink-bg);border-color:#fbb6ce;}
-        .fill-pink .seat-name{color:#c2406e;}
-        .seat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px;}
-        .drag-handle{cursor:grab;color:var(--text-muted);font-size:14px;padding:2px 4px;border-radius:3px;flex-shrink:0;user-select:none;}
-        .drag-handle:hover{background:rgba(0,0,0,.08);color:var(--text-secondary);}
-        .drag-handle:active{cursor:grabbing;}
-        .seat-name{font-weight:700;font-size:12px;line-height:1.2;cursor:pointer;border-radius:3px;padding:1px 3px;transition:background .15s;}
-        .seat-name:hover{background:rgba(0,0,0,0.06);}
-        .rename-input{font-weight:700;font-size:12px;line-height:1.2;border:1.5px solid var(--blue);border-radius:4px;padding:1px 5px;font-family:inherit;outline:none;background:#fff;color:var(--text-primary);width:100%;min-width:60px;max-width:160px;}
-        .btn-action-group{display:flex;gap:4px;flex-shrink:0;}
-        .btn-mini{padding:3px 8px;font-size:10px;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-family:inherit;transition:all .12s;}
-        .btn-mini-success{background:var(--green);color:#fff;}
-        .btn-mini-success:hover{background:#258a37;}
-        .btn-mini-danger{background:#e5e7eb;color:#6b7280;}
-        .btn-mini-danger:hover{background:#fca5a5;color:var(--red);}
-        .btn-mini-rename{background:#e0e7ff;color:var(--blue);}
-        .btn-mini-rename:hover{background:#c7d2fe;}
-        .items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;background:rgba(255,255,255,0.7);padding:7px 8px;border-radius:var(--radius-sm);}
-        .item-check{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--text-secondary);}
-        .item-check input[type=checkbox]{cursor:pointer;width:14px;height:14px;accent-color:var(--green);flex-shrink:0;}
-        .qty-input{width:36px;padding:1px 3px;font-size:10px;border:1px solid var(--border);border-radius:3px;text-align:center;font-family:inherit;outline:none;}
-        .qty-input:focus{border-color:var(--blue);}
-        /* Add / Remove seat button row */
-        .col-actions{display:flex;gap:6px;margin-top:8px;justify-content:center;}
-        .btn-col-action{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:11px;font-family:inherit;background:var(--surface);color:var(--text-secondary);transition:all .15s;}
+
+        /* Tách biệt hàng ghế Leader phía trên cùng */
+        .leaders-row-container {
+            background: #e9ecef;
+            border-radius: var(--radius);
+            padding: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #ced4da;
+        }
+        .leaders-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .leaders-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Lưới 4 cột dãy vị trí phía dưới */
+        .layout-grid{display:grid;grid-template-columns:1fr 24px 1fr 1fr 24px 1fr;gap:8px;margin-bottom:4px;}
+        .aisle{background:linear-gradient(180deg,#dee2e6,#e9ecef);display:flex;align-items:center;justify-content:center;font-weight:800;color:#adb5bd;border-radius:4px;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:2px;font-size:10px;}
+        
+        .col-wrapper{display:flex;flex-direction:column;gap:4px;}
+        .seat-column{display:flex;flex-direction:column;gap:4px;min-height:50px;max-height:58vh;overflow-y:auto;padding-right:2px;}
+        
+        /* Thiết kế hộp ghế tinh gọn để không chiếm chiều cao */
+        .seat-box{border-radius:var(--radius);padding:6px 8px;position:relative;box-shadow:var(--shadow-sm);border:1.5px solid #dee2e6;background:#fff;transition:all 0.1s;}
+        .seat-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;}
+        .seat-name{font-weight:700;font-size:11px;line-height:1.2;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .rename-input{font-weight:700;font-size:11px;border:1.5px solid var(--blue);border-radius:3px;padding:0 3px;outline:none;width:100px;}
+        
+        .btn-action-group{display:flex;gap:2px;}
+        .btn-mini{padding:1px 4px;font-size:9px;border:none;border-radius:3px;cursor:pointer;font-weight:600;}
+        .btn-mini-danger{background:#e5e7eb;color:#6b7280;}.btn-mini-danger:hover{background:#fca5a5;color:var(--red);}
+
+        /* Lưới thiết bị cực kì gọn gàng */
+        .items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px 6px;background:rgba(255,255,255,0.8);padding:4px 6px;border-radius:var(--radius-sm);border:1px solid rgba(0,0,0,0.03);}
+        .item-check{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:500;color:var(--text-secondary);}
+        .item-check input[type=checkbox]{cursor:pointer;width:12px;height:12px;accent-color:var(--green);}
+        .qty-input{width:24px;padding:0;font-size:9px;border:1px solid var(--border);border-radius:2px;text-align:center;}
+
+        /* Đóng gói nút hành động của cột */
+        .col-actions{display:flex;gap:4px;justify-content:center;margin-bottom:2px;}
+        .btn-col-action{padding:3px 8px;border:1px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:10px;background:var(--surface);color:var(--text-secondary);}
         .btn-col-add:hover{border-color:var(--green);color:var(--green);background:var(--green-light);}
         .btn-col-remove:hover{border-color:var(--red);color:var(--red);background:var(--red-light);}
-        .bottom-border-panel{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
-        .border-wall{border:1.5px dashed #94a3b8;background:#f1f5f9;padding:12px;border-radius:var(--radius-sm);text-align:center;font-weight:700;font-size:13px;color:#64748b;letter-spacing:2px;}
-        .highlight{border:2px solid #f59f00!important;box-shadow:0 0 0 4px rgba(245,159,0,.15)!important;animation:pulse-gold 1.6s infinite;}
-        @keyframes pulse-gold{0%{box-shadow:0 0 0 0 rgba(245,159,0,.4);}70%{box-shadow:0 0 0 8px rgba(245,159,0,0);}100%{box-shadow:0 0 0 0 rgba(245,159,0,0);}}
-        #toast{position:fixed;bottom:28px;right:28px;background:#1a1d2e;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;display:none;gap:8px;align-items:center;max-width:320px;}
-        #toast.show{display:flex;animation:fadeInUp .3s ease;}
-        #toast.success{background:var(--green);}#toast.info{background:var(--blue);}#toast.warn{background:var(--yellow);}
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;}
-        .modal-overlay.show{display:flex;}
-        .modal{background:#fff;border-radius:14px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2);}
-        .modal h3{font-size:18px;font-weight:700;margin-bottom:12px;}
-        .modal p{font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;}
-        .modal-steps{background:var(--surface-alt);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:20px;}
-        .modal-steps li{font-size:13px;color:var(--text-secondary);padding:4px 0;list-style:decimal;margin-left:16px;line-height:1.5;}
-        .modal-footer{display:flex;justify-content:flex-end;gap:8px;}
-        .autosave-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);font-weight:600;}
-        .autosave-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:blink 2s infinite;}
-        @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
-        @media(max-width:1200px){.detail-grid{grid-template-columns:repeat(3,1fr);}.dashboard-grid{grid-template-columns:repeat(2,1fr);}}
-        @media(max-width:900px){.layout-grid{grid-template-columns:1fr 28px 1fr;}.detail-grid{grid-template-columns:repeat(2,1fr);}}
+
+        .bottom-border-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+        .border-wall{border:1px dashed #94a3b8;background:#f1f5f9;padding:4px;border-radius:var(--radius-sm);text-align:center;font-weight:700;font-size:11px;color:#64748b;letter-spacing:1px;}
+        
+        .highlight{border:2px solid #f59f00!important;box-shadow:0 0 0 3px rgba(245,159,0,.2)!important;}
+        
+        /* Biến màu sắc theo đúng yêu cầu nghiêm ngặt */
+        .state-full-equipped { background-color: #00EE76 !important; border-color: #00cd63 !important; }
+        .state-missing-equipment { background-color: #FF6A6A !important; border-color: #ff4d4d !important; }
+        .state-missing-equipment .seat-name, .state-full-equipped .seat-name { color: #1a1d2e !important; }
+
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center;}
+        .modal{background:#fff;border-radius:8px;padding:16px;width:400px;box-shadow:var(--shadow-lg);}
+        .modal h3{font-size:14px;margin-bottom:8px;}
+        .modal p, .modal-steps li{font-size:11px;color:var(--text-secondary);margin-bottom:8px;}
+        .modal-footer{display:flex;justify-content:flex-end;gap:4px;}
     </style>
 </head>
 <body>
@@ -140,38 +130,10 @@
 <div class="modal-overlay" id="gas-modal">
     <div class="modal">
         <h3>☁️ Cài đặt đồng bộ Google Sheets</h3>
-        <p>Làm theo các bước sau để bật đồng bộ tự động giữa các máy:</p>
-        <ol class="modal-steps">
-            <li>Mở <strong>Google Sheets</strong> → tạo bảng mới → đặt tên tuỳ ý</li>
-            <li>Vào menu <strong>Extensions → Apps Script</strong></li>
-            <li>Xoá code cũ, dán toàn bộ nội dung file <strong>Code.gs</strong> vào</li>
-            <li>Nhấn 💾 Save → nhấn <strong>Deploy → New deployment</strong></li>
-            <li>Chọn type: <strong>Web app</strong> → Execute as: <strong>Me</strong> → Who has access: <strong>Anyone</strong></li>
-            <li>Nhấn <strong>Deploy</strong> → copy URL dán vào ô bên dưới</li>
-        </ol>
-        <div style="margin-bottom:16px;">
-            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">URL Apps Script Web App:</label>
-            <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;outline:none;">
-        </div>
+        <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/..." style="width:100%;padding:6px;border:1px solid var(--border);margin-bottom:10px;font-size:11px;">
         <div class="modal-footer">
             <button class="btn btn-danger" onclick="closeGasModal()">Để sau</button>
-            <button class="btn btn-sync" onclick="saveGasUrl()">☁️ Kết nối & Đồng bộ</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="gs-modal">
-    <div class="modal">
-        <h3>📊 Xuất sang Google Sheets</h3>
-        <p>File CSV đã được tải xuống. Làm theo các bước sau để import vào Google Sheets:</p>
-        <ol class="modal-steps">
-            <li>Mở <strong>Google Sheets</strong> (sheets.google.com)</li>
-            <li>Vào menu <strong>File → Import</strong></li>
-            <li>Chọn tab <strong>Upload</strong> → tải file CSV vừa tải</li>
-            <li>Nhấn <strong>Import data</strong> là xong!</li>
-        </ol>
-        <div class="modal-footer">
-            <button class="btn btn-primary" onclick="closeCsvModal()">Đã hiểu ✓</button>
+            <button class="btn btn-sync" onclick="saveGasUrl()">☁️ Kết nối</button>
         </div>
     </div>
 </div>
@@ -179,830 +141,432 @@
 <div class="container">
     <div class="page-header">
         <div class="page-header-left">
-            <h1>🖥️ SÀN LẦU 2 — Kiểm Kê Thiết Bị</h1>
-            <p>Hệ thống sơ đồ & kiểm kê tài sản phòng máy tự động</p>
+            <h1> Shelves 🖥️ SÀN LẦU 2 — Kiểm Kê Sơ Đồ Thiết Bị</h1>
+            <p>Hệ thống quản lý trực quan thu gọn vừa vặn màn hình 20"</p>
         </div>
         <div class="header-right">
             <div class="autosave-badge"><div class="autosave-dot"></div>Tự động lưu</div>
-            <div class="sync-status offline" id="sync-status"><div class="sync-dot"></div><span id="sync-text">Chưa kết nối</span></div>
-            <span class="header-badge" id="last-saved">Chưa có thay đổi</span>
+            <div class="sync-status offline" id="sync-status"><span id="sync-text">Chưa kết nối</span></div>
+            <span class="header-badge" id="last-saved">Chưa lưu</span>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-label">Tổng vị trí</div><div class="stat-value" id="stat-total">0</div></div>
-        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-label">Đủ thiết bị</div><div class="stat-value" id="stat-full">0</div></div>
-        <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-label">Thiếu thiết bị</div><div class="stat-value" id="stat-missing">0</div></div>
-        <div class="stat-card"><div class="stat-icon yellow">📊</div><div class="stat-label">Tỷ lệ hoàn thành</div><div class="stat-value" id="stat-percent">0%</div></div>
+        <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-info-block"><span class="stat-label">Tổng vị trí</span><span class="stat-value" id="stat-total">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info-block"><span class="stat-label">Đủ thiết bị</span><span class="stat-value" id="stat-full">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info-block"><span class="stat-label">Thiếu thiết bị</span><span class="stat-value" id="stat-missing">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon yellow">📊</div><div class="stat-info-block"><span class="stat-label">Tỷ lệ hoàn thành</span><span class="stat-value" id="stat-percent">0%</span></div></div>
     </div>
 
     <div class="detail-grid">
-        <div class="stat-card detail-card"><div class="stat-icon blue">📦</div><div class="stat-label">Thùng Máy Tính</div><div class="stat-value" id="count-thung">0</div></div>
-        <div class="stat-card detail-card"><div class="stat-icon purple">🖥️</div><div class="stat-label">Màn hình 20"</div><div class="stat-value" id="count-man20">0</div></div>
-        <div class="stat-card detail-card"><div class="stat-icon purple">🖥️✨</div><div class="stat-label">Màn hình 24"</div><div class="stat-value" id="count-man24">0</div></div>
-        <div class="stat-card detail-card"><div class="stat-icon green">🖱️</div><div class="stat-label">Tổng Chuột</div><div class="stat-value" id="count-chuot">0</div></div>
-        <div class="stat-card detail-card"><div class="stat-icon yellow">⌨️</div><div class="stat-label">Tổng Phím</div><div class="stat-value" id="count-phim">0</div></div>
-        <div class="stat-card detail-card"><div class="stat-icon red">🎧</div><div class="stat-label">Tai nghe USB</div><div class="stat-value" id="count-tai">0</div></div>
+        <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-info-block"><span class="stat-label">Thùng CPU</span><span class="stat-value" id="count-thung">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon purple">🖥️</div><div class="stat-info-block"><span class="stat-label">Màn 20"</span><span class="stat-value" id="count-man20">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon purple">🖥️</div><div class="stat-info-block"><span class="stat-label">Màn 24"</span><span class="stat-value" id="count-man24">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon green">🖱️</div><div class="stat-info-block"><span class="stat-label">Chuột</span><span class="stat-value" id="count-chuot">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon yellow">⌨️</div><div class="stat-info-block"><span class="stat-label">Bàn Phím</span><span class="stat-value" id="count-phim">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon red">🎧</div><div class="stat-info-block"><span class="stat-label">Tai Nghe</span><span class="stat-value" id="count-tai">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon purple">✨</div><div class="stat-info-block"><span class="stat-label">Chỗ Trống</span><span class="stat-value" id="count-empty-seat">0</span></div></div>
     </div>
 
     <div class="controls-panel">
         <div class="search-wrap">
             <span class="icon">🔍</span>
-            <input type="text" id="search-input" placeholder="Tìm kiếm tên nhân viên..." oninput="searchEmployee()">
+            <input type="text" id="search-input" placeholder="Tìm kiếm nhân viên..." oninput="searchEmployee()">
         </div>
         <div class="btn-group">
-            <button class="btn btn-sync" onclick="syncNow()">☁️ Đồng bộ ngay</button>
+            <button class="btn btn-sync" onclick="syncNow()">☁️ Đồng bộ</button>
             <button class="btn btn-success" onclick="exportGoogleSheets()">📊 Xuất CSV</button>
-            <button class="btn btn-success" onclick="document.getElementById('import-csv-file').click()" style="background:#1a7a34;">📥 Nhập CSV</button>
-            <input type="file" id="import-csv-file" accept=".csv" style="display:none" onchange="importCSV(event)">
-            <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất backup</button>
-            <button class="btn btn-warning" onclick="document.getElementById('import-file').click()">📂 Nhập backup</button>
-            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
-            <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset tất cả</button>
+            <button class="btn btn-primary" onclick="exportJSON()">💾 Backup</button>
+            <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset</button>
         </div>
     </div>
 
-    <div class="layout-grid" id="header-grid">
-        <div id="leader-header-1"></div><div></div>
-        <div id="leader-header-2a"></div><div id="leader-header-2b"></div>
-        <div></div><div id="leader-header-3"></div>
+    <div class="leaders-row-container">
+        <div class="leaders-title">👑 Ban quản lý & Vị trí đặc biệt (Phía trên tách biệt)</div>
+        <div class="leaders-grid" id="leaders-container"></div>
     </div>
-    <!-- Column add/remove controls row -->
-    <div class="layout-grid" style="margin-bottom:8px;">
+
+    <div class="layout-grid" style="margin-bottom: 2px;">
         <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeat('col1','fill-purple','LAN_PHUONG')">＋ Thêm chỗ</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col1')">－ Bớt chỗ</button>
+            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col1')">＋ Đầu cột 1</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col1')">－ Bớt</button>
         </div>
         <div></div>
         <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeat('col2a','fill-purple','OTHER')">＋ Thêm chỗ</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2a')">－ Bớt chỗ</button>
+            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col2a')">＋ Đầu cột 2A</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2a')">－ Bớt</button>
         </div>
         <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeat('col2b','fill-pink','OTHER')">＋ Thêm chỗ</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2b')">－ Bớt chỗ</button>
+            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col2b')">＋ Đầu cột 2B</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col2b')">－ Bớt</button>
         </div>
         <div></div>
         <div class="col-actions">
-            <button class="btn-col-action btn-col-add" onclick="addSeat('col3','fill-pink','TRAN_OANH')">＋ Thêm chỗ</button>
-            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col3')">－ Bớt chỗ</button>
+            <button class="btn-col-action btn-col-add" onclick="addSeatAtTop('col3')">＋ Đầu cột 3</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeat('col3')">－ Bớt</button>
         </div>
     </div>
+
     <div class="layout-grid" id="main-grid">
         <div class="col-wrapper">
-            <div class="seat-column" id="col-1" data-col="col1"></div>
+            <div class="seat-column" id="col-1"></div>
         </div>
         <div class="aisle">LỐI ĐI</div>
         <div class="col-wrapper">
-            <div class="seat-column" id="col-2a" data-col="col2a"></div>
+            <div class="seat-column" id="col-2a"></div>
         </div>
         <div class="col-wrapper">
-            <div class="seat-column" id="col-2b" data-col="col2b"></div>
+            <div class="seat-column" id="col-2b"></div>
         </div>
         <div class="aisle">LỐI ĐI</div>
         <div class="col-wrapper">
-            <div class="seat-column" id="col-3" data-col="col3"></div>
+            <div class="seat-column" id="col-3"></div>
         </div>
     </div>
+
     <div class="bottom-border-panel">
-        <div class="border-wall">TƯỜNG</div>
-        <div class="border-wall">CỬA KÍNH</div>
+        <div class="border-wall">TƯỜNG PHÒNG</div>
+        <div class="border-wall">VÁCH CỬA KÍNH</div>
     </div>
 </div>
 
 <script>
-// ── SEAT DATA ────────────────────────────────────────────────────
-const layoutData = {
+// ── KHỞI TẠO VÀ CẤU CẤU TRÚC DỮ LIỆU GỐC ───────────────────────────────────
+const DEFAULT_LAYOUT = {
     leaders:[
-        {id:"L1",  name:"LAN PHƯƠNG LEAD QA",              count:"18",targetId:"leader-header-1", fill:"fill-purple", team:"LAN_PHUONG"},
-        {id:"L2A", name:"NGÂN SUPPORT TL (Vế Trái)",       count:"20",targetId:"leader-header-2a",fill:"fill-purple", team:"OTHER"},
-        {id:"L2B", name:"KHÁC",                             count:"20",targetId:"leader-header-2b",fill:"fill-purple", team:"OTHER"},
-        {id:"L3",  name:"TRẦN OANH - MULTI TASK TEAMLEADER",count:"19",targetId:"leader-header-3", fill:"fill-purple", team:"TRAN_OANH"}
+        {id:"L1", name:"LAN PHƯƠNG LEAD QA"},
+        {id:"L2A", name:"NGÂN SUPPORT TL (Vế Trái)"},
+        {id:"L2B", name:"KHÁC"},
+        {id:"L3", name:"TRẦN OANH - MULTI TASK TEAMLEADER"}
     ],
     col1:[
-        {id:"1_1",name:"CHỖ TRỐNG",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_2",name:"MINH NHỰT",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_3",name:"ĐAN VY",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_4",name:"LONG NHÂN",fill:"fill-green",team:"LAN_PHUONG"},
-        {id:"1_5",name:"TÁN PHÚC",fill:"fill-green",team:"LAN_PHUONG"},{id:"1_blank1",name:"",fill:"empty-space"},
-        {id:"1_6",name:"TRỰC",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_7",name:"THẮNG",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_8",name:"KIM NGÂN",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_9",name:"NHẬT KHÁNH",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_10",name:"PHÚ SĨ SENIOR",fill:"fill-yellow",team:"LAN_PHUONG"},{id:"1_11",name:"CHÍNH SENIOR",fill:"fill-yellow",team:"LAN_PHUONG"},
-        {id:"1_blank2",name:"",fill:"empty-space"},{id:"1_12",name:"PT - PHƯƠNG THẢO",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_13",name:"TÂN TÀI",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_14",name:"TUẤN ANH",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_15",name:"QUANG HẬU",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_16",name:"MINH HOÀNG",fill:"fill-purple",team:"LAN_PHUONG"},
-        {id:"1_17",name:"CHỖ TRỐNG",fill:"fill-purple",team:"LAN_PHUONG"},{id:"1_18",name:"TOÀN",fill:"fill-purple",team:"LAN_PHUONG"}
+        {id:"1_1",name:"CHỖ TRỐNG"},{id:"1_2",name:"MINH NHỰT"},{id:"1_3",name:"BẢO TRÂN"},{id:"1_4",name:"Ý NHI"},
+        {id:"1_5",name:"KIM THOA"},{id:"1_6",name:"ĐOÀN PHÁT"},{id:"1_7",name:"CẨM TÚ"},{id:"1_8",name:"HOÀI THƯƠNG"}
     ],
     col2a:[
-        {id:"2a_1",name:"CHỖ TRỐNG",fill:"fill-red",team:"OTHER"},{id:"2a_2",name:"PT - KIM NGÂN",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_3",name:"CHỖ TRỐNG",fill:"fill-red",team:"OTHER"},{id:"2a_4",name:"PT - NHỊ CẮM",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_5",name:"PT - DIỄM MY",fill:"fill-purple",team:"OTHER"},{id:"2a_6",name:"PT - PHỤNG NHI",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_7",name:"PT - TRÍ PHI",fill:"fill-purple",team:"OTHER"},{id:"2a_8",name:"THÀNH ĐẠT",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_9",name:"THU HIỀN",fill:"fill-purple",team:"OTHER"},{id:"2a_10",name:"HOÀNG MỸ",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_11",name:"THẢO TRÂM",fill:"fill-purple",team:"OTHER"},{id:"2a_12",name:"THỊ THỦY",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_13",name:"Ý LAN",fill:"fill-purple",team:"OTHER"},{id:"2a_14",name:"THỪA NGHIÊN",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_15",name:"NGUYỄN NHI",fill:"fill-purple",team:"OTHER"},{id:"2a_16",name:"HUYỀN TRANG",fill:"fill-purple",team:"OTHER"},
-        {id:"2a_17",name:"MINH THÁI",fill:"fill-purple",team:"OTHER"},{id:"2a_18",name:"BẢO ANH SENIOR",fill:"fill-yellow",team:"OTHER"},
-        {id:"2a_19",name:"PT - PHƯƠNG THY",fill:"fill-pink",team:"OTHER"},{id:"2a_20",name:"PT - LIÊN ANH",fill:"fill-pink",team:"OTHER"}
+        {id:"2a_1",name:"TRƯỜNG DUY"},{id:"2a_2",name:"THUÝ AN"},{id:"2a_3",name:"BẢO NGHI"},{id:"2a_4",name:"CHỖ TRỐNG"},
+        {id:"2a_5",name:"QUỐC KHÁNH"},{id:"2a_6",name:"MỸ HUYỀN"},{id:"2a_7",name:"PHƯƠNG ANH"},{id:"2a_8",name:"CHỖ TRỐNG"}
     ],
     col2b:[
-        {id:"2b_1",name:"THIÊN NGÂN",fill:"fill-pink",team:"OTHER"},{id:"2b_2",name:"TÚ TRINH",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_3",name:"TRUNG NGHỊ",fill:"fill-pink",team:"OTHER"},{id:"2b_4",name:"MINH TÂM",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_5",name:"MINH THƯ",fill:"fill-pink",team:"OTHER"},{id:"2b_6",name:"DUY KHÁNH",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_7",name:"HỒNG ÂN",fill:"fill-pink",team:"OTHER"},{id:"2b_8",name:"THIÊN KIM",fill:"fill-yellow",team:"OTHER"},
-        {id:"2b_9",name:"MINH SENIOR",fill:"fill-yellow",team:"OTHER"},{id:"2b_10",name:"KHÁNH LY",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_11",name:"NHẬT LAM",fill:"fill-pink",team:"OTHER"},{id:"2b_12",name:"HÂN SENIOR",fill:"fill-yellow",team:"OTHER"},
-        {id:"2b_13",name:"NGUYỄN SENIOR",fill:"fill-yellow",team:"OTHER"},{id:"2b_14",name:"DIỆU TRINH",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_15",name:"PHI PHỤNG",fill:"fill-pink",team:"OTHER"},{id:"2b_16",name:"PT - QUỐC THỊNH",fill:"fill-purple",team:"OTHER"},
-        {id:"2b_17",name:"PT - THU HỒNG",fill:"fill-purple",team:"OTHER"},{id:"2b_18",name:"PT - KHOA",fill:"fill-pink",team:"OTHER"},
-        {id:"2b_19",name:"PT - LOAN",fill:"fill-pink",team:"OTHER"},{id:"2b_20",name:"KIM CHI",fill:"fill-purple",team:"OTHER"}
+        {id:"2b_1",name:"CHỖ TRỐNG"},{id:"2b_2",name:"NGỌC HUYỀN"},{id:"2b_3",name:"ÁI VÂN"},{id:"2b_4",name:"BĂNG NHI"},
+        {id:"2b_5",name:"MINH THƯ"},{id:"2b_6",name:"THẢO VY"},{id:"2b_7",name:"TƯỜNG VY"},{id:"2b_8",name:"ĐỨC HUY"}
     ],
     col3:[
-        {id:"3_1",name:"BẢO NGỌC",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_2",name:"HOÀNG KHẢI",fill:"fill-pink",team:"TRAN_OANH"},
-        {id:"3_3",name:"TRUNG HIẾU",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_4",name:"PT - CÁT TƯỜNG",fill:"fill-pink",team:"TRAN_OANH"},
-        {id:"3_5",name:"HUY HOÀNG",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_blank1",name:"",fill:"empty-space"},
-        {id:"3_6",name:"MINH TRÍ",fill:"fill-pink",team:"TRAN_OANH"},{id:"3_7",name:"PT - CẨM TÚ",fill:"fill-pink",team:"TRAN_OANH"},
-        {id:"3_8",name:"MINH ĐẠO",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_9",name:"PT - PHÚC HẬU",fill:"fill-purple",team:"TRAN_OANH"},
-        {id:"3_10",name:"BẢO AN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_11",name:"PT - VĂN VIỆT",fill:"fill-purple",team:"TRAN_OANH"},
-        {id:"3_blank2",name:"",fill:"empty-space"},{id:"3_12",name:"THẢO VI",fill:"fill-purple",team:"TRAN_OANH"},
-        {id:"3_13",name:"NHƯ XUYẾN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_14",name:"THU THẢO",fill:"fill-purple",team:"TRAN_OANH"},
-        {id:"3_15",name:"MAI XUÂN",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_16",name:"THỊ HỒNG",fill:"fill-purple",team:"TRAN_OANH"},
-        {id:"3_17",name:"THỊ QUỲNH",fill:"fill-purple",team:"TRAN_OANH"},{id:"3_18",name:"CÔNG HIỆP",fill:"fill-purple",team:"TRAN_OANH"}
+        {id:"3_1",name:"KIM NGÂN"},{id:"3_2",name:"YÊN NHI"},{id:"3_3",name:"MỸ TRANG"},{id:"3_4",name:"THÀNH ĐẠT"},
+        {id:"3_5",name:"TẤN PHÁT"},{id:"3_6",name:"THANH TRÚC"},{id:"3_7",name:"CHỖ TRỐNG"},{id:"3_8",name:"CHỖ TRỐNG"}
     ]
 };
 
-// ── COLUMN META (for dynamic seats) ──────────────────────────────
-const colMeta = {
-    col1:  {domId:'col-1',  defaultFill:'fill-purple', defaultTeam:'LAN_PHUONG'},
-    col2a: {domId:'col-2a', defaultFill:'fill-purple', defaultTeam:'OTHER'},
-    col2b: {domId:'col-2b', defaultFill:'fill-pink',   defaultTeam:'OTHER'},
-    col3:  {domId:'col-3',  defaultFill:'fill-pink',   defaultTeam:'TRAN_OANH'},
-};
+let layoutData = {};
+let inventoryState = {};
+let gasUrl = localStorage.getItem('gas_url') || '';
 
-// ── COLUMN ORDER STATE (ordered list of seat ids per col) ─────────
-let columnOrder = { col1:[], col2a:[], col2b:[], col3:[] };
-
-function getAllSeats(){
-    const all=[];
-    layoutData.leaders.forEach(l=>{if(l.fill!=='empty-space')all.push(l);});
-    ['col1','col2a','col2b','col3'].forEach(k=>{
-        columnOrder[k].forEach(id=>{
-            const s = findSeatById(id);
-            if(s && s.fill!=='empty-space') all.push(s);
-        });
-    });
-    return all;
-}
-
-function findSeatById(id) {
-    for(const k of ['col1','col2a','col2b','col3']){
-        const found = layoutData[k].find(s=>s.id===id);
-        if(found) return found;
+// Đảm bảo load cấu hình động từ LocalStorage để không bị đưa về giá trị ban đầu khi Refresh
+function loadAllStates() {
+    const savedLayout = localStorage.getItem('layout_structure');
+    if (savedLayout) {
+        layoutData = JSON.parse(savedLayout);
+    } else {
+        layoutData = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+        saveLayoutStructure();
     }
-    return null;
+
+    const savedInv = localStorage.getItem('inventory_state');
+    inventoryState = savedInv ? JSON.parse(savedInv) : {};
 }
 
-function getSeatColKey(id) {
-    for(const k of ['col1','col2a','col2b','col3']){
-        if(layoutData[k].find(s=>s.id===id)) return k;
+function saveLayoutStructure() {
+    localStorage.setItem('layout_structure', JSON.stringify(layoutData));
+}
+
+function saveInventoryState() {
+    localStorage.setItem('inventory_state', JSON.stringify(inventoryState));
+    updateTimestamp();
+}
+
+function updateTimestamp() {
+    const d = new Date();
+    document.getElementById('last-saved').textContent = `Lưu: ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+}
+
+// ── TÍNH TOÁN LOGIC KIỂM TRA THIẾT BỊ THEO QUY TẮC SẾP YÊU CẦU ────────────────
+function getSeatStatus(id, name) {
+    // Nếu chưa khởi tạo cấu hình vật tư, mặc định là trống
+    if (!inventoryState[id]) {
+        inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
     }
-    return null;
+    const state = inventoryState[id];
+    
+    // Điều kiện đủ bộ: Có Thùng CPU + Chuột + Tai Nghe + Phím + Màn hình 20" (và không có màn hình 24")
+    const hasFullEquipped = state.thung && state.man20 && !state.man24 && state.chuot && state.phim && state.tai;
+    
+    // Điều kiện tô đỏ: Nếu tên là "CHỖ TRỐNG" và thiếu bất kì một trong năm thiết bị trên
+    const isNameEmpty = (name && name.trim().toUpperCase() === "CHỖ TRỐNG");
+    const isMissingSomething = !state.thung || !state.man20 || !state.chuot || !state.phim || !state.tai;
+    const hasWarningRed = isNameEmpty && isMissingSomething;
+
+    if (hasFullEquipped) return 'state-full-equipped'; // Xanh lá #00EE76
+    if (hasWarningRed) return 'state-missing-equipment'; // Đỏ nổi bật #FF6A6A
+    return '';
 }
 
-// ── CONSTANTS ────────────────────────────────────────────────────
-const deviceKeys=['thung','man','chuot','phim','tai'];
-const STORAGE_KEY='floor2_inventory_v3';
-const NAMES_KEY='floor2_names_v2';
-const ORDER_KEY='floor2_order_v2';
-const GAS_URL_KEY='floor2_gas_url';
-const MONITOR_KEY='floor2_monitor_override_v1';
-
-// ── STATE ────────────────────────────────────────────────────────
-let inventoryState={};
-let customNames={};
-let monitorOverrides={};
-let gasUrl='https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
-let syncTimer=null;
-let isSyncing=false;
-let dragSrcId=null;
-let dragSrcColKey=null;
-
-// ── STORAGE ──────────────────────────────────────────────────────
-function applyMonitorOverrides(){
-    // Apply saved monitorOverrides to all seats in layoutData
-    ['col1','col2a','col2b','col3'].forEach(k=>{
-        layoutData[k].forEach(seat=>{
-            if(monitorOverrides[seat.id]!==undefined) seat.monitorOverride=monitorOverrides[seat.id];
-            else delete seat.monitorOverride;
-        });
-    });
-    layoutData.leaders.forEach(l=>{
-        if(monitorOverrides[l.id]!==undefined) l.monitorOverride=monitorOverrides[l.id];
-        else delete l.monitorOverride;
-    });
+// Thay đổi thiết bị đơn lẻ
+function toggleDevice(id, deviceField) {
+    if (!inventoryState[id]) inventoryState[id] = {};
+    inventoryState[id][deviceField] = !inventoryState[id][deviceField];
+    
+    // Nếu chọn Đủ bộ (Màn 20) thì tự động tắt Màn 24 và ngược lại nếu muốn
+    saveInventoryState();
+    renderAll();
 }
 
-function loadState(){
-    try{const r=localStorage.getItem(STORAGE_KEY);if(r)inventoryState=JSON.parse(r);}catch(e){inventoryState={};}
-    try{const r=localStorage.getItem(NAMES_KEY);if(r)customNames=JSON.parse(r);}catch(e){customNames={};}
-    try{const r=localStorage.getItem(MONITOR_KEY);if(r)monitorOverrides=JSON.parse(r);}catch(e){monitorOverrides={};}
-    // Apply monitorOverrides to layoutData seats
-    applyMonitorOverrides();
-    try{
-        const r=localStorage.getItem(ORDER_KEY);
-        if(r){
-            const saved=JSON.parse(r);
-            // Validate and merge
-            ['col1','col2a','col2b','col3'].forEach(k=>{
-                if(saved[k] && Array.isArray(saved[k])) columnOrder[k]=saved[k];
-            });
+function changeQty(id, field, val) {
+    if (!inventoryState[id]) inventoryState[id] = {};
+    inventoryState[id][field + '_qty'] = parseInt(val) || 1;
+    saveInventoryState();
+    renderAll();
+}
+
+// ── QUẢN LÝ GHẾ NGỒI (CHÈN VÀO ĐẦU CỘT) ──────────────────────────────────
+function addSeatAtTop(colKey) {
+    const newId = `${colKey}_${Date.now()}`;
+    // Thêm vị trí chỗ ngồi mới ở ĐẦU mảng thay vì cuối mảng
+    layoutData[colKey].unshift({
+        id: newId,
+        name: "CHỖ TRỐNG"
+    });
+    saveLayoutStructure();
+    renderAll();
+    showToast("Đã thêm chỗ trống vào đầu dãy", "success");
+}
+
+function removeSeat(colKey) {
+    if (layoutData[colKey].length > 0) {
+        layoutData[colKey].shift(); // Xoá ở đầu để cân xứng thao tác hoặc dùng pop tùy ý sếp
+        saveLayoutStructure();
+        renderAll();
+        showToast("Đã bớt một vị trí đầu dãy", "info");
+    }
+}
+
+function startRename(id) {
+    const el = document.getElementById(`name-text-${id}`);
+    if (!el) return;
+    const curName = el.textContent;
+    el.innerHTML = `<input type="text" class="rename-input" id="input-${id}" value="${curName}" onblur="finishRename('${id}')" onkeydown="handleRenameKey(event, '${id}')">`;
+    const input = document.getElementById(`input-${id}`);
+    input.focus();
+    input.select();
+}
+
+function finishRename(id) {
+    const input = document.getElementById(`input-${id}`);
+    if (!input) return;
+    let newName = input.value.trim();
+    if (!newName) newName = "CHỖ TRỐNG";
+    
+    // Tìm trong leaders hoặc các cột để cập nhật mà không mất dữ liệu thiết bị
+    let found = false;
+    for (let key in layoutData) {
+        const idx = layoutData[key].findIndex(item => item.id === id);
+        if (idx !== -1) {
+            layoutData[key][idx].name = newName;
+            found = true;
+            break;
         }
-    }catch(e){}
-    // Fill missing orders from layoutData
-    ['col1','col2a','col2b','col3'].forEach(k=>{
-        if(!columnOrder[k] || columnOrder[k].length===0){
-            columnOrder[k]=layoutData[k].map(s=>s.id);
-        } else {
-            // Add any seats in layoutData that aren't tracked yet
-            layoutData[k].forEach(s=>{
-                if(!columnOrder[k].includes(s.id)) columnOrder[k].push(s.id);
-            });
-        }
-    });
-    setSyncStatus('synced','Đã kết nối');
-}
-
-function saveLocal(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
-    localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
-    localStorage.setItem(MONITOR_KEY,JSON.stringify(monitorOverrides));
-    localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
-    const now=new Date();
-    document.getElementById('last-saved').textContent='Lưu lúc '+now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    calculateStats();
-    scheduleSyncToCloud();
-}
-
-// ── GOOGLE APPS SCRIPT SYNC ───────────────────────────────────────
-function setSyncStatus(state,text){
-    const el=document.getElementById('sync-status');
-    el.className='sync-status '+state;
-    document.getElementById('sync-text').textContent=text;
-}
-
-function scheduleSyncToCloud(){
-    if(!gasUrl)return;
-    clearTimeout(syncTimer);
-    syncTimer=setTimeout(pushToCloud,2000);
-}
-
-async function pushToCloud(){
-    if(!gasUrl||isSyncing)return;
-    isSyncing=true;
-    setSyncStatus('syncing','Đang đồng bộ...');
-    try{
-        const payload={action:'save',data:{inventory:inventoryState,customNames,columnOrder,monitorOverrides}};
-        await fetch(gasUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
-        setSyncStatus('synced','Đã đồng bộ '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}));
-    }catch(e){
-        setSyncStatus('error','Lỗi đồng bộ');
-        showToast('⚠️ Không thể đồng bộ. Kiểm tra URL Apps Script.','warn');
-    }finally{isSyncing=false;}
-}
-
-function pullFromCloud(){
-    if(!gasUrl)return Promise.resolve(false);
-    setSyncStatus('syncing','Đang tải dữ liệu...');
-    return new Promise(resolve=>{
-        const cbName='_gasCallback_'+Date.now();
-        const script=document.createElement('script');
-        let done=false;
-        const timeout=setTimeout(()=>{
-            if(done)return;done=true;
-            delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
-            setSyncStatus('error','Lỗi tải dữ liệu');
-            resolve(false);
-        },10000);
-        window[cbName]=function(json){
-            if(done)return;done=true;
-            clearTimeout(timeout);
-            delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
-            if(json&&json.inventory){
-                inventoryState=json.inventory;
-                customNames=json.customNames||{};
-                if(json.columnOrder) columnOrder=json.columnOrder;
-                localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
-                localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
-    localStorage.setItem(MONITOR_KEY,JSON.stringify(monitorOverrides));
-                localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
-                setSyncStatus('synced','Đã đồng bộ');
-                resolve(true);
-            } else {
-                setSyncStatus('synced','Đã kết nối');
-                resolve(false);
-            }
-        };
-        const sep=gasUrl.includes('?')?'&':'?';
-        script.src=gasUrl+sep+'callback='+cbName+'&t='+Date.now();
-        document.head.appendChild(script);
-    });
-}
-
-async function syncNow(){
-    if(!gasUrl){showGasSetupModal();return;}
-    showToast('☁️ Đang đồng bộ...','info');
-    const ok=await pullFromCloud();
-    if(ok){renderAll();showToast('✅ Đồng bộ thành công!','success');}
-    else showToast('⚠️ Không thể đồng bộ. Kiểm tra URL.','warn');
-}
-
-function showGasSetupModal(){document.getElementById('gas-modal').classList.add('show');}
-function closeGasModal(){document.getElementById('gas-modal').classList.remove('show');}
-function saveGasUrl(){
-    const url=document.getElementById('gas-url-input').value.trim();
-    if(url){gasUrl=url;localStorage.setItem(GAS_URL_KEY,gasUrl);pullFromCloud().then(ok=>{if(ok){renderAll();showToast('✅ Đồng bộ thành công!','success');}else pushToCloud();});}
-    closeGasModal();
-}
-
-// ── NAME HELPERS ─────────────────────────────────────────────────
-function getDisplayName(id,defaultName){return customNames[id]!==undefined?customNames[id]:defaultName;}
-
-function startRename(id){
-    const nameEl=document.getElementById('name-'+id);
-    if(!nameEl)return;
-    const defaultName=nameEl.dataset.default;
-    const currentName=getDisplayName(id,defaultName);
-    const input=document.createElement('input');
-    input.type='text';input.value=currentName;input.className='rename-input';
-    let committed=false;
-    function commit(){
-        if(committed)return;committed=true;
-        const val=input.value.trim();
-        if(val&&val!==defaultName)customNames[id]=val;
-        else delete customNames[id];
-        nameEl.textContent=getDisplayName(id,defaultName);
-        nameEl.style.display='';
-        if(input.parentNode)input.parentNode.removeChild(input);
-        saveLocal();
-        showToast('✏️ Đã lưu tên mới','success');
     }
-    input.addEventListener('keydown',e=>{
-        if(e.key==='Enter'){e.preventDefault();commit();}
-        if(e.key==='Escape'){committed=true;nameEl.style.display='';if(input.parentNode)input.parentNode.removeChild(input);}
-    });
-    input.addEventListener('blur',commit);
-    nameEl.style.display='none';
-    nameEl.parentNode.insertBefore(input,nameEl);
-    setTimeout(()=>{input.focus();input.select();},0);
+    if (found) saveLayoutStructure();
+    renderAll();
 }
 
-// ── SEAT STATE ───────────────────────────────────────────────────
-function initSeatState(id){
-    if(!inventoryState[id])inventoryState[id]={thung:false,thung_qty:1,man:false,man_qty:1,chuot:false,chuot_qty:1,phim:false,phim_qty:1,tai:false,tai_qty:1};
+function handleRenameKey(e, id) {
+    if (e.key === 'Enter') finishRename(id);
 }
 
-// Monitor label: dùng monitorOverride nếu có (sau khi nhập CSV), nếu không dùng team
-function getMonitorLabel(seat){
-    if(seat && seat.monitorOverride) return seat.monitorOverride==='24' ? 'Màn hình 24"' : 'Màn hình 20"';
-    const team = typeof seat === 'string' ? seat : (seat && seat.team);
-    return (team==='LAN_PHUONG'||team==='TRAN_OANH') ? 'Màn hình 24"' : 'Màn hình 20"';
-}
-
-function buildItemsGridHTML(id,state,seatObj){
-    const monitorLabel=getMonitorLabel(seatObj);
-    return `<div class="items-grid">
-        <div class="item-check"><input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${id}','thung')"><span>Thùng CPU</span></div>
-        <div class="item-check"><input type="checkbox" ${state.man?'checked':''} onchange="toggleDevice('${id}','man')"><span style="font-weight:600;color:var(--purple);">${monitorLabel}</span></div>
-        <div class="item-check"><input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${id}','chuot')"><span>Chuột</span><input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${id}','chuot',this.value)"></div>
-        <div class="item-check"><input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${id}','phim')"><span>Bàn phím</span><input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${id}','phim',this.value)"></div>
-        <div class="item-check" style="grid-column:span 2"><input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${id}','tai')"><span>Tai nghe USB</span></div>
-    </div>`;
-}
-
-function createSeatBox(data,isLeader=false){
-    if(data.fill==='empty-space'){const el=document.createElement('div');el.className='seat-box empty-space';return el;}
-    initSeatState(data.id);
-    const state=inventoryState[data.id];
-    const box=document.createElement('div');
-    box.className=(isLeader?'column-main-header ':'' )+'seat-box '+data.fill;
-    box.id='seat-box-'+data.id;
-    box.dataset.seatId=data.id;
-    if(!isLeader){
-        box.draggable=true;
-        box.addEventListener('dragstart',onDragStart);
-        box.addEventListener('dragend',onDragEnd);
-        box.addEventListener('dragover',onDragOver);
-        box.addEventListener('dragleave',onDragLeave);
-        box.addEventListener('drop',onDrop);
+// ── RENDER COMPONENT GIAO DIỆN CHÍNH XÁC VÀ TINH GỌN ───────────────────────
+function createSeatBoxHTML(seat) {
+    if (!inventoryState[seat.id]) {
+        inventoryState[seat.id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
     }
-    if(deviceKeys.every(k=>state[k]))box.classList.add('full-equipped');
-    const displayName=getDisplayName(data.id,data.name);
-    const leaderMeta=isLeader?`<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Số lượng: ${data.count}</div>`:'';
-    box.innerHTML=`
-        <div class="seat-header">
-            <span class="drag-handle" title="Kéo để di chuyển">⠿</span>
-            <div style="min-width:0;flex:1;">
-                <span class="seat-name" id="name-${data.id}" data-default="${data.name.replace(/"/g,'&quot;')}" onclick="startRename('${data.id}')" title="Click để đổi tên">${displayName}</span>
-                ${leaderMeta}
+    const state = inventoryState[seat.id];
+    const statusClass = getSeatStatus(seat.id, seat.name);
+
+    return `
+        <div class="seat-box ${statusClass}" id="box-${seat.id}">
+            <div class="seat-header">
+                <span class="seat-name" id="name-text-${seat.id}" onclick="startRename('${seat.id}')">${seat.name}</span>
+                <div class="btn-action-group">
+                    <button class="btn-mini btn-mini-danger" onclick="clearSeatInventory('${seat.id}')" title="Xoá nhanh vật tư">✕</button>
+                </div>
             </div>
-            <div class="btn-action-group">
-                <button class="btn-mini btn-mini-rename" onclick="startRename('${data.id}')" title="Đổi tên">✏️</button>
-                <button class="btn-mini btn-mini-success" onclick="setQuickFull('${data.id}')">✅ Đủ bộ</button>
-                <button class="btn-mini btn-mini-danger" onclick="resetSingleSeat('${data.id}')">↩ Xóa</button>
+            <div class="items-grid">
+                <div class="item-check">
+                    <input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${seat.id}','thung')">
+                    <span>CPU</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${seat.id}','tai')">
+                    <span>Tai nghe</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.man20?'checked':''} onchange="toggleDevice('${seat.id}','man20')">
+                    <span style="font-weight:700;color:var(--purple);">Màn 20"</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.man24?'checked':''} onchange="toggleDevice('${seat.id}','man24')">
+                    <span style="font-weight:500;color:var(--text-primary);">Màn 24"</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${seat.id}','chuot')">
+                    <span>Chuột</span>
+                    <input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${seat.id}','chuot',this.value)">
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${seat.id}','phim')">
+                    <span>Phím</span>
+                    <input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${seat.id}','phim',this.value)">
+                </div>
             </div>
         </div>
-        ${buildItemsGridHTML(data.id,state,data)}`;
-    return box;
+    `;
 }
 
-// ── ACTIONS ───────────────────────────────────────────────────────
-function toggleDevice(id,device){inventoryState[id][device]=!inventoryState[id][device];updateBoxStatus(id);saveLocal();}
-function changeQty(id,device,val){let v=parseInt(val);if(isNaN(v)||v<1)v=1;inventoryState[id][device+'_qty']=v;saveLocal();}
-
-function setQuickFull(id){
-    deviceKeys.forEach(k=>{inventoryState[id][k]=true;});
-    const box=document.getElementById('seat-box-'+id);
-    if(box){box.classList.add('full-equipped');box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=true);}
-    saveLocal();showToast('✅ Đã đánh dấu đủ thiết bị','success');
-}
-
-function resetSingleSeat(id){
-    inventoryState[id]={thung:false,thung_qty:1,man:false,man_qty:1,chuot:false,chuot_qty:1,phim:false,phim_qty:1,tai:false,tai_qty:1};
-    const box=document.getElementById('seat-box-'+id);
-    if(box){box.classList.remove('full-equipped');box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);box.querySelectorAll('.qty-input').forEach(i=>i.value=1);}
-    saveLocal();showToast('↩ Đã xóa dữ liệu vị trí này','info');
-}
-
-function updateBoxStatus(id){
-    const box=document.getElementById('seat-box-'+id);
-    if(!box)return;
-    if(deviceKeys.every(k=>inventoryState[id][k]))box.classList.add('full-equipped');
-    else box.classList.remove('full-equipped');
-}
-
-// ── ADD / REMOVE SEATS ────────────────────────────────────────────
-let newSeatCounter=1000;
-
-function addSeat(colKey, fill, team){
-    const id='new_'+colKey+'_'+(newSeatCounter++);
-    const newSeat={id,name:'CHỖ TRỐNG MỚI',fill,team};
-    layoutData[colKey].push(newSeat);
-    columnOrder[colKey].push(id);
-    initSeatState(id);
-    const colEl=document.getElementById(colMeta[colKey].domId);
-    const box=createSeatBox(newSeat);
-    colEl.appendChild(box);
-    // Set up drop zone on column
-    setupColumnDrop(colEl);
-    saveLocal();
-    showToast('➕ Đã thêm chỗ ngồi mới','success');
-    box.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function removeSeat(colKey){
-    const order=columnOrder[colKey];
-    // Find last non-empty seat
-    for(let i=order.length-1;i>=0;i--){
-        const id=order[i];
-        const seat=findSeatById(id);
-        if(seat&&seat.fill!=='empty-space'){
-            if(!confirm(`Xoá vị trí "${getDisplayName(id,seat.name)}"?\nDữ liệu kiểm kê sẽ bị xoá.`))return;
-            // Remove from layoutData
-            const ldArr=layoutData[colKey];
-            const idx=ldArr.findIndex(s=>s.id===id);
-            if(idx!==-1)ldArr.splice(idx,1);
-            // Remove from order
-            order.splice(i,1);
-            // Remove from DOM
-            const box=document.getElementById('seat-box-'+id);
-            if(box)box.remove();
-            delete inventoryState[id];
-            delete customNames[id];
-            saveLocal();
-            showToast('➖ Đã xóa chỗ ngồi','info');
-            return;
-        }
-    }
-    showToast('⚠️ Không còn chỗ để xóa','warn');
-}
-
-// ── DRAG & DROP ────────────────────────────────────────────────────
-function onDragStart(e){
-    dragSrcId=this.dataset.seatId;
-    dragSrcColKey=getSeatColKey(dragSrcId);
-    this.classList.add('dragging');
-    e.dataTransfer.effectAllowed='move';
-    e.dataTransfer.setData('text/plain',dragSrcId);
-}
-
-function onDragEnd(e){
-    this.classList.remove('dragging');
-    document.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom');});
-    document.querySelectorAll('.drop-target-empty').forEach(el=>el.classList.remove('drop-target-empty'));
-}
-
-function onDragOver(e){
-    e.preventDefault();
-    e.dataTransfer.dropEffect='move';
-    document.querySelectorAll('.drag-over-top,.drag-over-bottom').forEach(el=>{el.classList.remove('drag-over-top','drag-over-bottom');});
-    const rect=this.getBoundingClientRect();
-    const midY=rect.top+rect.height/2;
-    if(e.clientY<midY) this.classList.add('drag-over-top');
-    else this.classList.add('drag-over-bottom');
-}
-
-function onDragLeave(e){
-    this.classList.remove('drag-over-top','drag-over-bottom');
-}
-
-function onDrop(e){
-    e.preventDefault();
-    this.classList.remove('drag-over-top','drag-over-bottom');
-    const targetId=this.dataset.seatId;
-    if(!dragSrcId||dragSrcId===targetId)return;
-
-    const targetColKey=getSeatColKey(targetId);
-    if(!targetColKey)return;
-
-    // Determine insert position
-    const rect=this.getBoundingClientRect();
-    const midY=rect.top+rect.height/2;
-    const insertAfter=(e.clientY>=midY);
-
-    // Move seat data between columns if needed
-    if(dragSrcColKey!==targetColKey){
-        const srcSeat=findSeatById(dragSrcId);
-        if(!srcSeat)return;
-        // Move in layoutData
-        const srcArr=layoutData[dragSrcColKey];
-        const srcIdx=srcArr.findIndex(s=>s.id===dragSrcId);
-        if(srcIdx!==-1)srcArr.splice(srcIdx,1);
-        const dstArr=layoutData[targetColKey];
-        const dstIdx=dstArr.findIndex(s=>s.id===targetId);
-        if(dstIdx!==-1)dstArr.splice(insertAfter?dstIdx+1:dstIdx,0,srcSeat);
-        else dstArr.push(srcSeat);
-        // Update team of moved seat to match destination column default team
-        srcSeat.team=colMeta[targetColKey].defaultTeam;
-    }
-
-    // Reorder in columnOrder
-    const srcOrder=columnOrder[dragSrcColKey];
-    const dstOrder=columnOrder[targetColKey];
-    const srcOIdx=srcOrder.indexOf(dragSrcId);
-    if(srcOIdx!==-1)srcOrder.splice(srcOIdx,1);
-    const dstOIdx=dstOrder.indexOf(targetId);
-    if(dstOIdx!==-1)dstOrder.splice(insertAfter?dstOIdx+1:dstOIdx,0,dragSrcId);
-    else dstOrder.push(dragSrcId);
-
-    // Re-render affected columns
-    renderColumn(dragSrcColKey);
-    if(targetColKey!==dragSrcColKey)renderColumn(targetColKey);
-
-    saveLocal();
-    showToast('↕️ Đã di chuyển vị trí','info');
-    dragSrcId=null;dragSrcColKey=null;
-}
-
-function setupColumnDrop(colEl){
-    colEl.addEventListener('dragover',e=>{
-        e.preventDefault();
-        // Only highlight if column is empty or dragging over empty space
-        if(colEl.children.length===0)colEl.classList.add('drop-target-empty');
+function renderAll() {
+    // 1. Render khu vực Leader biệt lập phía trên cùng
+    const leadContainer = document.getElementById('leaders-container');
+    leadContainer.innerHTML = '';
+    layoutData.leaders.forEach(lead => {
+        leadContainer.innerHTML += createSeatBoxHTML(lead);
     });
-    colEl.addEventListener('dragleave',e=>{colEl.classList.remove('drop-target-empty');});
-    colEl.addEventListener('drop',e=>{
-        colEl.classList.remove('drop-target-empty');
-        // Drop onto empty column or after all items
-        if(!dragSrcId)return;
-        e.preventDefault();
-        const colKey=[...Object.entries(colMeta)].find(([k,v])=>v.domId===colEl.id)?.[0];
-        if(!colKey||colKey===dragSrcColKey)return;
-        const srcSeat=findSeatById(dragSrcId);
-        if(!srcSeat)return;
-        // Move in layoutData
-        const srcArr=layoutData[dragSrcColKey];
-        const srcIdx=srcArr.findIndex(s=>s.id===dragSrcId);
-        if(srcIdx!==-1)srcArr.splice(srcIdx,1);
-        layoutData[colKey].push(srcSeat);
-        srcSeat.team=colMeta[colKey].defaultTeam;
-        // Update order
-        const srcOrder=columnOrder[dragSrcColKey];
-        const si=srcOrder.indexOf(dragSrcId);
-        if(si!==-1)srcOrder.splice(si,1);
-        columnOrder[colKey].push(dragSrcId);
-        renderColumn(dragSrcColKey);
-        renderColumn(colKey);
-        saveLocal();
-        showToast('↕️ Đã di chuyển vị trí','info');
-        dragSrcId=null;dragSrcColKey=null;
+
+    // 2. Render 4 cột dãy vị trí phía dưới
+    ['col1', 'col2a', 'col2b', 'col3'].forEach(colKey => {
+        const colDomId = colKey === 'col1' ? 'col-1' : colKey === 'col2a' ? 'col-2a' : colKey === 'col2b' ? 'col-2b' : 'col-3';
+        const container = document.getElementById(colDomId);
+        container.innerHTML = '';
+        layoutData[colKey].forEach(seat => {
+            container.innerHTML += createSeatBoxHTML(seat);
+        });
     });
-}
 
-// ── STATS ─────────────────────────────────────────────────────────
-function calculateStats(){
-    const allSeats=getAllSeats();
-    const total=allSeats.length;
-    let full=0,totalThung=0,totalMan20=0,totalMan24=0,totalChuot=0,totalPhim=0,totalTai=0;
-    allSeats.forEach(seat=>{
-        const s=inventoryState[seat.id];
-        if(!s)return;
-        if(deviceKeys.every(k=>s[k]))full++;
-        if(s.thung)totalThung+=(s.thung_qty||1);
-        if(s.tai)totalTai+=(s.tai_qty||1);
-        if(s.chuot)totalChuot+=(s.chuot_qty||1);
-        if(s.phim)totalPhim+=(s.phim_qty||1);
-        if(s.man){
-            // Ưu tiên monitorOverride (gán khi nhập CSV) để đảm bảo thống kê đúng
-            // Nếu không có override, tính theo team mặc định
-            const is24 = seat.monitorOverride
-                ? seat.monitorOverride==='24'
-                : (seat.team==='LAN_PHUONG'||seat.team==='TRAN_OANH');
-            if(is24) totalMan24+=(s.man_qty||1);
-            else totalMan20+=(s.man_qty||1);
-        }
-    });
-    document.getElementById('stat-total').textContent=total;
-    document.getElementById('stat-full').textContent=full;
-    document.getElementById('stat-missing').textContent=total-full;
-    document.getElementById('stat-percent').textContent=total>0?((full/total)*100).toFixed(1)+'%':'0%';
-    document.getElementById('count-thung').textContent=totalThung;
-    document.getElementById('count-man20').textContent=totalMan20;
-    document.getElementById('count-man24').textContent=totalMan24;
-    document.getElementById('count-chuot').textContent=totalChuot;
-    document.getElementById('count-phim').textContent=totalPhim;
-    document.getElementById('count-tai').textContent=totalTai;
-}
-
-function resetAllInventory(){
-    if(confirm('⚠️ Bạn có chắc muốn XÓA TOÀN BỘ dữ liệu kiểm kê?\nHành động này không thể hoàn tác.')){
-        inventoryState={};customNames={};monitorOverrides={};
-        localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NAMES_KEY);localStorage.removeItem(MONITOR_KEY);
-        // Reset all seat monitorOverrides in layoutData
-        ['col1','col2a','col2b','col3'].forEach(k=>layoutData[k].forEach(s=>delete s.monitorOverride));
-        layoutData.leaders.forEach(l=>delete l.monitorOverride);
-        renderAll();
-        if(gasUrl)pushToCloud();
-        showToast('🗑️ Đã reset toàn bộ dữ liệu','info');
-    }
-}
-
-function searchEmployee(){
-    const q=document.getElementById('search-input').value.toLowerCase().trim();
-    document.querySelectorAll('.seat-box').forEach(b=>b.classList.remove('highlight'));
-    if(!q)return;
-    getAllSeats().forEach(item=>{
-        const name=getDisplayName(item.id,item.name);
-        if(name&&name.toLowerCase().includes(q)){
-            const el=document.getElementById('seat-box-'+item.id);
-            if(el){el.classList.add('highlight');el.scrollIntoView({behavior:'smooth',block:'center'});}
-        }
-    });
-}
-
-// ── EXPORT ───────────────────────────────────────────────────────
-function exportGoogleSheets(){
-    const rows=[['STT','Vị trí','Thùng CPU','Màn hình','Loại Màn Hình','Chuột','SL Chuột','Bàn phím','SL Phím','Tai nghe USB','Trạng thái']];
-    let stt=1;
-    getAllSeats().forEach(item=>{
-        const s=inventoryState[item.id];if(!s)return;
-        const full=deviceKeys.every(k=>s[k]),name=getDisplayName(item.id,item.name);
-        const is24=item.monitorOverride ? item.monitorOverride==='24' : (item.team==='LAN_PHUONG'||item.team==='TRAN_OANH');
-        const monitorType=is24?'24 inch':'20 inch';
-        rows.push([stt++,name,s.thung?'Có':'Không',s.man?'Có':'Không',s.man?monitorType:'N/A',s.chuot?'Có':'Không',s.chuot_qty||1,s.phim?'Có':'Không',s.phim_qty||1,s.tai?'Có':'Không',full?'Đủ bộ':'Thiếu']);
-    });
-    const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-    dlBlob(csv,'text/csv;charset=utf-8;',`KiemKe_Lau2_${getDateStr()}.csv`);
-    document.getElementById('gs-modal').classList.add('show');
-}
-
-function exportJSON(){
-    const payload={version:3,exported:new Date().toISOString(),floor:'Lau2',data:inventoryState,customNames,columnOrder,monitorOverrides};
-    dlBlob(JSON.stringify(payload,null,2),'application/json',`Backup_KiemKe_Lau2_${getDateStr()}.json`);
-    showToast('💾 File backup đã được tải xuống','success');
-}
-
-function importJSON(event){
-    const file=event.target.files[0];if(!file)return;
-    const reader=new FileReader();
-    reader.onload=function(e){
-        try{
-            const payload=JSON.parse(e.target.result);
-            const data=payload.data||payload;
-            if(typeof data!=='object')throw new Error('Invalid');
-            if(confirm(`📂 Import dữ liệu từ file "${file.name}"?\nDữ liệu hiện tại sẽ bị ghi đè.`)){
-                inventoryState=data;
-                customNames=payload.customNames||{};
-                if(payload.columnOrder)columnOrder=payload.columnOrder;
-                if(payload.monitorOverrides){ monitorOverrides=payload.monitorOverrides; applyMonitorOverrides(); }
-                saveLocal();renderAll();
-                if(gasUrl)pushToCloud();
-                showToast('✅ Import thành công!','success');
-            }
-        }catch(e){alert('❌ File không hợp lệ.');}
-    };
-    reader.readAsText(file);event.target.value='';
-}
-
-function importCSV(event){
-    const file=event.target.files[0];if(!file)return;
-    const reader=new FileReader();
-    reader.onload=function(e){
-        try{
-            const text=e.target.result.replace(/^\uFEFF/,''); // strip BOM
-            const lines=text.split(/\r?\n/).filter(l=>l.trim());
-            if(lines.length<2){alert('❌ File CSV không có dữ liệu.');return;}
-            function parseRow(line){
-                const cols=[];let cur='',inQ=false;
-                for(let i=0;i<line.length;i++){
-                    const ch=line[i];
-                    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-                    else if(ch===','&&!inQ){cols.push(cur);cur='';}
-                    else cur+=ch;
-                }
-                cols.push(cur);return cols;
-            }
-            const headers=parseRow(lines[0]).map(h=>h.trim().toLowerCase());
-            const iName=headers.indexOf('vị trí');
-            const iThung=headers.indexOf('thùng cpu');
-            const iMan=headers.indexOf('màn hình');
-            const iLoaiMan=headers.indexOf('loại màn hình');
-            const iChuot=headers.indexOf('chuột');
-            const iSLChuot=headers.indexOf('sl chuột');
-            const iPhim=headers.indexOf('bàn phím');
-            const iSLPhim=headers.indexOf('sl phím');
-            const iTai=headers.indexOf('tai nghe usb');
-            if(iName===-1){alert('❌ Không tìm thấy cột "Vị trí" trong file CSV.\nVui lòng dùng file CSV xuất từ hệ thống này.');return;}
-            if(!confirm(`📥 Nhập dữ liệu từ "${file.name}"?\nDữ liệu kiểm kê (checkbox) hiện tại sẽ bị ghi đè theo file CSV.`))return;
-            let updated=0;
-            for(let i=1;i<lines.length;i++){
-                const cols=parseRow(lines[i]);
-                const name=(cols[iName]||'').trim().toUpperCase();
-                if(!name)continue;
-                const seat=getAllSeats().find(s=>(getDisplayName(s.id,s.name)||'').toUpperCase()===name);
-                if(!seat)continue;
-                initSeatState(seat.id);
-                const s=inventoryState[seat.id];
-                if(iThung!==-1)s.thung=(cols[iThung]||'').trim()==='Có';
-                if(iMan!==-1)s.man=(cols[iMan]||'').trim()==='Có';
-                if(iChuot!==-1)s.chuot=(cols[iChuot]||'').trim()==='Có';
-                if(iSLChuot!==-1){const v=parseInt(cols[iSLChuot]);if(!isNaN(v)&&v>0)s.chuot_qty=v;}
-                if(iPhim!==-1)s.phim=(cols[iPhim]||'').trim()==='Có';
-                if(iSLPhim!==-1){const v=parseInt(cols[iSLPhim]);if(!isNaN(v)&&v>0)s.phim_qty=v;}
-                if(iTai!==-1)s.tai=(cols[iTai]||'').trim()==='Có';
-                // Đọc cột "Loại Màn Hình" từ CSV và lưu vào monitorOverrides
-                // để persist qua localStorage sau khi reload trang
-                if(iLoaiMan!==-1){
-                    const loai=(cols[iLoaiMan]||'').trim().toLowerCase();
-                    if(loai==='24 inch'){ seat.monitorOverride='24'; monitorOverrides[seat.id]='24'; }
-                    else if(loai==='20 inch'){ seat.monitorOverride='20'; monitorOverrides[seat.id]='20'; }
-                    else { delete seat.monitorOverride; delete monitorOverrides[seat.id]; }
-                }
-                updated++;
-            }
-            saveLocal();renderAll();
-            if(gasUrl)pushToCloud();
-            showToast(`✅ Đã nhập ${updated} vị trí từ CSV`,'success');
-        }catch(err){alert('❌ Lỗi đọc file CSV: '+err.message);}
-    };
-    reader.readAsText(file,'utf-8');event.target.value='';
-}
-
-function closeCsvModal(){document.getElementById('gs-modal').classList.remove('show');}
-function dlBlob(content,type,name){const b=new Blob([content],{type}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
-function getDateStr(){const d=new Date();return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;}
-
-let toastTimer;
-function showToast(msg,type='info'){
-    const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;
-    clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='';},2800);
-}
-
-// ── RENDER ────────────────────────────────────────────────────────
-function renderColumn(colKey){
-    const meta=colMeta[colKey];
-    const colEl=document.getElementById(meta.domId);
-    colEl.innerHTML='';
-    columnOrder[colKey].forEach(id=>{
-        const seat=findSeatById(id);
-        if(seat)colEl.appendChild(createSeatBox(seat));
-    });
-    setupColumnDrop(colEl);
-}
-
-function renderAll(){
-    // Render leader headers
-    layoutData.leaders.forEach(leader=>{
-        const c=document.getElementById(leader.targetId);c.innerHTML='';c.appendChild(createSeatBox(leader,true));
-    });
-    // Render columns
-    ['col1','col2a','col2b','col3'].forEach(k=>renderColumn(k));
     calculateStats();
 }
 
-// ── INIT ──────────────────────────────────────────────────────────
-loadState();
+function clearSeatInventory(id) {
+    inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+    saveInventoryState();
+    renderAll();
+}
+
+// ── TÍNH TOÁN THỐNG KÊ VẬT TƯ TOÀN PHÒNG MÁY ─────────────────────────────────
+function calculateStats() {
+    let totalSeats = 0, fullEquipped = 0, missingEquipment = 0, emptySeatCount = 0;
+    let tCPU = 0, tMan20 = 0, tMan24 = 0, tChuot = 0, tPhim = 0, tTai = 0;
+
+    for (let key in layoutData) {
+        layoutData[key].forEach(seat => {
+            totalSeats++;
+            const state = inventoryState[seat.id] || { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+            
+            if (seat.name.trim().toUpperCase() === "CHỖ TRỐNG") {
+                emptySeatCount++;
+            }
+
+            if (state.thung) tCPU++;
+            if (state.man20) tMan20++;
+            if (state.man24) tMan24++;
+            if (state.chuot) tChuot += (state.chuot_qty || 1);
+            if (state.phim) tPhim += (state.phim_qty || 1);
+            if (state.tai) tTai++;
+
+            const status = getSeatStatus(seat.id, seat.name);
+            if (status === 'state-full-equipped') fullEquipped++;
+            else if (status === 'state-missing-equipment') missingEquipment++;
+        });
+    }
+
+    document.getElementById('stat-total').textContent = totalSeats;
+    document.getElementById('stat-full').textContent = fullEquipped;
+    document.getElementById('stat-missing').textContent = missingEquipment;
+    document.getElementById('stat-percent').textContent = totalSeats > 0 ? Math.round((fullEquipped / totalSeats) * 100) + '%' : '0%';
+
+    document.getElementById('count-thung').textContent = tCPU;
+    document.getElementById('count-man20').textContent = tMan20;
+    document.getElementById('count-man24').textContent = tMan24;
+    document.getElementById('count-chuot').textContent = tChuot;
+    document.getElementById('count-phim').textContent = tPhim;
+    document.getElementById('count-tai').textContent = tTai;
+    document.getElementById('count-empty-seat').textContent = emptySeatCount;
+}
+
+// ── CHỨC NĂNG TÌM KIẾM NHÂN VIÊN ──────────────────────────────────────────
+function searchEmployee() {
+    const q = document.getElementById('search-input').value.trim().toUpperCase();
+    for (let key in layoutData) {
+        layoutData[key].forEach(seat => {
+            const el = document.getElementById(`box-${seat.id}`);
+            if (!el) return;
+            if (q && seat.name.toUpperCase().includes(q)) {
+                el.classList.add('highlight');
+            } else {
+                el.classList.remove('highlight');
+            }
+        });
+    }
+}
+
+// ── XUẤT CSV VÀ BACKUP HỆ THỐNG ───────────────────────────────────────────
+function exportGoogleSheets() {
+    let csv = "\uFEFFMã Ghế,Vị Trí Dãy,Tên Nhân Viên,Thùng CPU,Màn hình 20,Màn hình 24,Chuột (SL),Bàn phím (SL),Tai nghe USB\n";
+    for (let key in layoutData) {
+        layoutData[key].forEach(seat => {
+            const st = inventoryState[seat.id] || {};
+            csv += `"${seat.id}","${key}","${seat.name}","${st.thung?'X':''}","${st.man20?'X':''}","${st.man24?'X':''}","${st.chuot?st.chuot_qty||1:0}","${st.phim?st.phim_qty||1:0}","${st.tai?'X':''}"\n`;
+        });
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `kiem_ke_lau_2_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Đã tải xuống file thống kê CSV", "success");
+}
+
+function exportJSON() {
+    const backup = { layoutData, inventoryState };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `backup_so_do_${Date.now()}.json`;
+    link.click();
+}
+
+function resetAllInventory() {
+    if(confirm("Bạn có chắc chắn muốn xóa hết trạng thái kiểm kê thiết bị không?")) {
+        inventoryState = {};
+        layoutData = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+        saveLayoutStructure();
+        saveInventoryState();
+        renderAll();
+        showToast("Hệ thống đã reset về trạng thái trống", "warn");
+    }
+}
+
+// ── TOAST MESSAGES ───────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'show ' + type;
+    setTimeout(() => { t.className = ''; }, 2500);
+}
+
+function closeGasModal() { document.getElementById('gas-modal').style.display = 'none'; }
+function syncNow() { showToast("Tính năng đồng bộ Google Sheets đang chờ cấu hình", "info"); }
+
+// Khởi chạy hệ thống liên tục
+loadAllStates();
 renderAll();
-if(gasUrl){pullFromCloud().then(ok=>{if(ok)renderAll();});}
-document.getElementById('gs-modal').addEventListener('click',function(e){if(e.target===this)closeCsvModal();});
-document.getElementById('gas-modal').addEventListener('click',function(e){if(e.target===this)closeGasModal();});
 </script>
 </body>
 </html>
