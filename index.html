@@ -210,7 +210,7 @@
         /* ─── STAT CARDS ─── */
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 10px;
             margin-bottom: 18px;
         }
@@ -711,21 +711,21 @@
 
         <div class="layout-grid" id="main-grid">
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#eef2ff; color:#3b5bdb; border-color:#bac8ff;">&nbsp;</div>
+                <div class="column-main-header" style="background:#eef2ff; color:#3b5bdb; border-color:#bac8ff;">A</div>
                 <div class="seat-column" id="col-1"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#fff5f5; color:#e03131; border-color:#fca5a5;">&nbsp;</div>
+                <div class="column-main-header" style="background:#fff5f5; color:#e03131; border-color:#fca5a5;">B</div>
                 <div class="seat-column" id="col-2a"></div>
             </div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#fff0f6; color:#c2255c; border-color:#fbb6ce;">&nbsp;</div>
+                <div class="column-main-header" style="background:#fff0f6; color:#c2255c; border-color:#fbb6ce;">C</div>
                 <div class="seat-column" id="col-2b"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#f3f0ff; color:#7048e8; border-color:#d0bfff;">&nbsp;</div>
+                <div class="column-main-header" style="background:#f3f0ff; color:#7048e8; border-color:#d0bfff;">D</div>
                 <div class="seat-column" id="col-3"></div>
             </div>
         </div>
@@ -738,7 +738,9 @@
         document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         const STORAGE_KEY = 'inventoryDataV2';
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
+        
+        // ĐƯỜNG DẪN WEB APP ĐÃ ĐƯỢC KẾT NỐI CHUẨN XÁC
+        const WEB_APP_URL = 'https://script.google.com/a/macros/now.vn/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 
         // Khởi tạo Dữ liệu gốc
         let customNames = {};
@@ -746,10 +748,10 @@
         let columnOrder = { col1: [], col2a: [], col2b: [], col3: [] };
         let layoutData = {
             leaders: [
-                { id: "L1", name: "LAN PHƯƠNG", count: "18", targetId: "leader-header-1", fill: "fill-purple", team: "LAN_PHUONG" },
-                { id: "L2A", name: "NGÂN SUPPORT TL", count: "20", targetId: "leader-header-2a", fill: "fill-purple", team: "OTHER" },
-                { id: "L2B", name: "KHÁC", count: "20", targetId: "leader-header-2b", fill: "fill-purple", team: "OTHER" },
-                { id: "L3", name: "TRẦN OANH", count: "19", targetId: "leader-header-3", fill: "fill-purple", team: "TRAN_OANH" }
+                { id: "L1", name: "A", count: "18", targetId: "leader-header-1", fill: "fill-purple", team: "LAN_PHUONG" },
+                { id: "L2A", name: "B", count: "20", targetId: "leader-header-2a", fill: "fill-purple", team: "OTHER" },
+                { id: "L2B", name: "C", count: "20", targetId: "leader-header-2b", fill: "fill-purple", team: "OTHER" },
+                { id: "L3", name: "D", count: "19", targetId: "leader-header-3", fill: "fill-purple", team: "TRAN_OANH" }
             ],
             col1: [
                 { id: "1_1", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_2", name: "MINH NHỰT", fill: "fill-purple" }, { id: "1_3", name: "ĐAN VY", fill: "fill-purple" }, { id: "1_4", name: "LONG NHÂN", fill: "fill-green" }, { id: "1_5", name: "TÁN PHÚC", fill: "fill-green" }, { id: "1_blank1", name: "", fill: "empty-space" }, { id: "1_6", name: "TRỰC", fill: "fill-purple" }, { id: "1_7", name: "THẮNG", fill: "fill-purple" }, { id: "1_8", name: "KIM NGÂN", fill: "fill-purple" }, { id: "1_9", name: "NHẬT KHÁNH", fill: "fill-purple" }, { id: "1_10", name: "PHÚ SĨ SENIOR", fill: "fill-yellow" }, { id: "1_11", name: "CHÍNH SENIOR", fill: "fill-yellow" }, { id: "1_blank2", name: "", fill: "empty-space" }, { id: "1_12", name: "PT - PHƯƠNG THẢO", fill: "fill-purple" }, { id: "1_13", name: "TÂN TÀI", fill: "fill-purple" }, { id: "1_14", name: "TUẤN ANH", fill: "fill-purple" }, { id: "1_15", name: "QUANG HẬU", fill: "fill-purple" }, { id: "1_16", name: "MINH HOÀNG", fill: "fill-purple" }, { id: "1_17", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_18", name: "TOÀN", fill: "fill-purple" }
@@ -761,7 +763,7 @@
                 { id: "2b_1", name: "THIÊN NGÂN", fill: "fill-pink" }, { id: "2b_2", name: "TÚ TRINH", fill: "fill-pink" }, { id: "2b_3", name: "TRUNG NGHỊ", fill: "fill-pink" }, { id: "2b_4", name: "MINH TÂM", fill: "fill-pink" }, { id: "2b_5", name: "MINH THƯ", fill: "fill-pink" }, { id: "2b_6", name: "DUY KHÁNH", fill: "fill-pink" }, { id: "2b_7", name: "HỒNG ÂN", fill: "fill-pink" }, { id: "2b_8", name: "THIÊN KIM", fill: "fill-yellow" }, { id: "2b_9", name: "MINH SENIOR", fill: "fill-yellow" }, { id: "2b_10", name: "KHÁNH LY", fill: "fill-pink" }, { id: "2b_11", name: "NHẬT LAM", fill: "fill-pink" }, { id: "2b_12", name: "HÂN SENIOR", fill: "fill-yellow" }, { id: "2b_13", name: "NGUYỄN SENIOR", fill: "fill-yellow" }, { id: "2b_14", name: "DIỆU TRINH", fill: "fill-pink" }, { id: "2b_15", name: "PHI PHỤNG", fill: "fill-pink" }, { id: "2b_16", name: "PT - QUỐC THỊNH", fill: "fill-purple" }, { id: "2b_17", name: "PT - THU HỒNG", fill: "fill-purple" }, { id: "2b_18", name: "PT - KHOA", fill: "fill-pink" }, { id: "2b_19", name: "PT - LOAN", fill: "fill-pink" }, { id: "2b_20", name: "KIM CHI", fill: "fill-purple" }
             ],
             col3: [
-                { id: "C3_1782579850790", name: "Vị trí mới", fill: "fill-purple" }, { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" }, { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" }, { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" }, { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" }, { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" }, { id: "3_blank1", name: "", fill: "empty-space" }, { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" }, { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" }, { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" }, { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" }, { id: "3_10", name: "BẢO AN", fill: "fill-purple" }, { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" }, { id: "3_blank2", name: "", fill: "empty-space" }, { id: "3_12", name: "THẢO VI", fill: "fill-purple" }, { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }, { id: "3_14", name: "THU THẢO", fill: "fill-purple" }, { id: "3_15", name: "MAI XUÂN", fill: "fill-purple" }, { id: "3_16", name: "THI HỒNG", fill: "fill-purple" }, { id: "3_17", name: "THỊ QUỲNH", fill: "fill-purple" }, { id: "3_18", name: "CÔNG HIỆP", fill: "fill-purple" }
+                { id: "C3_1782579850790", name: "Vị trí mới", fill: "fill-purple" }, { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" }, { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" }, { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" }, { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" }, { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" }, { id: "3_blank1", name: "", fill: "empty-space" }, { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" }, { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" }, { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" }, { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" }, { id: "3_10", name: "BẢO AN", fill: "fill-purple" }, { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" }, { id: "3_blank2", name: "", fill: "empty-space" }, { id: "3_12", name: "THẢO VI", fill: "fill-purple" }, { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }, { id: "3_14", name: "THU THẢO", fill: "fill-purple" }, { id: "3_15", name: "MAI XUÂN", fill: "fill-purple" }, { id: "3_16", name: "THỊ HỒNG", fill: "fill-purple" }, { id: "3_17", name: "THỊ QUỲNH", fill: "fill-purple" }, { id: "3_18", name: "CÔNG HIỆP", fill: "fill-purple" }
             ]
         };
 
@@ -787,8 +789,9 @@
             };
         }
 
-        async function loadData() {
-            // Bước 1: Load dữ liệu local cache trước để hiển thị nhanh
+        // TỰ ĐỘNG TẢI DỮ LIỆU TỪ ĐÁM MÂY KHI LOAD TRANG
+        function loadData() {
+            // Bước 1: Đọc dữ liệu từ bộ nhớ trình duyệt làm nền trước
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 try {
@@ -803,59 +806,39 @@
             }
             renderAll();
 
-            // Bước 2: Tự động tải dữ liệu trực tiếp từ Google Apps Script Web App để đồng bộ đa thiết bị
+            // Bước 2: Gọi API kéo dữ liệu mới nhất trên Google Sheets về (Bảo toàn đồng bộ đa thiết bị)
             updateSyncStatus('syncing');
-            try {
-                const response = await fetch(API_URL);
-                if (response.ok) {
-                    const cloudData = await response.json();
-                    if (cloudData && cloudData.inventoryState) {
-                        columnOrder = cloudData.columnOrder || columnOrder;
-                        layoutData = cloudData.layoutData || layoutData;
-                        inventoryState = cloudData.inventoryState || inventoryState;
-                        customNames = cloudData.customNames || customNames;
-                        
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
-                        renderAll();
-                        updateSyncStatus('synced');
-                        showToast('🔄 Đã tự động cập nhật dữ liệu mới nhất từ đám mây!', 'success');
-                        return;
-                    }
+            fetch(WEB_APP_URL, {
+                method: "GET",
+                redirect: "follow"
+            })
+            .then(res => res.json())
+            .then(cloudData => {
+                if (cloudData && cloudData.inventoryState) {
+                    columnOrder = cloudData.columnOrder || columnOrder;
+                    layoutData = cloudData.layoutData || layoutData;
+                    inventoryState = cloudData.inventoryState || inventoryState;
+                    customNames = cloudData.customNames || customNames;
+                    
+                    // Ghi đè lại vào bộ nhớ trình duyệt phòng khi mất mạng
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
+                    renderAll();
+                    updateSyncStatus('synced');
+                    showToast('☁️ Đã tải dữ liệu đồng bộ mới nhất từ đám mây!', 'success');
+                } else {
+                    updateSyncStatus('synced');
                 }
+            })
+            .catch(err => {
+                console.log("Không thể kết nối Cloud, sử dụng dữ liệu Offline tạm thời:", err);
                 updateSyncStatus('unsynced');
-            } catch (err) {
-                console.error("Lỗi đồng bộ đám mây đầu trang:", err);
-                updateSyncStatus('unsynced');
-            }
+            });
         }
 
-        let syncDebounceTimeout;
         function saveLocal() {
-            const payload = { columnOrder, layoutData, inventoryState, customNames };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
             updateSyncStatus('unsynced');
             updateCounts();
-
-            // Cơ chế tự động đồng bộ ngầm lên Đám mây sau 2 giây ngừng thao tác
-            clearTimeout(syncDebounceTimeout);
-            syncDebounceTimeout = setTimeout(() => {
-                syncSilent();
-            }, 2000);
-        }
-
-        async function syncSilent() {
-            const payload = { columnOrder, layoutData, inventoryState, customNames };
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-                updateSyncStatus('synced');
-            } catch (e) {
-                console.error("Đồng bộ ngầm thất bại:", e);
-            }
         }
 
         function updateSyncStatus(status) {
@@ -863,39 +846,55 @@
             if (!badge) return;
             const now = new Date().toLocaleTimeString('vi-VN');
             if (status === 'unsynced') {
-                badge.innerHTML = `💾 Lưu local lúc ${now} <span style="color:var(--yellow); font-weight:700;">• Chưa đồng bộ mây</span>`;
+                badge.innerHTML = `💾 Lưu lúc ${now} <span style="color:var(--yellow); font-weight:700;">• Chưa đồng bộ</span>`;
             } else if (status === 'syncing') {
-                badge.innerHTML = `⏳ Đang kết nối mây...`;
+                badge.innerHTML = `⏳ Đang kết nối...`;
             } else if (status === 'synced') {
-                badge.innerHTML = `✅ Đã đồng bộ mây lúc ${now}`;
+                badge.innerHTML = `✅ Đã đồng bộ lúc ${now}`;
             }
         }
 
-        async function syncNow() {
+        // HÀM ĐỒNG BỘ THỰC TẾ LÊN GOOGLE SHEETS backend
+        function syncNow() {
             updateSyncStatus('syncing');
             const btn = document.getElementById('btn-sync');
             const oldHtml = btn.innerHTML;
             btn.innerHTML = '<span class="spin">⏳</span> Đang tải lên...';
 
-            const payload = { columnOrder, layoutData, inventoryState, customNames };
+            const dataToSync = {
+                columnOrder,
+                layoutData,
+                inventoryState,
+                customNames
+            };
 
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
-                });
-                
-                updateSyncStatus('synced');
-                btn.innerHTML = oldHtml;
-                showToast('☁️ Đồng bộ lên đám mây thành công!', 'success');
-            } catch (err) {
-                console.error("Lỗi đồng bộ thủ công:", err);
-                btn.innerHTML = oldHtml;
+            // Sử dụng fetch loại bỏ CORS preflight để tương thích 100% với Google Apps Script Web App
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify(dataToSync),
+                redirect: 'follow'
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.ok) {
+                    updateSyncStatus('synced');
+                    showToast('☁️ Đồng bộ lên đám mây thành công!', 'success');
+                } else {
+                    throw new Error(res.error || "Lỗi lưu dữ liệu");
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi đồng bộ đám mây:", err);
                 updateSyncStatus('unsynced');
-                showToast('❌ Kết nối đám mây thất bại!', 'error');
-            }
+                showToast('❌ Lỗi đồng bộ! Kiểm tra phân quyền Apps Script.', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = oldHtml;
+            });
         }
 
         function getItemsHtml(seatId, state, isLeader) {
@@ -936,10 +935,10 @@
             if (isLeader) {
                 html += `
                 <label class="item-check" style="grid-column: span 2;">
-                    <input type="checkbox" onchange="updateItem('${seatId}','laptop',this.checked)" ${state.laptop ? 'checked' : ''}> Laptop + Sạc + c.chuột
+                    <input type="checkbox" onchange="updateItem('${seatId}','laptop',this.checked)" ${state.laptop ? 'checked' : ''}> Laptop + Sạc + chuột
                 </label>
                 <label class="item-check" style="grid-column: span 2;">
-                    <input type="checkbox" onchange="updateItem('${seatId}','laptop_tui',this.checked)" ${state.laptop_tui ? 'checked' : ''}> Laptop + Sạc + c.chuột + túi
+                    <input type="checkbox" onchange="updateItem('${seatId}','laptop_tui',this.checked)" ${state.laptop_tui ? 'checked' : ''}> Laptop + Sạc + chuột + túi chống sốc
                 </label>
             `;
             }
@@ -1139,14 +1138,11 @@
         }
 
         function resetAllInventory() {
-            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ và khôi phục cài đặt ban đầu không? Thao tác này cũng đồng bộ đè lên Cloud.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                customNames = {};
-                inventoryState = {};
+            if (confirm('BẠN CÓ CHẮC CHẮN MUỐN RESET TOÀN BỘ DỮ LIỆU KIỂM KÊ?')) {
                 initDefaultData();
                 saveLocal();
                 renderAll();
-                showToast('🗑️ Đã reset toàn bộ hệ thống!', 'success');
+                showToast('🗑️ Đã làm sạch toàn bộ dữ liệu kiểm kê.', 'success');
             }
         }
 
@@ -1163,24 +1159,6 @@
         function exportExcel() {
             let html = '<table border="1"><tr><th>Tên</th><th>Thùng</th><th>Màn 20"</th><th>Màn 24"</th><th>Chuột</th><th>Phím</th><th>Tai USB</th><th>Laptop + Sạc + chuột</th><th>Laptop + Sạc + chuột + túi</th></tr>';
 
-            // Thêm các hàng của Leaders vào trước
-            layoutData.leaders.forEach(leader => {
-                const name = customNames[leader.id] || leader.name || '';
-                const state = inventoryState[leader.id] || {};
-                html += '<tr>';
-                html += `<td>${name}</td>`;
-                html += `<td>${state.thung ? (state.thung_qty || 1) : ''}</td>`;
-                html += `<td>${state.man20 ? 1 : ''}</td>`;
-                html += `<td>${state.man24 ? 1 : ''}</td>`;
-                html += `<td>${state.chuot ? (state.chuot_qty || 1) : ''}</td>`;
-                html += `<td>${state.phim ? (state.phim_qty || 1) : ''}</td>`;
-                html += `<td>${state.tai ? (state.tai_qty || 1) : ''}</td>`;
-                html += `<td>${state.laptop ? 1 : ''}</td>`;
-                html += `<td>${state.laptop_tui ? 1 : ''}</td>`;
-                html += '</tr>';
-            });
-
-            // Thêm các hàng của Thành viên các Cột
             ['col1', 'col2a', 'col2b', 'col3'].forEach(colKey => {
                 columnOrder[colKey].forEach(seatId => {
                     const seat = layoutData[colKey].find(s => s.id === seatId);
@@ -1214,80 +1192,50 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-
-            // Hàm chuẩn hóa và parse giá trị boolean / số từ file Excel cực kỳ an toàn
-            const parseExcelBool = val => {
-                if (!val) return false;
-                const str = val.toString().trim().toLowerCase();
-                return str === 'true' || str === '1' || str === 'x' || str === 'v' || val === true || val === 1;
-            };
-            const parseExcelQty = val => {
-                const num = parseInt(val);
-                return isNaN(num) || num < 1 ? 1 : num;
-            };
-
             reader.onload = e => {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
                     jsonData.forEach(row => {
-                        const name = (row['Tên'] || row['Name'] || '').toString().trim();
-                        if (!name) return;
-
-                        // Tìm seatId khớp với tên (bao gồm cả Cột và Trưởng nhóm)
-                        let seatId = ['col1', 'col2a', 'col2b', 'col3'].reduce((found, colKey) => {
+                        const name = row['Tên'] || row['Name'] || '';
+                        const seatId = ['col1', 'col2a', 'col2b', 'col3'].reduce((found, colKey) => {
                             if (found) return found;
                             return columnOrder[colKey].find(id => {
                                 const seat = layoutData[colKey].find(s => s.id === id);
-                                const currentName = (customNames[id] || seat?.name || '').toString().trim();
-                                return currentName.toLowerCase() === name.toLowerCase();
+                                const currentName = customNames[id] || seat.name || '';
+                                return currentName === name;
                             });
                         }, null);
 
-                        if (!seatId) {
-                            const leaderMatch = layoutData.leaders.find(l => {
-                                const currentName = (customNames[l.id] || l.name || '').toString().trim();
-                                return currentName.toLowerCase() === name.toLowerCase();
-                            });
-                            if (leaderMatch) seatId = leaderMatch.id;
-                        }
-
                         if (seatId) {
-                            const isThung = parseExcelBool(row['Thùng'] || row['Thung']);
-                            const isChuot = parseExcelBool(row['Chuột'] || row['Chuot']);
-                            const isPhim = parseExcelBool(row['Phím'] || row['Phim']);
-                            const isTai = parseExcelBool(row['Tai USB'] || row['Tai nghe USB'] || row['Tai']);
-
                             inventoryState[seatId] = {
-                                thung: isThung,
-                                thung_qty: isThung ? parseExcelQty(row['Thùng'] || row['Thung']) : 1,
-                                man20: parseExcelBool(row['Màn 20"'] || row['Man 20']),
-                                man24: parseExcelBool(row['Màn 24"'] || row['Man 24']),
-                                chuot: isChuot,
-                                chuot_qty: isChuot ? parseExcelQty(row['Chuột'] || row['Chuot']) : 1,
-                                phim: isPhim,
-                                phim_qty: isPhim ? parseExcelQty(row['Phím'] || row['Phim']) : 1,
-                                tai: isTai,
-                                tai_qty: isTai ? parseExcelQty(row['Tai USB'] || row['Tai nghe USB'] || row['Tai']) : 1,
-                                laptop: parseExcelBool(row['Laptop + Sạc + chuột'] || row['Laptop']),
-                                laptop_tui: parseExcelBool(row['Laptop + Sạc + chuột + túi'] || row['Laptop túi'])
+                                thung: row['Thùng'] ? true : false,
+                                thung_qty: row['Thùng'] ? parseInt(row['Thùng']) || 1 : 1,
+                                man20: row['Màn 20"'] ? true : false,
+                                man24: row['Màn 24"'] ? true : false,
+                                chuot: row['Chuột'] ? true : false,
+                                chuot_qty: row['Chuột'] ? parseInt(row['Chuột']) || 1 : 1,
+                                phim: row['Phím'] ? true : false,
+                                phim_qty: row['Phím'] ? parseInt(row['Phím']) || 1 : 1,
+                                tai: row['Tai USB'] ? true : false,
+                                tai_qty: row['Tai USB'] ? parseInt(row['Tai USB']) || 1 : 1,
+                                laptop: row['Laptop + Sạc + chuột'] ? true : false,
+                                laptop_tui: row['Laptop + Sạc + chuột + túi'] ? true : false
                             };
                         }
                     });
-
                     saveLocal();
                     renderAll();
                     showToast('📊 Đã nhập Excel thành công!', 'success');
                 } catch (err) {
-                    console.error("Lỗi đọc Excel chi tiết:", err);
-                    showToast('❌ File Excel cấu trúc lỗi hoặc không đúng định dạng!', 'error');
+                    showToast('❌ File Excel không hợp lệ! Vui lòng dùng thư viện XLSX.', 'error');
                 }
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsBinaryString(file);
             event.target.value = '';
         }
 
@@ -1299,6 +1247,7 @@
                 try {
                     const jsonContent = JSON.parse(e.target.result);
 
+                    // Cập nhật dữ liệu từ JSON file
                     if (jsonContent.columnOrder) columnOrder = jsonContent.columnOrder;
                     if (jsonContent.layoutData) layoutData = jsonContent.layoutData;
                     if (jsonContent.inventoryState) inventoryState = jsonContent.inventoryState;
@@ -1318,7 +1267,7 @@
 
         function searchEmployee() {
             const val = document.getElementById('search-input').value.toLowerCase();
-            document.querySelectorAll('.seat-column .seat-box, #header-grid .seat-box').forEach(box => {
+            document.querySelectorAll('.seat-box').forEach(box => {
                 const nameEl = box.querySelector('.seat-name');
                 if (nameEl && nameEl.innerText.toLowerCase().includes(val)) {
                     box.style.display = 'block';
