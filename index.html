@@ -7,481 +7,557 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root {
-            --bg: #f3f4f6; --surface: #ffffff; --surface-alt: #f9fafb; --border: #e5e7eb;
-            --text-primary: #111827; --text-secondary: #4b5563; --text-muted: #9ca3af;
-            --blue: #2563eb; --blue-light: #eff6ff; --blue-dark: #1d4ed8;
-            --green: #10b981; --green-light: #ecfdf5;
-            --red: #ef4444; --red-light: #fef2f2;
-            --yellow: #f59e0b; --yellow-light: #fffbeb;
-            --purple: #8b5cf6; --indigo: #6366f1;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --radius: 8px; --radius-sm: 4px;
+            --bg: #f4f6fa;
+            --surface: #ffffff;
+            --surface-alt: #f8f9fc;
+            --border: #e2e6ef;
+            --text-primary: #1a1d2e;
+            --text-secondary: #4a5568;
+            --text-muted: #9ca3af;
+            --blue: #3b5bdb;
+            --blue-light: #eef2ff;
+            --blue-dark: #2f4ac0;
+            --green: #2f9e44;
+            --green-light: #ebfbee;
+            --green-dark: #1b4332;
+            --red: #e03131;
+            --red-light: #fff5f5;
+            --yellow: #f59f00;
+            --yellow-light: #fff9db;
+            --purple: #7048e8;
+            --pink-bg: #fff0f6;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.10);
+            --radius: 12px;
+            --radius-sm: 8px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text-primary); max-height: 100vh; padding: 6px; font-size: 11px; overflow: hidden; }
-        .container { max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; height: 98vh; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 20px; padding-bottom: 80px; }
+        .container { max-width: 1640px; margin: 0 auto; }
         
-        /* HEADER UI SANG TRỌNG */
-        .page-header { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: var(--radius); padding: 6px 14px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-md); }
-        .page-header-left h1 { color: #ffffff; font-size: 14px; font-weight: 800; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; }
-        .page-header-left p { color: #94a3b8; font-size: 10px; margin-top: 1px; }
-        .header-right { display: flex; gap: 8px; align-items: center; }
-        .header-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 500; }
+        /* Header */
+        .page-header { background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 60%, #3b5bdb 100%); border-radius: 14px; padding: 28px 36px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow-lg); }
+        .page-header-left h1 { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .page-header-left p { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 4px; }
+        .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .header-badge { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         
-        /* TRẠNG THÁI KẾT NỐI KHÔNG GÂY ỨC CHẾ */
-        .sync-status { display: flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
-        .sync-status.online { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .sync-status.offline { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; cursor: pointer; }
-        .sync-status.syncing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        /* Dashboard Stats */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+        .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .stat-icon.blue { background: var(--blue-light); }
+        .stat-icon.green { background: var(--green-light); }
+        .stat-icon.red { background: var(--red-light); }
+        .stat-icon.yellow { background: var(--yellow-light); }
+        .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
 
-        /* DASHBOARD CỰC TINH GỌN */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 4px; }
-        .detail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
-        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 4px 8px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
-        .stat-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; }
-        .stat-icon.blue { background: var(--blue-light); color: var(--blue); }
-        .stat-icon.green { background: var(--green-light); color: var(--green); }
-        .stat-icon.red { background: var(--red-light); color: var(--red); }
-        .stat-icon.yellow { background: var(--yellow-light); color: var(--yellow); }
-        .stat-icon.purple { background: #f3e8ff; color: var(--purple); }
-        .stat-info-block { display: flex; flex-direction: column; }
-        .stat-label { font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); line-height: 1; }
-        .stat-value { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
-
-        /* THANH ĐIỀU KHIỂN */
-        .controls-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 6px; box-shadow: var(--shadow-sm); }
+        /* Controls Panel */
+        .controls-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm); }
         .search-wrap { position: relative; }
-        .search-wrap input { padding: 3px 6px 3px 20px; width: 160px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 11px; outline: none; transition: all 0.2s; }
-        .search-wrap input:focus { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
-        .search-wrap::before { content: "🔍"; position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--text-muted); }
-        .btn-group { display: flex; gap: 4px; }
-        .btn { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 10px; white-space: nowrap; transition: all 0.1s; }
+        .search-wrap input { padding: 9px 12px 9px 34px; width: 280px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; outline: none; background: var(--surface-alt); }
+        .search-wrap .icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 13px; transition: all .15s; }
         .btn-primary { background: var(--blue); color: #fff; }
-        .btn-primary:hover { background: var(--blue-dark); }
         .btn-success { background: var(--green); color: #fff; }
-        .btn-danger { background: #fff; color: var(--red); border-color: #fca5a5; }
-        .btn-danger:hover { background: var(--red-light); }
+        .btn-danger { background: #fff; color: var(--red); border: 1px solid #fca5a5; }
+        .btn-sync { background: linear-gradient(135deg, #3b5bdb, #7048e8); color: #fff; }
 
-        /* KHU VỰC 4 GHẾ LEADER PHÍA TRÊN BIỆT LẬP */
-        .leaders-row-container { background: #f1f5f9; border-radius: var(--radius); padding: 4px; margin-bottom: 4px; border: 1px solid #cbd5e1; }
-        .leaders-title { font-size: 10px; font-weight: 700; color: #334155; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
-        .leaders-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        /* Grid Layout */
+        .layout-grid { display: grid; grid-template-columns: 1fr 38px 1fr 1fr 38px 1fr; gap: 12px; margin-bottom: 4px; }
+        .aisle { background: linear-gradient(180deg, #e9ecef, #dee2e6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #8a9ab0; border-radius: 6px; writing-mode: vertical-rl; text-orientation: upright; font-size: 11px; border: 1px dashed #c8d0db; }
+        .col-wrapper { display: flex; flex-direction: column; gap: 0; }
+        .seat-column { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
 
-        /* LƯỚI 4 CỘT CHÍNH PHÍA DƯỚI */
-        .layout-grid { display: grid; grid-template-columns: 1fr 20px 1fr 1fr 20px 1fr; gap: 4px; flex-grow: 1; }
-        .aisle { background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #9ca3af; border-radius: 4px; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 1px; font-size: 9px; user-select: none; }
-        .col-wrapper { display: flex; flex-direction: column; gap: 2px; height: 100%; }
-        .seat-column { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex-grow: 1; padding-right: 1px; max-height: 52vh; }
+        /* Seat Box Styling */
+        .seat-box { background: var(--surface); border-radius: var(--radius); padding: 12px; position: relative; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: all 0.2s ease; }
         
-        /* CARD CHỖ NGỒI CAO CẤP */
-        .seat-box { border-radius: var(--radius); padding: 4px 6px; position: relative; box-shadow: var(--shadow-sm); border: 1.5px solid #d1d5db; background: #fff; transition: all 0.15s ease; }
-        .seat-box:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .seat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-        .seat-name { font-weight: 700; font-size: 10.5px; cursor: pointer; color: var(--text-primary); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .rename-input { font-weight: 700; font-size: 10px; border: 1.5px solid var(--blue); border-radius: 3px; padding: 0 2px; outline: none; width: 110px; }
-        .btn-mini { padding: 0px 3px; font-size: 8px; border: none; border-radius: 3px; cursor: pointer; background: #f3f4f6; color: #6b7280; font-weight: 700; }
-        .btn-mini:hover { background: var(--red-light); color: var(--red); }
-
-        /* LƯỚI THIẾT BỊ KHÍT */
-        .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px 4px; background: rgba(255,255,255,0.6); padding: 3px; border-radius: var(--radius-sm); border: 1px solid #f3f4f6; }
-        .item-check { display: flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 500; color: var(--text-secondary); }
-        .item-check input[type=checkbox] { cursor: pointer; width: 11px; height: 11px; accent-color: #059669; }
-        .qty-input { width: 18px; font-size: 8px; border: 1px solid var(--border); border-radius: 2px; text-align: center; height: 13px; }
-
-        /* HÀNH ĐỘNG ĐẦU CỘT */
-        .col-actions { display: flex; gap: 2px; justify-content: center; }
-        .btn-col-action { padding: 2px 6px; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); cursor: pointer; font-weight: 700; font-size: 9px; background: var(--surface); color: var(--text-secondary); }
-        .btn-col-action:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
-
-        .bottom-border-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
-        .border-wall { border: 1px dashed #94a3b8; background: #e2e8f0; padding: 3px; border-radius: var(--radius-sm); text-align: center; font-weight: 700; font-size: 10px; color: #475569; letter-spacing: 1px; }
+        /* Màu sắc Trạng thái Mới áp dụng chuẩn đồ họa */
+        .seat-box.full-equipped-20 { background-color: #e8f5e9 !important; border: 2px solid #2e7d32 !important; box-shadow: 0 4px 10px rgba(46,125,50,0.1); }
+        .seat-box.full-equipped-20 .seat-name { color: #1b5e20 !important; }
         
-        /* TRẠNG THÁI MÀU SẮC PHÂN CẤP SẾP DUYỆT */
-        .state-full-equipped { background-color: #00EE76 !important; border-color: #10b981 !important; color: #047857 !important; }
-        .state-missing-equipment { background-color: #FF6A6A !important; border-color: #ef4444 !important; color: #7f1d1d !important; }
-        .state-missing-equipment .item-check, .state-full-equipped .item-check { color: inherit !important; font-weight: 600; }
-        .highlight { border: 2px solid var(--yellow)!important; box-shadow: 0 0 0 2px var(--yellow-light)!important; }
+        .seat-box.missing-equipped { background-color: #fff5f5 !important; border: 2px solid #e03131 !important; box-shadow: 0 4px 10px rgba(224,49,49,0.1); }
+        .seat-box.missing-equipped .seat-name { color: #c92a2a !important; }
 
-        /* THÔNG BÁO TOAST */
-        #toast { position: fixed; bottom: 15px; right: 15px; background: #1e293b; color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 10px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999; box-shadow: var(--shadow-md); }
-        #toast.show { opacity: 1; }
+        .seat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .seat-name { font-weight: 700; font-size: 13px; color: var(--text-primary); cursor: pointer; }
+        .seat-name:hover { text-decoration: underline; }
+        .rename-input { font-weight: 700; font-size: 12px; border: 1.5px solid var(--blue); border-radius: 4px; padding: 2px 6px; outline: none; width: 100%; }
+
+        /* Items Checkbox Grid */
+        .items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; background: rgba(248, 249, 252, 0.8); padding: 8px; border-radius: var(--radius-sm); border: 1px solid rgba(0,0,0,0.02); }
+        .item-check { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: var(--text-secondary); }
+        .item-check input[type=checkbox] { cursor: pointer; width: 14px; height: 14px; accent-color: var(--green); }
+        .qty-input { width: 34px; padding: 1px; font-size: 10px; border: 1px solid var(--border); border-radius: 4px; text-align: center; margin-left: auto; }
+
+        /* Actions Column */
+        .col-actions { display: flex; gap: 6px; margin-top: 8px; margin-bottom: 8px; justify-content: center; }
+        .btn-col-action { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border: 1.5px dashed var(--border); border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: 11px; background: var(--surface); color: var(--text-secondary); transition: all .15s; }
+        .btn-col-add:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+        .btn-col-remove:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+        .btn-mini { padding: 3px 8px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-mini-success { background: var(--green); color: #fff; }
+        .btn-mini-danger { background: #e5e7eb; color: #6b7280; }
+        .btn-mini-danger:hover { background: #fca5a5; color: var(--red); }
+
+        /* Footer & Deploy Link Config */
+        .footer-panel { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .deploy-url-wrap { width: 100%; max-width: 650px; background: var(--surface); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .deploy-url-wrap label { font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+        .deploy-url-input-group { display: flex; gap: 8px; }
+        .deploy-url-input-group input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; outline: none; font-family: monospace; }
+        .copyright { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-top: 8px; letter-spacing: 0.5px; }
+
+        #toast { position: fixed; bottom: 28px; right: 28px; background: #1a1d2e; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow-lg); display: none; z-index: 9999; }
+        #toast.show { display: block; animation: fadeInUp 0.3s ease; }
+        
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
 <div id="toast"></div>
 
 <div class="container">
     <div class="page-header">
         <div class="page-header-left">
-            <h1>🖥️ SÀN LẦU 2 — KIỂM KÊ SƠ ĐỒ THIẾT BỊ</h1>
-            <p>Bản sửa đổi UI/UX cao cấp dành cho Quản lý - Tự động đồng bộ Google Sheets</p>
+            <h1>🖥️ SÀN LẦU 2 — Kiểm Kê Thiết Bị</h1>
+            <p>Hệ thống sơ đồ & kiểm kê tài sản phòng máy tự động</p>
         </div>
         <div class="header-right">
-            <div class="sync-status offline" id="sync-status" onclick="initGasConnection()">
-                <span id="sync-dot">🔴</span> <span id="sync-text">Chưa kết nối (Click để thử lại)</span>
-            </div>
-            <span class="header-badge" id="last-saved">Chưa đồng bộ</span>
+            <span class="header-badge" id="last-saved">Chưa lưu thay đổi</span>
         </div>
     </div>
 
     <div class="dashboard-grid">
-        <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-info-block"><span class="stat-label">Tổng vị trí</span><span class="stat-value" id="stat-total">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info-block"><span class="stat-label">Đủ thiết bị</span><span class="stat-value" id="stat-full">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info-block"><span class="stat-label">Thiếu thiết bị</span><span class="stat-value" id="stat-missing">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon purple">📊</div><div class="stat-info-block"><span class="stat-label">Hiệu suất sàn</span><span class="stat-value" id="stat-percent">0%</span></div></div>
-    </div>
-
-    <div class="detail-grid">
-        <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-info-block"><span class="stat-label">Thùng CPU</span><span class="stat-value" id="count-thung">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon purple">🖥️</div><div class="stat-info-block"><span class="stat-label">Màn 20"</span><span class="stat-value" id="count-man20">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon purple">🖥️</div><div class="stat-info-block"><span class="stat-label">Màn 24"</span><span class="stat-value" id="count-man24">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon green">🖱️</div><div class="stat-info-block"><span class="stat-label">Chuột</span><span class="stat-value" id="count-chuot">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon yellow">⌨️</div><div class="stat-info-block"><span class="stat-label">Bàn Phím</span><span class="stat-value" id="count-phim">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon red">🎧</div><div class="stat-info-block"><span class="stat-label">Tai Nghe</span><span class="stat-value" id="count-tai">0</span></div></div>
-        <div class="stat-card"><div class="stat-icon purple">✨</div><div class="stat-info-block"><span class="stat-label">Chỗ Trống</span><span class="stat-value" id="count-empty-seat">0</span></div></div>
+        <div class="stat-card"><div class="stat-icon blue">🪑</div><div class="stat-label">Tổng vị trí</div><div class="stat-value" id="stat-total">0</div></div>
+        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-label">Đủ thiết bị (Đủ bộ)</div><div class="stat-value" id="stat-full">0</div></div>
+        <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-label">Thiếu thiết bị</div><div class="stat-value" id="stat-missing">0</div></div>
+        <div class="stat-card"><div class="stat-icon yellow">📊</div><div class="stat-label">Tỷ lệ hoàn thành</div><div class="stat-value" id="stat-percent">0%</div></div>
     </div>
 
     <div class="controls-panel">
         <div class="search-wrap">
-            <input type="text" id="search-input" placeholder="Tìm kiếm nhân viên..." oninput="searchEmployee()">
+            <span class="icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Tìm kiếm tên nhân viên..." oninput="searchEmployee()">
         </div>
         <div class="btn-group">
-            <button class="btn btn-primary" onclick="syncWithCloud()">☁️ Đồng bộ Ngay</button>
-            <button class="btn btn-success" onclick="exportCSV()">📊 Xuất CSV</button>
-            <button class="btn btn-danger" onclick="resetAllData()">🗑️ Reset</button>
+            <button class="btn btn-sync" onclick="syncNow()">☁️ Đồng bộ ngay</button>
+            <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất backup</button>
+            <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset tất cả</button>
         </div>
     </div>
 
-    <div class="leaders-row-container">
-        <div class="leaders-title">👑 BAN QUẢN LÝ & VỊ TRÍ ĐẶC BIỆT (PHÍA TRÊN TÁCH BIỆT THỰC TẾ)</div>
-        <div class="leaders-grid" id="leaders-container"></div>
-    </div>
-
-    <div class="layout-grid" style="margin-bottom: 2px; flex-grow:0;">
-        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col1')">＋ Thêm Đầu Cột 1</button></div>
+    <div class="layout-grid">
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeatTop('col1')">＋ Thêm vị trí đầu</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeatTop('col1')">－ Xóa vị trí đầu</button>
+        </div>
         <div></div>
-        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col2a')">＋ Thêm Đầu Cột 2A</button></div>
-        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col2b')">＋ Thêm Đầu Cột 2B</button></div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeatTop('col2a')">＋ Thêm vị trí đầu</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeatTop('col2a')">－ Xóa vị trí đầu</button>
+        </div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeatTop('col2b')">＋ Thêm vị trí đầu</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeatTop('col2b')">－ Xóa vị trí đầu</button>
+        </div>
         <div></div>
-        <div class="col-actions"><button class="btn-col-action" onclick="addSeatAtTop('col3')">＋ Thêm Đầu Cột 3</button></div>
+        <div class="col-actions">
+            <button class="btn-col-action btn-col-add" onclick="addSeatTop('col3')">＋ Thêm vị trí đầu</button>
+            <button class="btn-col-action btn-col-remove" onclick="removeSeatTop('col3')">－ Xóa vị trí đầu</button>
+        </div>
     </div>
 
     <div class="layout-grid" id="main-grid">
-        <div class="col-wrapper"><div class="seat-column" id="col-1"></div></div>
-        <div class="aisle">LỐI ĐI CHÍNH</div>
-        <div class="col-wrapper"><div class="seat-column" id="col-2a"></div></div>
-        <div class="col-wrapper"><div class="seat-column" id="col-2b"></div></div>
-        <div class="aisle">LỐI ĐI CHÍNH</div>
-        <div class="col-wrapper"><div class="seat-column" id="col-3"></div></div>
+        <div class="col-wrapper"><div class="seat-column" id="col-1" data-col="col1"></div></div>
+        <div class="aisle">LỐI ĐI</div>
+        <div class="col-wrapper"><div class="seat-column" id="col-2a" data-col="col2a"></div></div>
+        <div class="col-wrapper"><div class="seat-column" id="col-2b" data-col="col2b"></div></div>
+        <div class="aisle">LỐI ĐI</div>
+        <div class="col-wrapper"><div class="seat-column" id="col-3" data-col="col3"></div></div>
     </div>
-
-    <div class="bottom-border-panel">
-        <div class="border-wall">Khu Vực Tường / Ban công</div>
-        <div class="border-wall">Cửa Ra Vào Kính Sàn Lầu 2</div>
+    
+    <div class="footer-panel">
+        <div class="deploy-url-wrap">
+            <label for="gas-url-bottom">🔗 ĐƯỜNG DẪN TRIỂN KHAI APPS SCRIPT (WEB APP URL):</label>
+            <div class="deploy-url-input-group">
+                <input type="text" id="gas-url-bottom" placeholder="https://script.google.com/macros/s/.../exec" onchange="updateDeployUrl(this.value)">
+                <button class="btn btn-primary" style="padding: 0 14px;" onclick="showToast('💾 Đã ghi nhận URL cấu hình mới!','success')">Lưu cấu hình</button>
+            </div>
+        </div>
+        <div class="copyright">Đặng Công Chính - ShopeeFood © 2026</div>
     </div>
 </div>
 
 <script>
-// Cấu hình URL Web App đã triển khai của bạn
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec";
+    // ── DATABASE CONFIGURATION ───────────────────────────────────────
+    let layoutData = {
+        col1: [],
+        col2a: [],
+        col2b: [],
+        col3: []
+    };
 
-const DEFAULT_LAYOUT = {
-    leaders: [
-        {id:"L1", name:"LAN PHƯƠNG LEAD QA"}, {id:"L2A", name:"NGÂN SUPPORT TL (Vế Trái)"},
-        {id:"L2B", name:"KHÁC"}, {id:"L3", name:"TRẦN OANH - MULTI TASK TEAMLEADER"}
-    ],
-    col1: [
-        {id:"1_1",name:"CHỖ TRỐNG"},{id:"1_2",name:"MINH NHỰT"},{id:"1_3",name:"BẢO TRÂN"},{id:"1_4",name:"Ý NHI"},
-        {id:"1_5",name:"KIM THOA"},{id:"1_6",name:"ĐOÀN PHÁT"},{id:"1_7",name:"CẨM TÚ"},{id:"1_8",name:"HOÀI THƯƠNG"}
-    ],
-    col2a: [
-        {id:"2a_1",name:"TRƯỜNG DUY"},{id:"2a_2",name:"THUÝ AN"},{id:"2a_3",name:"BẢO NGHI"},{id:"2a_4",name:"CHỖ TRỐNG"},
-        {id:"2a_5",name:"QUỐC KHÁNH"},{id:"2a_6",name:"MỸ HUYỀN"},{id:"2a_7",name:"PHƯƠNG ANH"},{id:"2a_8",name:"CHỖ TRỐNG"}
-    ],
-    col2b: [
-        {id:"2b_1",name:"CHỖ TRỐNG"},{id:"2b_2",name:"NGỌC HUYỀN"},{id:"2b_3",name:"ÁI VÂN"},{id:"2b_4",name:"BĂNG NHI"},
-        {id:"2b_5",name:"MINH THƯ"},{id:"2b_6",name:"THẢO VY"},{id:"2b_7",name:"TƯỜNG VY"},{id:"2b_8",name:"ĐỨC HUY"}
-    ],
-    col3: [
-        {id:"3_1",name:"KIM NGÂN"},{id:"3_2",name:"YÊN NHI"},{id:"3_3",name:"MỸ TRANG"},{id:"3_4",name:"THÀNH ĐẠT"},
-        {id:"3_5",name:"TẤN PHÁT"},{id:"3_6",name:"THANH TRÚC"},{id:"3_7",name:"CHỖ TRỐNG"},{id:"3_8",name:"CHỖ TRỐNG"}
-    ]
-};
+    const colMeta = {
+        col1: { domId: 'col-1', prefix: 'C1' },
+        col2a: { domId: 'col-2a', prefix: 'C2A' },
+        col2b: { domId: 'col-2b', prefix: 'C2B' },
+        col3: { domId: 'col-3', prefix: 'C3' }
+    };
 
-let layoutData = {};
-let inventoryState = {};
+    let columnOrder = { col1: [], col2a: [], col2b: [], col3: [] };
+    let inventoryState = {};
+    let customNames = {};
+    let gasUrl = 'https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 
-// Tải dữ liệu từ LocalStorage để giữ nguyên cấu hình khi refresh
-function loadInitialState() {
-    const savedLayout = localStorage.getItem('luxury_layout');
-    const savedInv = localStorage.getItem('luxury_inventory');
-    
-    layoutData = savedLayout ? JSON.parse(savedLayout) : JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
-    inventoryState = savedInv ? JSON.parse(savedInv) : {};
-    
-    if(!savedLayout) saveToLocalStorage();
-}
+    const STORAGE_KEY = 'floor2_inventory_v4_sys';
 
-function saveToLocalStorage() {
-    localStorage.setItem('luxury_layout', JSON.stringify(layoutData));
-    localStorage.setItem('luxury_inventory', JSON.stringify(inventoryState));
-}
-
-// Logic kiểm tra màu sắc nghiêm ngặt theo yêu cầu của Sếp
-function getSeatStatus(id, name) {
-    if (!inventoryState[id]) {
-        inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
+    // ── INITIALIZATION ──────────────────────────────────────────────
+    function saveLocal() {
+        const payload = {
+            columnOrder,
+            layoutData,
+            inventoryState,
+            customNames,
+            gasUrl
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        document.getElementById('last-saved').textContent = 'Đã lưu: ' + new Date().toLocaleTimeString();
+        calculateStats();
     }
-    const state = inventoryState[id];
-    
-    // Đủ bộ = Đầy đủ thiết bị và bắt buộc chọn Màn 20" (Màn 24" KHÔNG chọn)
-    const isFull = state.thung && state.man20 && !state.man24 && state.chuot && state.phim && state.tai;
-    // Thiếu bộ = Chỗ trống và bị khuyết bất kì thiết bị nào trong nhóm 5 món bắt buộc
-    const isNameEmpty = (name && name.trim().toUpperCase() === "CHỖ TRỐNG");
-    const isMissing = !state.thung || !state.man20 || !state.chuot || !state.phim || !state.tai;
-    
-    if (isFull) return 'state-full-equipped'; // Xanh lá #00EE76
-    if (isNameEmpty && isMissing) return 'state-missing-equipment'; // Đỏ #FF6A6A
-    return '';
-}
 
-function toggleDevice(id, field) {
-    inventoryState[id][field] = !inventoryState[id][field];
-    saveToLocalStorage();
-    renderAll();
-    autoCloudSync(); // Tự động đẩy lên Google Sheets
-}
-
-function changeQty(id, field, val) {
-    inventoryState[id][field + '_qty'] = parseInt(val) || 1;
-    saveToLocalStorage();
-    renderAll();
-    autoCloudSync();
-}
-
-function addSeatAtTop(colKey) {
-    const newId = `${colKey}_${Date.now()}`;
-    layoutData[colKey].unshift({ id: newId, name: "CHỖ TRỐNG" });
-    inventoryState[newId] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
-    saveToLocalStorage();
-    renderAll();
-    autoCloudSync();
-    showToast("Đã chèn vị trí mới lên đầu cột.");
-}
-
-function startRename(id) {
-    const el = document.getElementById(`name-${id}`);
-    if (!el) return;
-    const curName = el.textContent;
-    el.innerHTML = `<input type="text" class="rename-input" id="input-${id}" value="${curName}" onblur="finishRename('${id}')" onkeydown="if(event.key==='Enter')this.blur()">`;
-    const input = document.getElementById(`input-${id}`);
-    input.focus();
-    input.select();
-}
-
-function finishRename(id) {
-    const input = document.getElementById(`input-${id}`);
-    if (!input) return;
-    let newName = input.value.trim() || "CHỖ TRỐNG";
-    
-    for (let key in layoutData) {
-        const idx = layoutData[key].findIndex(item => item.id === id);
-        if (idx !== -1) { layoutData[key][idx].name = newName; break; }
+    function loadState() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            try {
+                const data = JSON.parse(raw);
+                if (data.columnOrder) columnOrder = data.columnOrder;
+                if (data.layoutData) layoutData = data.layoutData;
+                if (data.inventoryState) inventoryState = data.inventoryState;
+                if (data.customNames) customNames = data.customNames;
+                if (data.gasUrl) {
+                    gasUrl = data.gasUrl;
+                    document.getElementById('gas-url-bottom').value = gasUrl;
+                }
+            } catch (e) {
+                console.error("Lỗi parse LocalStorage, đang thiết lập cấu trúc trống.", e);
+            }
+        } else {
+            // Khởi tạo 4 vị trí mẫu ban đầu cho trực quan
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+                const id = colMeta[k].prefix + '_' + Date.now() + '_' + Math.floor(Math.random()*100);
+                layoutData[k].push({ id: id, name: 'Vị trí trống' });
+                columnOrder[k].push(id);
+                initSeatState(id);
+            });
+            document.getElementById('gas-url-bottom').value = gasUrl;
+            saveLocal();
+        }
     }
-    saveToLocalStorage();
-    renderAll();
-    autoCloudSync();
-}
 
-function clearInventory(id) {
-    inventoryState[id] = { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
-    saveToLocalStorage();
-    renderAll();
-    autoCloudSync();
-}
+    function updateDeployUrl(val) {
+        gasUrl = val.trim();
+        saveLocal();
+        showToast('🔗 Đã cập nhật URL Deploy thành công!', 'success');
+    }
 
-// Render HTML
-function buildSeatHTML(seat) {
-    const state = inventoryState[seat.id] || { thung:false, man20:false, man24:false, chuot:false, phim:false, tai:false, chuot_qty:1, phim_qty:1 };
-    const statusClass = getSeatStatus(seat.id, seat.name);
-    return `
-        <div class="seat-box ${statusClass}" id="box-${seat.id}">
+    function initSeatState(id) {
+        if (!inventoryState[id]) {
+            inventoryState[id] = {
+                thung: false,
+                man20: false,
+                man24: false,
+                chuot: false, chuot_qty: 1,
+                phim: false, phim_qty: 1,
+                tai: false
+            };
+        }
+    }
+
+    // ── RENDER ENGINE ────────────────────────────────────────────────
+    function renderColumn(colKey) {
+        const meta = colMeta[colKey];
+        const colEl = document.getElementById(meta.domId);
+        colEl.innerHTML = '';
+        
+        columnOrder[colKey].forEach(id => {
+            const seat = layoutData[colKey].find(s => s.id === id);
+            if (seat) {
+                colEl.appendChild(createSeatBoxElement(seat, colKey));
+            }
+        });
+    }
+
+    function createSeatBoxElement(seat, colKey) {
+        const id = seat.id;
+        initSeatState(id);
+        const state = inventoryState[id];
+        const displayName = customNames[id] || seat.name;
+
+        // Định nghĩa kiểm tra Logic màu sắc cảnh báo theo yêu cầu:
+        // Đủ bộ = Thùng, Chuột, Phím, Tai, và Màn 20 (Màn 24 hủy chọn) -> Màu xanh lá đậm
+        // Ngược lại nếu thiếu bất kỳ cái nào trong 5 cái lõi trên -> Màu đỏ nổi bật
+        const hasCore = state.thung && state.chuot && state.phim && state.tai && state.man20;
+        
+        let stateClass = '';
+        if (hasCore && !state.man24) {
+            stateClass = 'full-equipped-20';
+        } else if (!hasCore) {
+            stateClass = 'missing-equipped';
+        }
+
+        const box = document.createElement('div');
+        box.id = 'seat-box-' + id;
+        box.className = `seat-box ${stateClass}`;
+
+        box.innerHTML = `
             <div class="seat-header">
-                <span class="seat-name" id="name-${seat.id}" onclick="startRename('${seat.id}')">${seat.name}</span>
-                <button class="btn-mini" onclick="clearInventory('${seat.id}')">✕</button>
+                <span class="seat-name" id="name-${id}" onclick="startRename('${id}','${colKey}')">${displayName}</span>
+                <div class="btn-action-group">
+                    <button class="btn-mini btn-mini-success" onclick="selectFullKit('${id}','${colKey}')">Đủ bộ</button>
+                    <button class="btn-mini btn-mini-danger" onclick="deleteSpecificSeat('${id}','${colKey}')">Xóa</button>
+                </div>
             </div>
             <div class="items-grid">
-                <div class="item-check"><input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${seat.id}','thung')"><span>CPU</span></div>
-                <div class="item-check"><input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${seat.id}','tai')"><span>Tai nghe</span></div>
-                <div class="item-check"><input type="checkbox" ${state.man20?'checked':''} onchange="toggleDevice('${seat.id}','man20')"><span style="color:var(--purple);font-weight:700;">Màn 20"</span></div>
-                <div class="item-check"><input type="checkbox" ${state.man24?'checked':''} onchange="toggleDevice('${seat.id}','man24')"><span>Màn 24"</span></div>
                 <div class="item-check">
-                    <input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${seat.id}','chuot')"><span>Chuột</span>
-                    <input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${seat.id}','chuot',this.value)">
+                    <input type="checkbox" ${state.thung?'checked':''} onchange="toggleDevice('${id}','thung','${colKey}')">
+                    <span>Thùng CPU</span>
                 </div>
                 <div class="item-check">
-                    <input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${seat.id}','phim')"><span>Phím</span>
-                    <input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${seat.id}','phim',this.value)">
+                    <input type="checkbox" ${state.man20?'checked':''} onchange="toggleDevice('${id}','man20','${colKey}')">
+                    <span style="font-weight:600;color:var(--purple);">Màn hình 20"</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.man24?'checked':''} onchange="toggleDevice('${id}','man24','${colKey}')">
+                    <span style="font-weight:600;color:#2f9e44;">Màn hình 24"</span>
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.chuot?'checked':''} onchange="toggleDevice('${id}','chuot','${colKey}')">
+                    <span>Chuột</span>
+                    <input type="number" class="qty-input" value="${state.chuot_qty||1}" min="1" onchange="changeQty('${id}','chuot',this.value,'${colKey}')">
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.phim?'checked':''} onchange="toggleDevice('${id}','phim','${colKey}')">
+                    <span>Bàn phím</span>
+                    <input type="number" class="qty-input" value="${state.phim_qty||1}" min="1" onchange="changeQty('${id}','phim',this.value,'${colKey}')">
+                </div>
+                <div class="item-check">
+                    <input type="checkbox" ${state.tai?'checked':''} onchange="toggleDevice('${id}','tai','${colKey}')">
+                    <span>Tai nghe USB</span>
                 </div>
             </div>
-        </div>
-    `;
-}
+        `;
+        return box;
+    }
 
-function renderAll() {
-    document.getElementById('leaders-container').innerHTML = layoutData.leaders.map(buildSeatHTML).join('');
-    ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
-        const domId = k === 'col1'?'col-1': k==='col2a'?'col-2a': k==='col2b'?'col-2b':'col-3';
-        document.getElementById(domId).innerHTML = layoutData[k].map(buildSeatHTML).join('');
-    });
-    calculateStats();
-}
+    function renderAll() {
+        ['col1', 'col2a', 'col2b', 'col3'].forEach(k => renderColumn(k));
+        calculateStats();
+    }
 
-function calculateStats() {
-    let total = 0, full = 0, missing = 0, empty = 0;
-    let nThung = 0, nMan20 = 0, nMan24 = 0, nChuot = 0, nPhim = 0, nTai = 0;
+    // ── LOGIC OPERATIONS ────────────────────────────────────────────
+    function toggleDevice(id, key, colKey) {
+        inventoryState[id][key] = !inventoryState[id][key];
+        saveLocal();
+        renderColumn(colKey);
+    }
 
-    for (let key in layoutData) {
-        layoutData[key].forEach(seat => {
-            total++;
-            const st = inventoryState[seat.id] || {};
-            if(seat.name.toUpperCase() === "CHỖ TRỐNG") empty++;
-            if(st.thung) nThung++; if(st.man20) nMan20++; if(st.man24) nMan24++;
-            if(st.chuot) nChuot += (st.chuot_qty || 1); if(st.phim) nPhim += (st.phim_qty || 1); if(st.tai) nTai++;
+    function changeQty(id, key, val, colKey) {
+        inventoryState[id][key + '_qty'] = parseInt(val) || 1;
+        saveLocal();
+    }
+
+    // Thiết lập tính năng "Đủ bộ" thông minh theo đúng mô tả của bạn
+    function selectFullKit(id, colKey) {
+        inventoryState[id].thung = true;
+        inventoryState[id].man20 = true;
+        inventoryState[id].man24 = false; // Ngoại trừ Màn hình 24"
+        inventoryState[id].chuot = true;
+        inventoryState[id].phim = true;
+        inventoryState[id].tai = true;
+        
+        saveLocal();
+        renderColumn(colKey);
+        showToast('✨ Đã thiết lập cấu hình Đủ bộ chuẩn!', 'success');
+    }
+
+    // Thêm vị trí mới vào ĐẦU danh sách hàng đợi của cột
+    function addSeatTop(colKey) {
+        const meta = colMeta[colKey];
+        const nextId = meta.prefix + '_' + Date.now() + '_' + Math.floor(Math.random() * 100);
+        
+        // Chèn vào đầu mảng cấu trúc dữ liệu
+        layoutData[colKey].unshift({ id: nextId, name: 'Vị trí mới' });
+        columnOrder[colKey].unshift(nextId);
+        
+        initSeatState(nextId);
+        saveLocal();
+        renderColumn(colKey);
+        showToast('➕ Đã chèn thêm chỗ ngồi mới ở đầu cột', 'success');
+    }
+
+    function removeSeatTop(colKey) {
+        if(columnOrder[colKey].length === 0) {
+            showToast('⚠️ Cột này hiện đang rỗng!', 'warn');
+            return;
+        }
+        if(confirm('Bạn có chắc chắn muốn xóa vị trí ở ĐẦU TIÊN của cột này không?')) {
+            const removedId = columnOrder[colKey].shift();
+            layoutData[colKey] = layoutData[colKey].filter(s => s.id !== removedId);
+            delete inventoryState[removedId];
+            delete customNames[removedId];
             
-            const status = getSeatStatus(seat.id, seat.name);
-            if(status === 'state-full-equipped') full++;
-            if(status === 'state-missing-equipment') missing++;
-        });
+            saveLocal();
+            renderColumn(colKey);
+            showToast('➖ Đã gỡ bỏ vị trí đầu tiên', 'info');
+        }
     }
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-full').textContent = full;
-    document.getElementById('stat-missing').textContent = missing;
-    document.getElementById('stat-percent').textContent = total ? Math.round((full/total)*100)+'%' : '0%';
-    document.getElementById('count-thung').textContent = nThung;
-    document.getElementById('count-man20').textContent = nMan20;
-    document.getElementById('count-man24').textContent = nMan24;
-    document.getElementById('count-chuot').textContent = nChuot;
-    document.getElementById('count-phim').textContent = nPhim;
-    document.getElementById('count-tai').textContent = nTai;
-    document.getElementById('count-empty-seat').textContent = empty;
-}
 
-function searchEmployee() {
-    const q = document.getElementById('search-input').value.trim().toUpperCase();
-    for (let key in layoutData) {
-        layoutData[key].forEach(seat => {
-            const el = document.getElementById(`box-${seat.id}`);
-            if(el) q && seat.name.toUpperCase().includes(q) ? el.classList.add('highlight') : el.classList.remove('highlight');
-        });
+    function deleteSpecificSeat(id, colKey) {
+        if(confirm('Xóa dữ liệu kiểm kê vị trí này?')) {
+            columnOrder[colKey] = columnOrder[colKey].filter(x => x !== id);
+            layoutData[colKey] = layoutData[colKey].filter(s => s.id !== id);
+            delete inventoryState[id];
+            delete customNames[id];
+            
+            saveLocal();
+            renderColumn(colKey);
+            showToast('🗑️ Đã xóa vị trí chỉ định', 'info');
+        }
     }
-}
 
-// ── ĐỒNG BỘ THỰC CHIẾN GOOGLE APPS SCRIPT (FIX LỖI CHƯA KẾT NỐI) ──────────────────
-async function initGasConnection() {
-    updateSyncStatus('syncing', 'Đang kết nối...');
-    try {
-        // Gửi một yêu cầu GET kiểm tra trạng thái Web App của bạn
-        const res = await fetch(`${GAS_URL}?action=read`, { method: 'GET', mode: 'cors' });
-        if (res.ok) {
-            const cloudData = await res.json();
-            if (cloudData && cloudData.inventoryState) {
-                inventoryState = cloudData.inventoryState;
-                if(cloudData.layoutData) layoutData = cloudData.layoutData;
-                saveToLocalStorage();
-                renderAll();
+    function startRename(id, colKey) {
+        const nameEl = document.getElementById('name-' + id);
+        if (!nameEl) return;
+        
+        const currentName = customNames[id] || "Vị trí trống";
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentName === 'Vị trí trống' ? '' : currentName;
+        input.className = 'rename-input';
+
+        let finished = false;
+        function saveName() {
+            if (finished) return;
+            finished = true;
+            const newVal = input.value.trim();
+            if (newVal) {
+                customNames[id] = newVal;
+            } else {
+                customNames[id] = 'Vị trí trống';
             }
-            updateSyncStatus('online', '🟢 Đã kết nối với Cloud Sheets');
-            showToast("Đã tải dữ liệu mới nhất từ Google Sheets.");
-        } else {
-            throw new Error();
+            saveLocal();
+            renderColumn(colKey);
         }
-    } catch (e) {
-        updateSyncStatus('offline', '🔴 Chưa kết nối (Click để thử lại)');
-    }
-}
 
-async function syncWithCloud() {
-    updateSyncStatus('syncing', 'Đang đồng bộ dữ liệu...');
-    try {
-        const payload = {
-            action: "update",
-            layoutData: layoutData,
-            inventoryState: inventoryState,
-            timestamp: new Date().toISOString()
-        };
-        
-        const res = await fetch(GAS_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Tránh lỗi Preflight OPTIONS trong GAS
-            body: JSON.stringify(payload)
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') saveName();
+            if (e.key === 'Escape') { finished = true; renderColumn(colKey); }
         });
+        input.addEventListener('blur', saveName);
         
-        if(res.ok) {
-            updateSyncStatus('online', '🟢 Đã kết nối với Cloud Sheets');
-            const d = new Date();
-            document.getElementById('last-saved').textContent = `Đồng bộ: ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-            showToast("Đã ghi nhận dữ liệu lên Google Sheets thành công.");
-        } else {
-            throw new Error();
-        }
-    } catch(e) {
-        updateSyncStatus('offline', '🔴 Lỗi đồng bộ. Chưa kết nối');
-        showToast("Lỗi: Không thể gửi dữ liệu lên Google Sheets.", "warn");
+        nameEl.innerHTML = '';
+        nameEl.appendChild(input);
+        input.focus();
     }
-}
 
-let debounceTimer;
-function autoCloudSync() {
-    // Chống nghẽn API: Chờ người dùng thao tác xong 2 giây mới tự động lưu lên Cloud
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        syncWithCloud();
-    }, 2000);
-}
+    // ── CALCULATION & METRICS ────────────────────────────────────────
+    function calculateStats() {
+        let total = 0;
+        let fullKitCount = 0;
+        let missingKitCount = 0;
 
-function updateSyncStatus(status, text) {
-    const el = document.getElementById('sync-status');
-    el.className = `sync-status ${status}`;
-    document.getElementById('sync-text').textContent = text;
-}
+        ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+            columnOrder[k].forEach(id => {
+                total++;
+                const state = inventoryState[id];
+                if(state) {
+                    const hasCore = state.thung && state.chuot && state.phim && state.tai && state.man20;
+                    if(hasCore && !state.man24) {
+                        fullKitCount++;
+                    } else {
+                        missingKitCount++;
+                    }
+                }
+            });
+        });
 
-function exportCSV() {
-    let csv = "\uFEFFMã Ghế,Vị Trí,Tên Nhân Viên,CPU,Màn 20,Màn 24,Chuột,Bàn Phím,Tai Nghe\n";
-    for (let key in layoutData) {
-        layoutData[key].forEach(seat => {
-            const st = inventoryState[seat.id] || {};
-            csv += `"${seat.id}","${key}","${seat.name}","${st.thung?'1':'0'}","${st.man20?'1':'0'}","${st.man24?'1':'0'}","${st.chuot?st.chuot_qty:0}","${st.phim?st.phim_qty:0}","${st.tai?'1':'0'}"\n`;
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-full').textContent = fullKitCount;
+        document.getElementById('stat-missing').textContent = missingKitCount;
+        document.getElementById('stat-percent').textContent = total > 0 ? Math.round((fullKitCount / total) * 100) + '%' : '0%';
+    }
+
+    function searchEmployee() {
+        const q = document.getElementById('search-input').value.toLowerCase().trim();
+        document.querySelectorAll('.seat-box').forEach(b => b.style.border = '');
+        if(!q) return;
+
+        ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+            columnOrder[k].forEach(id => {
+                const name = (customNames[id] || '').toLowerCase();
+                if(name.includes(q)) {
+                    const box = document.getElementById('seat-box-' + id);
+                    if(box) {
+                        box.style.border = '3px dashed #f59f00';
+                        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
         });
     }
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `kiem_ke_lau_2.csv`;
-    link.click();
-}
 
-function resetAllData() {
-    if(confirm("Xác nhận đưa sơ đồ về mặc định?")) {
-        localStorage.clear();
-        loadInitialState();
-        renderAll();
-        syncWithCloud();
+    function showToast(msg, type = 'info') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'show';
+        setTimeout(() => t.className = '', 3000);
     }
-}
 
-function showToast(msg) {
-    const t = document.getElementById('toast'); t.textContent = msg; t.className = 'show';
-    setTimeout(() => t.className = '', 2000);
-}
+    function exportJSON() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return showToast('Không có dữ liệu lưu trữ để export!', 'warn');
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(raw);
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", `Backup_KiemKe_Floor2_${new Date().toISOString().slice(0,10)}.json`);
+        dl.click();
+    }
 
-// Khởi chạy
-loadInitialState();
-renderAll();
-initGasConnection(); // Tự động kết nối khi vừa mở trang
+    function resetAllInventory() {
+        if(confirm('CẢNH BÁO: Hành động này sẽ dọn sạch toàn bộ dữ liệu cấu hình hiện tại về mặc định. Tiến hành?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }
+
+    async function syncNow() {
+        if(!gasUrl || gasUrl.includes('...')) {
+            showToast('⚠️ Vui lòng cấu hình URL Apps Script Web App ở cuối trang trước!', 'warn');
+            return;
+        }
+        showToast('☁️ Đang đồng bộ dữ liệu đám mây...', 'info');
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const response = await fetch(gasUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: raw
+            });
+            showToast('✅ Đã gửi lệnh đồng bộ lên Google Sheets!', 'success');
+        } catch(e) {
+            showToast('❌ Lỗi kết nối không phản hồi. Hãy kiểm tra lại URL.', 'warn');
+        }
+    }
+
+    // Khởi chạy tiến trình nạp dữ liệu
+    loadState();
+    renderAll();
 </script>
 </body>
 </html>
