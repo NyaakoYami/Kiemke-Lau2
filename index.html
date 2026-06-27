@@ -1167,6 +1167,33 @@
             reader.readAsBinaryString(file);
             event.target.value = '';
         }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const jsonContent = JSON.parse(e.target.result);
+
+                    // Cập nhật dữ liệu từ JSON file
+                    if (jsonContent.columnOrder) columnOrder = jsonContent.columnOrder;
+                    if (jsonContent.layoutData) layoutData = jsonContent.layoutData;
+                    if (jsonContent.inventoryState) inventoryState = jsonContent.inventoryState;
+                    if (jsonContent.customNames) customNames = jsonContent.customNames;
+
+                    saveLocal();
+                    renderAll();
+                    showToast('📂 Đã nhập JSON thành công!', 'success');
+                } catch (err) {
+                    showToast('❌ File JSON không hợp lệ!', 'error');
+                    console.error('JSON Import Error:', err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
         function searchEmployee() {
             const val = document.getElementById('search-input').value.toLowerCase();
             document.querySelectorAll('.seat-box').forEach(box => {
