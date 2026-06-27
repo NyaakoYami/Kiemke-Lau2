@@ -346,7 +346,8 @@ async function pushToCloud(){
     setSyncStatus('syncing','Đang đồng bộ...');
     try{
         const payload={action:'save',data:{inventory:inventoryState,customNames:customNames}};
-        await fetch(gasUrl,{method:'POST',body:JSON.stringify(payload)});
+        // Use no-cors: GAS doesn't return CORS headers on POST, but the write still succeeds
+        await fetch(gasUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
         setSyncStatus('synced','Đã đồng bộ '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}));
     }catch(e){
         setSyncStatus('error','Lỗi đồng bộ');
@@ -354,25 +355,40 @@ async function pushToCloud(){
     }finally{isSyncing=false;}
 }
 
-async function pullFromCloud(){
-    if(!gasUrl)return false;
+// JSONP-based GET to bypass CORS on GAS
+function pullFromCloud(){
+    if(!gasUrl)return Promise.resolve(false);
     setSyncStatus('syncing','Đang tải dữ liệu...');
-    try{
-        const url=gasUrl+(gasUrl.includes('?')?'&':'?')+'action=load&t='+Date.now();
-        const res=await fetch(url);
-        const json=await res.json();
-        if(json&&json.inventory){
-            inventoryState=json.inventory;
-            customNames=json.customNames||{};
-            localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
-            localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
-            setSyncStatus('synced','Đã đồng bộ');
-            return true;
-        }
-    }catch(e){
-        setSyncStatus('error','Lỗi tải dữ liệu');
-    }
-    return false;
+    return new Promise(resolve=>{
+        const cbName='_gasCallback_'+Date.now();
+        const script=document.createElement('script');
+        let done=false;
+        const timeout=setTimeout(()=>{
+            if(done)return;done=true;
+            delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
+            setSyncStatus('error','Lỗi tải dữ liệu');
+            resolve(false);
+        },10000);
+        window[cbName]=function(json){
+            if(done)return;done=true;
+            clearTimeout(timeout);
+            delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);
+            if(json&&json.inventory){
+                inventoryState=json.inventory;
+                customNames=json.customNames||{};
+                localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
+                localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
+                setSyncStatus('synced','Đã đồng bộ');
+                resolve(true);
+            } else {
+                setSyncStatus('synced','Đã kết nối');
+                resolve(false);
+            }
+        };
+        const sep=gasUrl.includes('?')?'&':'?';
+        script.src=gasUrl+sep+'callback='+cbName+'&t='+Date.now();
+        document.head.appendChild(script);
+    });
 }
 
 async function syncNow(){
