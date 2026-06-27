@@ -373,10 +373,12 @@ const STORAGE_KEY='floor2_inventory_v3';
 const NAMES_KEY='floor2_names_v2';
 const ORDER_KEY='floor2_order_v2';
 const GAS_URL_KEY='floor2_gas_url';
+const MONITOR_KEY='floor2_monitor_override_v1';
 
 // ── STATE ────────────────────────────────────────────────────────
 let inventoryState={};
 let customNames={};
+let monitorOverrides={};
 let gasUrl='https://script.google.com/macros/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 let syncTimer=null;
 let isSyncing=false;
@@ -384,9 +386,26 @@ let dragSrcId=null;
 let dragSrcColKey=null;
 
 // ── STORAGE ──────────────────────────────────────────────────────
+function applyMonitorOverrides(){
+    // Apply saved monitorOverrides to all seats in layoutData
+    ['col1','col2a','col2b','col3'].forEach(k=>{
+        layoutData[k].forEach(seat=>{
+            if(monitorOverrides[seat.id]!==undefined) seat.monitorOverride=monitorOverrides[seat.id];
+            else delete seat.monitorOverride;
+        });
+    });
+    layoutData.leaders.forEach(l=>{
+        if(monitorOverrides[l.id]!==undefined) l.monitorOverride=monitorOverrides[l.id];
+        else delete l.monitorOverride;
+    });
+}
+
 function loadState(){
     try{const r=localStorage.getItem(STORAGE_KEY);if(r)inventoryState=JSON.parse(r);}catch(e){inventoryState={};}
     try{const r=localStorage.getItem(NAMES_KEY);if(r)customNames=JSON.parse(r);}catch(e){customNames={};}
+    try{const r=localStorage.getItem(MONITOR_KEY);if(r)monitorOverrides=JSON.parse(r);}catch(e){monitorOverrides={};}
+    // Apply monitorOverrides to layoutData seats
+    applyMonitorOverrides();
     try{
         const r=localStorage.getItem(ORDER_KEY);
         if(r){
@@ -414,6 +433,7 @@ function loadState(){
 function saveLocal(){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
     localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
+    localStorage.setItem(MONITOR_KEY,JSON.stringify(monitorOverrides));
     localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
     const now=new Date();
     document.getElementById('last-saved').textContent='Lưu lúc '+now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -439,7 +459,7 @@ async function pushToCloud(){
     isSyncing=true;
     setSyncStatus('syncing','Đang đồng bộ...');
     try{
-        const payload={action:'save',data:{inventory:inventoryState,customNames,columnOrder}};
+        const payload={action:'save',data:{inventory:inventoryState,customNames,columnOrder,monitorOverrides}};
         await fetch(gasUrl,{method:'POST',mode:'no-cors',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'}});
         setSyncStatus('synced','Đã đồng bộ '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}));
     }catch(e){
@@ -471,6 +491,7 @@ function pullFromCloud(){
                 if(json.columnOrder) columnOrder=json.columnOrder;
                 localStorage.setItem(STORAGE_KEY,JSON.stringify(inventoryState));
                 localStorage.setItem(NAMES_KEY,JSON.stringify(customNames));
+    localStorage.setItem(MONITOR_KEY,JSON.stringify(monitorOverrides));
                 localStorage.setItem(ORDER_KEY,JSON.stringify(columnOrder));
                 setSyncStatus('synced','Đã đồng bộ');
                 resolve(true);
@@ -812,8 +833,11 @@ function calculateStats(){
 
 function resetAllInventory(){
     if(confirm('⚠️ Bạn có chắc muốn XÓA TOÀN BỘ dữ liệu kiểm kê?\nHành động này không thể hoàn tác.')){
-        inventoryState={};customNames={};
-        localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NAMES_KEY);
+        inventoryState={};customNames={};monitorOverrides={};
+        localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(NAMES_KEY);localStorage.removeItem(MONITOR_KEY);
+        // Reset all seat monitorOverrides in layoutData
+        ['col1','col2a','col2b','col3'].forEach(k=>layoutData[k].forEach(s=>delete s.monitorOverride));
+        layoutData.leaders.forEach(l=>delete l.monitorOverride);
         renderAll();
         if(gasUrl)pushToCloud();
         showToast('🗑️ Đã reset toàn bộ dữ liệu','info');
@@ -850,7 +874,7 @@ function exportGoogleSheets(){
 }
 
 function exportJSON(){
-    const payload={version:3,exported:new Date().toISOString(),floor:'Lau2',data:inventoryState,customNames,columnOrder};
+    const payload={version:3,exported:new Date().toISOString(),floor:'Lau2',data:inventoryState,customNames,columnOrder,monitorOverrides};
     dlBlob(JSON.stringify(payload,null,2),'application/json',`Backup_KiemKe_Lau2_${getDateStr()}.json`);
     showToast('💾 File backup đã được tải xuống','success');
 }
@@ -867,6 +891,7 @@ function importJSON(event){
                 inventoryState=data;
                 customNames=payload.customNames||{};
                 if(payload.columnOrder)columnOrder=payload.columnOrder;
+                if(payload.monitorOverrides){ monitorOverrides=payload.monitorOverrides; applyMonitorOverrides(); }
                 saveLocal();renderAll();
                 if(gasUrl)pushToCloud();
                 showToast('✅ Import thành công!','success');
@@ -922,13 +947,13 @@ function importCSV(event){
                 if(iPhim!==-1)s.phim=(cols[iPhim]||'').trim()==='Có';
                 if(iSLPhim!==-1){const v=parseInt(cols[iSLPhim]);if(!isNaN(v)&&v>0)s.phim_qty=v;}
                 if(iTai!==-1)s.tai=(cols[iTai]||'').trim()==='Có';
-                // Đọc cột "Loại Màn Hình" từ CSV để xác định đúng loại màn hình
-                // thay vì tính theo team mặc định (vốn có thể sai sau khi kéo thả)
+                // Đọc cột "Loại Màn Hình" từ CSV và lưu vào monitorOverrides
+                // để persist qua localStorage sau khi reload trang
                 if(iLoaiMan!==-1){
                     const loai=(cols[iLoaiMan]||'').trim().toLowerCase();
-                    if(loai==='24 inch') seat.monitorOverride='24';
-                    else if(loai==='20 inch') seat.monitorOverride='20';
-                    else delete seat.monitorOverride;
+                    if(loai==='24 inch'){ seat.monitorOverride='24'; monitorOverrides[seat.id]='24'; }
+                    else if(loai==='20 inch'){ seat.monitorOverride='20'; monitorOverrides[seat.id]='20'; }
+                    else { delete seat.monitorOverride; delete monitorOverrides[seat.id]; }
                 }
                 updated++;
             }
