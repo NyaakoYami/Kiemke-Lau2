@@ -10,96 +10,23 @@
 
         /* ─── KEYFRAMES ─── */
         @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-18px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-18px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes popIn {
-            0% {
-                transform: scale(0.85);
-                opacity: 0;
-            }
-            70% {
-                transform: scale(1.05);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -400px 0;
-            }
-            100% {
-                background-position: 400px 0;
-            }
-        }
-
-        @keyframes countUp {
-            from {
-                transform: translateY(8px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes toastSlide {
-            from {
-                opacity: 0;
-                transform: translateX(60px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes toastFade {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(60px);
-            }
+            0% { transform: scale(0.85); opacity: 0; }
+            70% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
         }
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        @keyframes headerGlow {
-            0%, 100% {
-                box-shadow: 0 8px 40px rgba(59, 91, 219, .25);
-            }
-            50% {
-                box-shadow: 0 8px 40px rgba(112, 72, 232, .35);
-            }
+            to { transform: rotate(360deg); }
         }
 
         @keyframes pulse {
@@ -134,12 +61,7 @@
             --transition: .18s cubic-bezier(.4, 0, .2, 1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
@@ -152,295 +74,110 @@
         /* ─── FULL-SCREEN PRELOADER ─── */
         #app-preloader {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1a1d2e 0%, #0e1017 100%);
             z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease, visibility 0.4s;
             color: #fff;
         }
 
-        #app-preloader.loaded {
-            opacity: 0;
-            visibility: hidden;
-        }
+        #app-preloader.loaded { opacity: 0; visibility: hidden; }
 
-        .loader-glow-circle {
-            position: relative;
-            width: 70px;
-            height: 70px;
-            margin-bottom: 20px;
-        }
-
+        .loader-glow-circle { width: 60px; height: 60px; margin-bottom: 20px; }
         .loader-glow-circle .spinner-core {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             border: 4px solid rgba(59, 91, 219, 0.1);
             border-left-color: var(--blue);
             border-right-color: var(--purple);
             border-radius: 50%;
-            animation: spin 0.9s cubic-bezier(0.55, 0.085, 0.68, 0.53) infinite;
+            animation: spin 0.9s linear infinite;
         }
 
-        .loader-text {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
-        }
-
-        .loader-subtext {
-            font-size: 12px;
-            color: #64748b;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
+        .loader-text { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+        .loader-subtext { font-size: 13px; color: #64748b; animation: pulse 1.5s infinite; }
 
         .container {
-            max-width: 1640px;
-            margin: 0 auto;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            max-width: 1640px; margin: 0 auto;
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
-
-        .container.app-ready {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .container.app-ready { opacity: 1; transform: translateY(0); }
 
         /* ─── HEADER ─── */
         .page-header {
-            background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 55%, #3b5bdb 100%);
-            border-radius: 16px;
-            padding: 28px 36px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-            box-shadow: var(--shadow-xl);
-            animation: fadeInDown .55s ease both, headerGlow 4s ease-in-out infinite;
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(135deg, #1a1d2e 0%, #2d3561 100%);
+            border-radius: 16px; padding: 24px 32px; margin-bottom: 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+            box-shadow: var(--shadow-md);
+            animation: fadeInDown .5s ease both;
         }
 
-        .page-header-left h1 {
-            color: #fff;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -.5px;
-        }
+        .page-header-left h1 { color: #fff; font-size: 24px; font-weight: 800; }
+        .page-header-left p { color: rgba(255, 255, 255, .65); font-size: 13px; margin-top: 4px; }
+        .header-right { display: flex; gap: 12px; align-items: center; }
 
-        .page-header-left p {
-            color: rgba(255, 255, 255, .65);
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .header-right {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .header-badge {
-            background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .22);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* ─── NEW SYNC CONTROL UI ─── */
+        /* ─── SYNC BOX UI ─── */
         .sync-dashboard-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: flex; align-items: center; gap: 12px;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            padding: 6px 16px;
-            border-radius: 30px;
-            transition: var(--transition);
+            padding: 6px 16px; border-radius: 30px;
         }
 
-        .sync-dashboard-box:hover {
-            background: rgba(255, 255, 255, 0.14);
-            border-color: rgba(255, 255, 255, 0.28);
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .status-pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            position: relative;
-        }
-
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #fff; }
+        .status-pulse-dot { width: 8px; height: 8px; border-radius: 50%; }
         .status-pulse-dot.ready { background-color: #51cf66; box-shadow: 0 0 0 4px rgba(81, 207, 102, 0.25); }
         .status-pulse-dot.syncing { background-color: #ff9800; box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.25); animation: pulse 1s infinite; }
         .status-pulse-dot.error { background-color: #ff6b6b; box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25); }
 
         .btn-inline-sync {
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.85);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-            padding: 2px;
-            border-radius: 50%;
-            transition: transform 0.3s ease, color var(--transition);
+            background: transparent; border: none; color: #fff; cursor: pointer;
+            display: flex; align-items: center; font-size: 14px; transition: transform 0.3s ease;
         }
-
-        .btn-inline-sync:hover:not(:disabled) {
-            color: #fff;
-            transform: rotate(180deg);
-        }
-
-        .btn-inline-sync:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-inline-sync:hover { transform: rotate(180deg); }
 
         /* ─── STAT CARDS ─── */
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+        .detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+        @media(min-width: 1200px) { .detail-grid { grid-template-columns: repeat(8, 1fr); } }
 
         .stat-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 10px 13px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            animation: fadeInUp .45s ease both;
+            background: var(--surface); border-radius: var(--radius); padding: 12px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+            display: flex; flex-direction: column; gap: 4px; animation: fadeInUp .4s ease both;
         }
-
-        .stat-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-        }
-
+        .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         .stat-icon.blue { background: var(--blue-light); }
         .stat-icon.green { background: var(--green-light); }
         .stat-icon.red { background: var(--red-light); }
         .stat-icon.yellow { background: var(--yellow-light); }
         .stat-icon.purple { background: #f3f0ff; }
+        .stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .stat-value { font-size: 20px; font-weight: 800; color: var(--text-primary); }
 
-        .stat-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1;
-        }
-
-        /* ─── CONTROLS ─── */
+        /* ─── CONTROLS PANEL ─── */
         .controls-panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            margin-bottom: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 14px 18px; margin-bottom: 18px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
             box-shadow: var(--shadow-sm);
         }
 
-        .search-wrap {
-            position: relative;
-        }
-
+        .search-wrap { position: relative; }
         .search-wrap input {
-            padding: 9px 12px 9px 36px;
-            width: 280px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            outline: none;
-            background: var(--surface-alt);
+            padding: 9px 12px 9px 36px; width: 280px;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 13px; outline: none; background: var(--surface-alt);
         }
+        .search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .search-wrap input:focus {
-            border-color: var(--blue);
-        }
-
-        .search-wrap .icon {
-            position: absolute;
-            left: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 16px;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            font-family: 'Inter', sans-serif;
-            transition: transform var(--transition), box-shadow var(--transition);
+            display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;
+            border: none; border-radius: var(--radius-sm); cursor: pointer;
+            font-weight: 600; font-size: 13px; transition: all var(--transition);
         }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
+        .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
         .btn-primary { background: var(--blue); color: #fff; }
         .btn-success { background: var(--green); color: #fff; }
         .btn-warning { background: var(--yellow); color: #fff; }
@@ -448,80 +185,31 @@
         .btn-sync { background: linear-gradient(135deg, #3b5bdb, #7048e8); color: #fff; }
 
         /* ─── LAYOUT GRID ─── */
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 1fr 38px 1fr 1fr 38px 1fr;
-            gap: 12px;
-            margin-bottom: 4px;
-        }
-
+        .layout-grid { display: grid; grid-template-columns: 1fr 40px 1fr 1fr 40px 1fr; gap: 12px; margin-bottom: 10px; }
+        
         .aisle {
             background: linear-gradient(180deg, #e9ecef, #dee2e6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: #8a9ab0;
-            border-radius: 6px;
-            writing-mode: vertical-rl;
-            text-orientation: upright;
-            font-size: 11px;
-            border: 1px dashed #c8d0db;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: #8a9ab0; border-radius: 6px;
+            writing-mode: vertical-rl; text-orientation: upright; font-size: 11px;
         }
 
-        .col-wrapper {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .seat-column {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-height: 60px;
-        }
-
+        .col-wrapper { display: flex; flex-direction: column; }
+        .seat-column { display: flex; flex-direction: column; gap: 8px; min-height: 100px; }
         .column-main-header {
-            border-radius: var(--radius);
-            padding: 12px 14px;
-            box-shadow: var(--shadow-sm);
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-align: center;
+            border-radius: var(--radius); padding: 10px; text-align: center;
+            font-weight: 700; margin-bottom: 8px; border: 1px solid var(--border);
         }
 
         /* ─── SEAT BOX ─── */
         .seat-box {
-            border-radius: var(--radius);
-            padding: 10px 12px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
-            transition: transform var(--transition), box-shadow var(--transition);
+            border-radius: var(--radius); padding: 12px;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+            background: var(--surface); transition: all var(--transition);
         }
-
-        .seat-box:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            z-index: 2;
-        }
-
-        .seat-box.dragging {
-            opacity: 0.45;
-            transform: scale(0.98);
-        }
-
-        .seat-box.drop-target {
-            outline: 2px dashed #3b5bdb;
-            outline-offset: -4px;
-        }
-
-        .seat-box.empty-space {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            height: 40px;
-            pointer-events: none;
-        }
+        .seat-box:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .seat-box.dragging { opacity: 0.4; }
+        .seat-box.empty-space { background: transparent !important; border: none !important; box-shadow: none !important; height: 45px; pointer-events: none; }
 
         .fill-purple { background-color: #f0ebff; border-color: #c5b4f5; }
         .fill-green { background-color: var(--green-light); border-color: #b2f2bb; }
@@ -529,223 +217,82 @@
         .fill-red { background-color: var(--red-light); border-color: #fca5a5; }
         .fill-pink { background-color: var(--pink-bg); border-color: #fbb6ce; }
 
-        /* ─── SEAT HEADER ─── */
-        .seat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 6px;
-        }
-
-        .seat-name {
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 3px;
-            padding: 2px 4px;
-            display: flex;
-            align-items: center;
-        }
-
-        .seat-name:hover {
-            background: rgba(0, 0, 0, .05);
-        }
+        .seat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .seat-title-wrap { display: flex; align-items: center; gap: 4px; }
+        .seat-name { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+        .btn-edit-name { background: transparent; border: none; cursor: pointer; font-size: 12px; color: var(--text-muted); }
+        .btn-edit-name:hover { color: var(--blue); }
 
         .rename-input {
-            font-weight: 700;
-            font-size: 12px;
-            border: 1.5px solid var(--blue);
-            border-radius: 4px;
-            padding: 2px 5px;
-            outline: none;
-            width: 100%;
-            animation: popIn .2s ease;
+            font-weight: 700; font-size: 12px; border: 1.5px solid var(--blue);
+            border-radius: 4px; padding: 2px 4px; outline: none; width: 120px;
         }
 
-        /* mini buttons */
-        .btn-action-group {
-            display: flex;
-            gap: 4px;
-        }
-
-        .btn-mini {
-            padding: 4px 8px;
-            font-size: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-mini-success { background: var(--green); color: #fff; }
+        .btn-mini { padding: 2px 6px; font-size: 10px; border: none; border-radius: 4px; cursor: pointer; }
         .btn-mini-danger { background: #e5e7eb; color: #6b7280; }
         .btn-mini-danger:hover { background: #fca5a5; color: var(--red); }
 
-        /* ─── ITEMS GRID ─── */
+        /* ITEMS GRID */
         .items-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
-            background: rgba(255, 255, 255, .7);
-            padding: 7px 8px;
-            border-radius: var(--radius-sm);
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+            background: rgba(255, 255, 255, 0.6); padding: 6px; border-radius: var(--radius-sm);
         }
+        .item-check { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; }
+        .item-check input[type=checkbox] { width: 13px; height: 13px; accent-color: var(--green); cursor: pointer; }
+        .qty-input { width: 38px; padding: 2px; font-size: 11px; border: 1px solid var(--border); border-radius: 3px; text-align: center; }
 
-        .item-check {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
-
-        .item-check input[type=checkbox] {
-            cursor: pointer;
-            width: 14px;
-            height: 14px;
-            accent-color: var(--green);
-        }
-
-        .qty-input {
-            width: 36px;
-            padding: 1px 3px;
-            font-size: 10px;
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            text-align: center;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .col-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-            justify-content: center;
-        }
-
+        .col-actions { display: flex; justify-content: center; margin-top: 8px; }
         .btn-col-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 12px;
-            border: 1.5px dashed var(--border);
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 11px;
-            background: var(--surface);
-            color: var(--text-secondary);
+            width: 100%; padding: 6px; border: 1.5px dashed var(--border);
+            border-radius: var(--radius-sm); background: var(--surface);
+            font-size: 11px; font-weight: 600; color: var(--text-secondary); cursor: pointer;
         }
+        .btn-col-action:hover { border-color: var(--blue); color: var(--blue); }
 
         #toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: #1a1d2e;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            box-shadow: var(--shadow-xl);
-            z-index: 9999;
-            display: none;
-            border-left: 4px solid var(--blue);
+            position: fixed; bottom: 24px; right: 24px; background: #1a1d2e; color: #fff;
+            padding: 12px 24px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            box-shadow: var(--shadow-xl); z-index: 9999; display: none; border-left: 4px solid var(--blue);
         }
-
-        #toast.show {
-            display: block;
-            animation: toastSlide .3s ease;
-        }
-
-        #toast.hide {
-            animation: toastFade .3s ease forwards;
-        }
-
-        .spin {
-            display: inline-block;
-            animation: spin .7s linear infinite;
-        }
+        #toast.show { display: block; animation: popIn 0.25s ease; }
     </style>
 </head>
 
 <body>
 
     <div id="app-preloader">
-        <div class="loader-glow-circle">
-            <div class="spinner-core"></div>
-        </div>
+        <div class="loader-glow-circle"><div class="spinner-core"></div></div>
         <div class="loader-text" id="loader-title">Đang đồng bộ dữ liệu hệ thống</div>
-        <div class="loader-subtext" id="loader-desc">Vui lòng đợi trong giây lát...</div>
+        <div class="loader-subtext" id="loader-desc">Vui lòng đợi giây lát...</div>
     </div>
 
     <div class="container">
         <div class="page-header">
             <div class="page-header-left">
                 <h1>Kiểm Kê Tài Sản - Sàn Lầu 2</h1>
-                <p>Hệ thống quản lý sơ đồ và thiết bị phần cứng chỗ ngồi</p>
+                <p>Hệ thống quản lý sơ đồ và thiết bị phần cứng chỗ ngồi chuyên nghiệp</p>
             </div>
             <div class="header-right">
                 <span class="header-badge" id="date-badge"></span>
                 <div class="sync-dashboard-box">
                     <div class="status-indicator">
                         <div class="status-pulse-dot ready" id="sync-dot"></div>
-                        <span id="sync-text-status">Đang kết nối...</span>
+                        <span id="sync-text-status">Khởi động...</span>
                     </div>
-                    <button class="btn-inline-sync" id="btn-header-sync" onclick="syncNow()" title="Đồng bộ lại">
-                        🔄
-                    </button>
+                    <button class="btn-inline-sync" id="btn-header-sync" onclick="syncNow()" title="Đồng bộ nhanh">🔄</button>
                 </div>
             </div>
         </div>
 
         <div class="detail-grid">
-            <div class="stat-card">
-                <div class="stat-icon blue">📦</div>
-                <div class="stat-label">Thùng Máy Tính</div>
-                <div class="stat-value" id="count-thung">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple">🖥️</div>
-                <div class="stat-label">Màn hình 20"</div>
-                <div class="stat-value" id="count-man20">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple">🖥️✨</div>
-                <div class="stat-label">Màn hình 24"</div>
-                <div class="stat-value" id="count-man24">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green">🖱️</div>
-                <div class="stat-label">Tổng Chuột</div>
-                <div class="stat-value" id="count-chuot">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon yellow">⌨️</div>
-                <div class="stat-label">Tổng Phím</div>
-                <div class="stat-value" id="count-phim">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon red">🎧</div>
-                <div class="stat-label">Tai nghe USB</div>
-                <div class="stat-value" id="count-tai">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon blue">💻</div>
-                <div class="stat-label">Laptop + Sạc + chuột</div>
-                <div class="stat-value" id="count-laptop">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple">💻💼</div>
-                <div class="stat-label">Laptop + Sạc + chuột + túi</div>
-                <div class="stat-value" id="count-laptop-tui">0</div>
-            </div>
+            <div class="stat-card"><div class="stat-icon blue">📦</div><div class="stat-label">Thùng Máy PC</div><div class="stat-value" id="count-thung">0</div></div>
+            <div class="stat-card"><div class="stat-icon purple">🖥️</div><div class="stat-label">Màn hình 20"</div><div class="stat-value" id="count-man20">0</div></div>
+            <div class="stat-card"><div class="stat-icon purple">🖥️✨</div><div class="stat-label">Màn hình 24"</div><div class="stat-value" id="count-man24">0</div></div>
+            <div class="stat-card"><div class="stat-icon green">🖱️</div><div class="stat-label">Tổng Chuột</div><div class="stat-value" id="count-chuot">0</div></div>
+            <div class="stat-card"><div class="stat-icon yellow">⌨️</div><div class="stat-label">Tổng Phím</div><div class="stat-value" id="count-phim">0</div></div>
+            <div class="stat-card"><div class="stat-icon red">🎧</div><div class="stat-label">Tai nghe USB</div><div class="stat-value" id="count-tai">0</div></div>
+            <div class="stat-card"><div class="stat-icon blue">💻</div><div class="stat-label">Laptop sạc</div><div class="stat-value" id="count-laptop">0</div></div>
+            <div class="stat-card"><div class="stat-icon purple">💼</div><div class="stat-label">Laptop + Túi</div><div class="stat-value" id="count-laptop-tui">0</div></div>
         </div>
 
         <div class="controls-panel">
@@ -756,50 +303,39 @@
             <div class="btn-group">
                 <button class="btn btn-sync" id="btn-sync" onclick="syncNow()">☁️ Đồng bộ ngay</button>
                 <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất JSON</button>
-                <button class="btn btn-success" onclick="exportExcel()"
-                    style="background:#51cf66; border-color:#37b24d;">📊 Xuất Excel</button>
-                <button class="btn btn-warning" onclick="document.getElementById('file-json').click()">📂 Nhập
-                    JSON</button>
+                <button class="btn btn-success" onclick="exportExcel()">📊 Xuất Excel</button>
+                <button class="btn btn-warning" onclick="document.getElementById('file-json').click()">📂 Nhập JSON</button>
                 <input type="file" id="file-json" accept=".json" style="display:none" onchange="importJSON(event)">
-                <button class="btn btn-warning" onclick="document.getElementById('file-excel').click()"
-                    style="background:#ffa94d; border-color:#fd7e14;">📊 Nhập Excel</button>
-                <input type="file" id="file-excel" accept=".xls,.xlsx,.csv" style="display:none"
-                    onchange="importExcel(event)">
-                <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset Toàn Bộ</button>
+                <button class="btn btn-warning" onclick="document.getElementById('file-excel').click()">📊 Nhập Excel</button>
+                <input type="file" id="file-excel" accept=".xls,.xlsx,.csv" style="display:none" onchange="importExcel(event)">
+                <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset Sơ Đồ</button>
             </div>
         </div>
 
         <div class="layout-grid" id="header-grid">
-            <div id="leader-header-1"></div>
-            <div class="aisle">LỐI ĐI</div>
-            <div id="leader-header-2a"></div>
-            <div id="leader-header-2b"></div>
-            <div class="aisle">LỐI ĐI</div>
-            <div id="leader-header-3"></div>
+            <div id="leader-header-1"></div><div class="aisle">LỐI ĐI</div>
+            <div id="leader-header-2a"></div><div id="leader-header-2b"></div>
+            <div class="aisle">LỐI ĐI</div><div id="leader-header-3"></div>
         </div>
 
         <div class="layout-grid" id="main-grid">
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#eef2ff; color:#3b5bdb; border-color:#bac8ff;">A</div>
-                <div class="seat-column" id="col-1" ondragover="handleColumnDragOver(event)"
-                    ondrop="handleColumnDrop(event,'col1')"></div>
+                <div class="column-main-header" style="background:#eef2ff; color:#3b5bdb;">Cột A</div>
+                <div class="seat-column" id="col-1" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'col1')"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#fff5f5; color:#e03131; border-color:#fca5a5;">B</div>
-                <div class="seat-column" id="col-2a" ondragover="handleColumnDragOver(event)"
-                    ondrop="handleColumnDrop(event,'col2a')"></div>
+                <div class="column-main-header" style="background:#fff5f5; color:#e03131;">Cột B</div>
+                <div class="seat-column" id="col-2a" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'col2a')"></div>
             </div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#fff0f6; color:#c2255c; border-color:#fbb6ce;">C</div>
-                <div class="seat-column" id="col-2b" ondragover="handleColumnDragOver(event)"
-                    ondrop="handleColumnDrop(event,'col2b')"></div>
+                <div class="column-main-header" style="background:#fff0f6; color:#c2255c;">Cột C</div>
+                <div class="seat-column" id="col-2b" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'col2b')"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
-                <div class="column-main-header" style="background:#f3f0ff; color:#7048e8; border-color:#d0bfff;">D</div>
-                <div class="seat-column" id="col-3" ondragover="handleColumnDragOver(event)"
-                    ondrop="handleColumnDrop(event,'col3')"></div>
+                <div class="column-main-header" style="background:#f3f0ff; color:#7048e8;">Cột D</div>
+                <div class="seat-column" id="col-3" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'col3')"></div>
             </div>
         </div>
     </div>
@@ -810,20 +346,20 @@
     <script>
         document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        const STORAGE_KEY = 'inventoryDataV2';
+        const STORAGE_KEY = 'inventoryData_Floor2';
         const WEB_APP_URL = 'https://script.google.com/a/macros/now.vn/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 
-        // Khởi tạo Dữ liệu gốc
+        // Dữ liệu cấu trúc gốc cố định
         let customNames = {};
         let inventoryState = {};
         let columnOrder = { col1: [], col2a: [], col2b: [], col3: [] };
-        
-        let layoutData = {
+
+        const defaultLayout = {
             leaders: [
-                { id: "L1", name: "A", count: "18", targetId: "leader-header-1", fill: "fill-purple", team: "LAN_PHUONG" },
-                { id: "L2A", name: "B", count: "20", targetId: "leader-header-2a", fill: "fill-purple", team: "OTHER" },
-                { id: "L2B", name: "C", count: "20", targetId: "leader-header-2b", fill: "fill-purple", team: "OTHER" },
-                { id: "L3", name: "D", count: "19", targetId: "leader-header-3", fill: "fill-purple", team: "TRAN_OANH" }
+                { id: "L1", name: "LEADER A", targetId: "leader-header-1", fill: "fill-purple", team: "LAN_PHUONG" },
+                { id: "L2A", name: "LEADER B", targetId: "leader-header-2a", fill: "fill-purple", team: "OTHER" },
+                { id: "L2B", name: "LEADER C", targetId: "leader-header-2b", fill: "fill-purple", team: "OTHER" },
+                { id: "L3", name: "LEADER D", targetId: "leader-header-3", fill: "fill-purple", team: "TRAN_OANH" }
             ],
             col1: [
                 { id: "1_1", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_2", name: "MINH NHỰT", fill: "fill-purple" }, { id: "1_3", name: "ĐAN VY", fill: "fill-purple" }, { id: "1_4", name: "LONG NHÂN", fill: "fill-green" }, { id: "1_5", name: "TÁN PHÚC", fill: "fill-green" }, { id: "1_blank1", name: "", fill: "empty-space" }, { id: "1_6", name: "TRỰC", fill: "fill-purple" }, { id: "1_7", name: "THẮNG", fill: "fill-purple" }, { id: "1_8", name: "KIM NGÂN", fill: "fill-purple" }, { id: "1_9", name: "NHẬT KHÁNH", fill: "fill-purple" }, { id: "1_10", name: "PHÚ SĨ SENIOR", fill: "fill-yellow" }, { id: "1_11", name: "CHÍNH SENIOR", fill: "fill-yellow" }, { id: "1_blank2", name: "", fill: "empty-space" }, { id: "1_12", name: "PT - PHƯƠNG THẢO", fill: "fill-purple" }, { id: "1_13", name: "TÂN TÀI", fill: "fill-purple" }, { id: "1_14", name: "TUẤN ANH", fill: "fill-purple" }, { id: "1_15", name: "QUANG HẬU", fill: "fill-purple" }, { id: "1_16", name: "MINH HOÀNG", fill: "fill-purple" }, { id: "1_17", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_18", name: "TOÀN", fill: "fill-purple" }
@@ -835,11 +371,10 @@
                 { id: "2b_1", name: "THIÊN NGÂN", fill: "fill-pink" }, { id: "2b_2", name: "TÚ TRINH", fill: "fill-pink" }, { id: "2b_3", name: "TRUNG NGHỊ", fill: "fill-pink" }, { id: "2b_4", name: "MINH TÂM", fill: "fill-pink" }, { id: "2b_5", name: "MINH THƯ", fill: "fill-pink" }, { id: "2b_6", name: "DUY KHÁNH", fill: "fill-pink" }, { id: "2b_7", name: "HỒNG ÂN", fill: "fill-pink" }, { id: "2b_8", name: "THIÊN KIM", fill: "fill-yellow" }, { id: "2b_9", name: "MINH SENIOR", fill: "fill-yellow" }, { id: "2b_10", name: "KHÁNH LY", fill: "fill-pink" }, { id: "2b_11", name: "NHẬT LAM", fill: "fill-pink" }, { id: "2b_12", name: "HÂN SENIOR", fill: "fill-yellow" }, { id: "2b_13", name: "NGUYỄN SENIOR", fill: "fill-yellow" }, { id: "2b_14", name: "DIỆU TRINH", fill: "fill-pink" }, { id: "2b_15", name: "PHI PHỤNG", fill: "fill-pink" }, { id: "2b_16", name: "PT - QUỐC THỊNH", fill: "fill-purple" }, { id: "2b_17", name: "PT - THU HỒNG", fill: "fill-purple" }, { id: "2b_18", name: "PT - KHOA", fill: "fill-pink" }, { id: "2b_19", name: "PT - LOAN", fill: "fill-pink" }, { id: "2b_20", name: "KIM CHI", fill: "fill-purple" }
             ],
             col3: [
-                { id: "C3_1782579850790", name: "Vị trí mới", fill: "fill-purple" }, { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" }, { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" }, { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" }, { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" }, { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" }, { id: "3_blank1", name: "", fill: "empty-space" }, { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" }, { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" }, { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" }, { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" }, { id: "3_10", name: "BẢO AN", fill: "fill-purple" }, { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" }, { id: "3_blank2", name: "", fill: "empty-space" }, { id: "3_12", name: "THẢO VI", fill: "fill-purple" }, { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }
+                { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" }, { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" }, { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" }, { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" }, { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" }, { id: "3_blank1", name: "", fill: "empty-space" }, { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" }, { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" }, { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" }, { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" }, { id: "3_10", name: "BẢO AN", fill: "fill-purple" }, { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" }, { id: "3_blank2", name: "", fill: "empty-space" }, { id: "3_12", name: "THẢO VI", fill: "fill-purple" }, { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }
             ]
         };
 
-        // Hàm cập nhật trạng thái đồng bộ giao diện (UI) linh hoạt
         function updateSyncStatusUI(status, message) {
             const dot = document.getElementById('sync-dot');
             const text = document.getElementById('sync-text-status');
@@ -850,152 +385,103 @@
             dot.className = 'status-pulse-dot';
 
             if (status === 'syncing') {
-                dot.classList.add('syncing');
-                text.innerText = message || 'Đang đồng bộ...';
-                if (btnHeader) btnHeader.disabled = true;
-                if (btnMain) { btnMain.disabled = true; btnMain.innerHTML = '<span class="spin">⏳</span> Đang tải...'; }
+                dot.classList.add('syncing'); text.innerText = message || 'Đang kết nối...';
+                if(btnHeader) btnHeader.disabled = true;
+                if(btnMain) { btnMain.disabled = true; btnMain.innerHTML = '<span class="spin">⏳</span> Đang tải...'; }
             } else if (status === 'success') {
-                dot.classList.add('ready');
-                text.innerText = message || 'Đã đồng bộ';
-                if (btnHeader) btnHeader.disabled = false;
-                if (btnMain) { btnMain.disabled = false; btnMain.innerHTML = '☁️ Đồng bộ ngay'; }
+                dot.classList.add('ready'); text.innerText = message || 'Đã đồng bộ';
+                if(btnHeader) btnHeader.disabled = false;
+                if(btnMain) { btnMain.disabled = false; btnMain.innerHTML = '☁️ Đồng bộ ngay'; }
             } else {
-                dot.classList.add('error');
-                text.innerText = message || 'Lỗi kết nối';
-                if (btnHeader) btnHeader.disabled = false;
-                if (btnMain) { btnMain.disabled = false; btnMain.innerHTML = '☁️ Thử lại'; }
+                dot.classList.add('error'); text.innerText = message || 'Ngoại tuyến (Local)';
+                if(btnHeader) btnHeader.disabled = false;
+                if(btnMain) { btnMain.disabled = false; btnMain.innerHTML = '☁️ Đồng bộ ngay'; }
             }
         }
 
-        // LUỒNG TẢI DỮ LIỆU BAN ĐẦU (PRELOAD FLOW)
+        // HÀM KHỞI CHẠY TẢI TRƯỚC DỮ LIỆU TOÀN DIỆN (SỬA LỖI CORS/REDIRECT)
         async function loadData() {
-            const loaderTitle = document.getElementById('loader-title');
-            const loaderDesc = document.getElementById('loader-desc');
-
-            if (loaderTitle) loaderTitle.innerText = "Đang kết nối Cloud...";
-            if (loaderDesc) loaderDesc.innerText = "Yêu cầu kiểm tra phân phối sơ đồ sàn mới nhất...";
-
-            updateSyncStatusUI('syncing', 'Đang tải...');
+            updateSyncStatusUI('syncing', 'Đang tải dữ liệu Cloud...');
+            
+            // Bước 1: Khôi phục dữ liệu đệm Local trước để đảm bảo an toàn, không lo bị biến thành số 0
+            const localRaw = localStorage.getItem(STORAGE_KEY);
+            if (localRaw) {
+                try {
+                    const parsed = JSON.parse(localRaw);
+                    if (parsed.customNames) customNames = parsed.customNames;
+                    if (parsed.inventoryState) inventoryState = parsed.inventoryState;
+                    if (parsed.columnOrder) columnOrder = parsed.columnOrder;
+                } catch(e) { console.error("Lỗi đọc LocalStorage", e); }
+            }
+            if (!columnOrder.col1 || columnOrder.col1.length === 0) {
+                initDefaultOrder();
+            }
 
             try {
-                // Fetch trực tiếp dữ liệu cấu hình từ Google Cloud Web App
-                const response = await fetch(WEB_APP_URL, { method: 'GET', mode: 'cors' });
-                if (!response.ok) throw new Error('Mạng phản hồi không ổn định');
+                // Thêm redirect: 'follow' để tránh lỗi kết nối nhảy sang Ngoại tuyến (Local)
+                const response = await fetch(WEB_APP_URL, { method: 'GET', mode: 'cors', redirect: 'follow' });
+                if (!response.ok) throw new Error("Phản hồi Server lỗi");
 
                 const cloudData = await response.json();
-
                 if (cloudData && cloudData.status === 'success') {
-                    if (loaderDesc) loaderDesc.innerText = "Xử lý thông tin kiểm kê chỗ ngồi...";
-                    
                     if (cloudData.customNames) customNames = cloudData.customNames;
                     if (cloudData.inventoryState) inventoryState = cloudData.inventoryState;
-                    if (cloudData.columnOrder) {
-                        columnOrder = cloudData.columnOrder;
-                    } else {
-                        initDefaultOrder();
-                    }
+                    if (cloudData.columnOrder) columnOrder = cloudData.columnOrder;
 
-                    // Đồng bộ lưu bản đệm LocalStorage phòng hờ mất mạng
                     saveLocal();
                     updateSyncStatusUI('success', 'Đã đồng bộ Cloud');
-                    showToast('Đồng bộ dữ liệu Cloud thành công!', 'success');
-                } else {
-                    throw new Error('Dữ liệu Cloud trả về lỗi cấu trúc');
+                    showToast('Kết nối thành công. Đã cập nhật sơ đồ sàn mới nhất!', 'success');
                 }
             } catch (error) {
-                console.warn("Không thể lấy dữ liệu Cloud, khôi phục từ bộ nhớ đệm (Local):", error);
-                if (loaderDesc) loaderDesc.innerText = "Đang khôi phục dữ liệu cục bộ...";
-
-                const localRaw = localStorage.getItem(STORAGE_KEY);
-                if (localRaw) {
-                    try {
-                        const parsed = JSON.parse(localRaw);
-                        if (parsed.customNames) customNames = parsed.customNames;
-                        if (parsed.inventoryState) inventoryState = parsed.inventoryState;
-                        if (parsed.columnOrder) {
-                            columnOrder = parsed.columnOrder;
-                        } else {
-                            initDefaultOrder();
-                        }
-                        updateSyncStatusUI('success', 'Ngoại tuyến (Local)');
-                    } catch (e) {
-                        initDefaultData();
-                        updateSyncStatusUI('error', 'Lỗi dữ liệu local');
-                    }
-                } else {
-                    initDefaultData();
-                    updateSyncStatusUI('error', 'Không kết nối');
-                }
+                console.warn("Không kết nối trực tiếp được API Cloud, duy trì giao diện Local:", error);
+                updateSyncStatusUI('error', 'Ngoại tuyến (Local)');
             } finally {
-                // Render toàn bộ dữ liệu ra màn hình sau khi hoàn tất nạp
                 renderAll();
-
-                // Đóng màn hình Preloader với hiệu ứng mượt
                 setTimeout(() => {
                     const preloader = document.getElementById('app-preloader');
                     const container = document.querySelector('.container');
                     if (preloader) preloader.classList.add('loaded');
                     if (container) container.classList.add('app-ready');
-                }, 600);
+                }, 400);
             }
         }
 
         function initDefaultOrder() {
             columnOrder = {
-                col1: layoutData.col1.map(s => s.id),
-                col2a: layoutData.col2a.map(s => s.id),
-                col2b: layoutData.col2b.map(s => s.id),
-                col3: layoutData.col3.map(s => s.id)
+                col1: defaultLayout.col1.map(s => s.id),
+                col2a: defaultLayout.col2a.map(s => s.id),
+                col2b: defaultLayout.col2b.map(s => s.id),
+                col3: defaultLayout.col3.map(s => s.id)
             };
-        }
-
-        function initDefaultData() {
-            initDefaultOrder();
-            saveLocal();
         }
 
         function saveLocal() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                customNames,
-                inventoryState,
-                columnOrder
-            }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ customNames, inventoryState, columnOrder }));
         }
 
-        // HÀM ĐỒNG BỘ CHỦ ĐỘNG KHI CLICK (SYNC NOW)
+        // HÀM ĐỒNG BỘ CHỦ ĐỘNG LÊN GOOGLE SHEETS
         async function syncNow() {
-            updateSyncStatusUI('syncing', 'Đang gửi...');
-            showToast('Đang tiến hành đồng bộ dữ liệu lên Cloud...', 'info');
-
-            const payload = {
-                customNames,
-                inventoryState,
-                columnOrder
-            };
+            updateSyncStatusUI('syncing', 'Đang gửi dữ liệu...');
+            showToast('Đang gửi dữ liệu lên Cloud...', 'info');
 
             try {
                 const res = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors',
+                    method: 'POST', mode: 'cors', redirect: 'follow',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ customNames, inventoryState, columnOrder })
                 });
-
                 const result = await res.json();
                 if (result.status === 'success') {
                     updateSyncStatusUI('success', 'Đã đồng bộ');
-                    showToast('Hệ thống cập nhật thành công lên Google Sheets!', 'success');
-                } else {
-                    throw new Error(result.message || 'Lỗi server');
-                }
+                    showToast('Đồng bộ thành công lên Google Sheets!', 'success');
+                } else { throw new Error(); }
             } catch (err) {
-                console.error("Lỗi đồng bộ dữ liệu:", err);
-                updateSyncStatusUI('error', 'Thất bại');
-                showToast('Không thể gửi dữ liệu. Đã sao lưu cục bộ (Local)!', 'danger');
+                updateSyncStatusUI('error', 'Lỗi kết nối');
+                showToast('Không gửi được dữ liệu. Hệ thống tự lưu đệm Local!', 'warning');
             }
         }
 
-        // RENDER VÀ CÁC LOGIC CHỨC NĂNG CHÍNH CỦA SƠ ĐỒ SÀN
+        // RENDER SƠ ĐỒ CHỖ NGỒI VÀ TÀI SẢN
         function renderAll() {
             renderLeaders();
             renderColumn('col1', 'col-1');
@@ -1006,14 +492,17 @@
         }
 
         function renderLeaders() {
-            layoutData.leaders.forEach(lead => {
+            defaultLayout.leaders.forEach(lead => {
                 const el = document.getElementById(lead.targetId);
                 if (!el) return;
                 const cName = customNames[lead.id] || lead.name;
                 el.innerHTML = `
-                    <div class="seat-box ${lead.fill}" style="border:2px solid var(--purple); text-align:center; font-weight:bold;">
-                        <div style="font-size:11px; color:var(--purple); margin-bottom:4px;">LEADER (${lead.team})</div>
-                        <span class="seat-name" onclick="startRename('${lead.id}', event)">${cName}</span>
+                    <div class="seat-box ${lead.fill}" style="border: 2px solid var(--purple); padding:8px; text-align:center;">
+                        <div style="font-size:10px; color:var(--purple); font-weight:bold;">LEADER (${lead.team})</div>
+                        <div class="seat-title-wrap" style="justify-content:center;">
+                            <span class="seat-name">${cName}</span>
+                            <button class="btn-edit-name" onclick="startRename('${lead.id}', event)">✏️</button>
+                        </div>
                     </div>
                 `;
             });
@@ -1025,13 +514,6 @@
             container.innerHTML = '';
 
             const ids = columnOrder[colKey] || [];
-            
-            // Bảo toàn nếu danh sách ID rỗng
-            if(ids.length === 0 && layoutData[colKey]) {
-                layoutData[colKey].forEach(s => ids.push(s.id));
-                columnOrder[colKey] = ids;
-            }
-
             ids.forEach(id => {
                 const seat = findSeatById(id);
                 if (!seat) return;
@@ -1045,53 +527,36 @@
 
                 const card = document.createElement('div');
                 card.className = `seat-box ${seat.fill}`;
-                card.draggable = true;
                 card.id = `card-${id}`;
-                
-                card.ondragstart = (e) => handleDragStart(e, id, colKey);
-                card.ondragend = handleDragEnd;
+                card.draggable = true;
+                card.ondragstart = (e) => { e.dataTransfer.setData('text/plain', JSON.stringify({ id, fromCol: colKey })); };
 
                 const displayName = customNames[id] || seat.name;
+                // Khôi phục đồng bộ đúng key dữ liệu tránh biến thành số 0
                 const state = inventoryState[id] || { thung: false, man20: 0, man24: 0, chuot: false, phim: false, tai: false, laptop: 0, laptopTui: 0 };
 
                 card.innerHTML = `
                     <div class="seat-header">
-                        <span class="seat-name" onclick="startRename('${id}', event)">${displayName}</span>
-                        <div class="btn-action-group">
-                            <button class="btn-mini btn-mini-danger" onclick="deleteSeat('${colKey}','${id}')">✕</button>
+                        <div class="seat-title-wrap">
+                            <span class="seat-name">${displayName}</span>
+                            <button class="btn-edit-name" onclick="startRename('${id}', event)">✏️</button>
                         </div>
+                        <button class="btn-mini btn-mini-danger" onclick="deleteSeat('${colKey}','${id}')">✕</button>
                     </div>
                     <div class="items-grid">
-                        <label class="item-check">
-                            <input type="checkbox" ${state.thung ? 'checked' : ''} onchange="toggleHardware('${id}', 'thung')"> PC
-                        </label>
-                        <div class="item-check">
-                            🖥️20: <input type="number" class="qty-input" min="0" max="9" value="${state.man20 || 0}" onchange="changeQty('${id}', 'man20', this.value)">
-                        </div>
-                        <div class="item-check">
-                            🖥️24: <input type="number" class="qty-input" min="0" max="9" value="${state.man24 || 0}" onchange="changeQty('${id}', 'man24', this.value)">
-                        </div>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.chuot ? 'checked' : ''} onchange="toggleHardware('${id}', 'chuot')"> Chuột
-                        </label>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.phim ? 'checked' : ''} onchange="toggleHardware('${id}', 'phim')"> Phím
-                        </label>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.tai ? 'checked' : ''} onchange="toggleHardware('${id}', 'tai')"> TaiNghe
-                        </label>
-                        <div class="item-check" style="grid-column: span 2;">
-                            💻 Thường: <input type="number" class="qty-input" min="0" max="9" value="${state.laptop || 0}" onchange="changeQty('${id}', 'laptop', this.value)">
-                        </div>
-                        <div class="item-check" style="grid-column: span 2;">
-                            💼 Có Túi: <input type="number" class="qty-input" min="0" max="9" value="${state.laptopTui || 0}" onchange="changeQty('${id}', 'laptopTui', this.value)">
-                        </div>
+                        <label class="item-check"><input type="checkbox" ${state.thung ? 'checked' : ''} onchange="toggleHardware('${id}', 'thung')"> PC</label>
+                        <div class="item-check">🖥️20: <input type="number" class="qty-input" min="0" value="${state.man20 || 0}" onchange="changeQty('${id}', 'man20', this.value)"></div>
+                        <div class="item-check">🖥️24: <input type="number" class="qty-input" min="0" value="${state.man24 || 0}" onchange="changeQty('${id}', 'man24', this.value)"></div>
+                        <label class="item-check"><input type="checkbox" ${state.chuot ? 'checked' : ''} onchange="toggleHardware('${id}', 'chuot')"> Chuột</label>
+                        <label class="item-check"><input type="checkbox" ${state.phim ? 'checked' : ''} onchange="toggleHardware('${id}', 'phim')"> Phím</label>
+                        <label class="item-check"><input type="checkbox" ${state.tai ? 'checked' : ''} onchange="toggleHardware('${id}', 'tai')"> TaiNghe</label>
+                        <div class="item-check" style="grid-column: span 2;">💻 Thường: <input type="number" class="qty-input" min="0" value="${state.laptop || 0}" onchange="changeQty('${id}', 'laptop', this.value)"></div>
+                        <div class="item-check" style="grid-column: span 2;">💼 Có Túi: <input type="number" class="qty-input" min="0" value="${state.laptopTui || 0}" onchange="changeQty('${id}', 'laptopTui', this.value)"></div>
                     </div>
                 `;
                 container.appendChild(card);
             });
 
-            // Bổ sung nút thêm chỗ ngồi nhanh ở cuối mỗi cột
             const colActions = document.createElement('div');
             colActions.className = 'col-actions';
             colActions.innerHTML = `<button class="btn-col-action" onclick="addNewSeat('${colKey}')">＋ Thêm Chỗ Ngồi</button>`;
@@ -1099,19 +564,22 @@
         }
 
         function findSeatById(id) {
-            for (const key in layoutData) {
-                if (Array.isArray(layoutData[key])) {
-                    const found = layoutData[key].find(s => s.id === id);
+            for (const key in defaultLayout) {
+                if (Array.isArray(defaultLayout[key])) {
+                    const found = defaultLayout[key].find(s => s.id === id);
                     if (found) return found;
                 }
             }
-            return null;
+            return { id, name: "VỊ TRÍ MỚI", fill: "fill-purple" };
         }
 
-        // ĐỔI TÊN THÀNH VIÊN TRỰC TIẾP (INLINE RENAME)
+        // ĐỔI TÊN NÚT BẤM CÂY VIẾT (EDIT LOGIC)
         function startRename(id, event) {
-            const el = event.currentTarget;
-            const currentText = el.innerText;
+            const btn = event.currentTarget;
+            const parent = btn.parentElement;
+            const nameSpan = parent.querySelector('.seat-name');
+            const currentText = customNames[id] || (nameSpan ? nameSpan.innerText : "CHỖ TRỐNG");
+
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'rename-input';
@@ -1123,17 +591,14 @@
                 saveLocal();
                 renderAll();
             };
+            input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); };
 
-            input.onkeydown = (e) => {
-                if (e.key === 'Enter') input.blur();
-            };
-
-            el.replaceWith(input);
+            if(nameSpan) nameSpan.replaceWith(input);
+            btn.style.display = 'none';
             input.focus();
             input.select();
         }
 
-        // QUẢN LÝ THAY ĐỔI TRẠNG THÁI THIẾT BỊ
         function toggleHardware(seatId, field) {
             if (!inventoryState[seatId]) inventoryState[seatId] = {};
             inventoryState[seatId][field] = !inventoryState[seatId][field];
@@ -1148,79 +613,40 @@
             calculateStats();
         }
 
-        // THÊM CHỖ NGỒI VÀ XÓA VỊ TRÍ
         function addNewSeat(colKey) {
             const newId = 'C_' + Date.now();
-            if (!layoutData[colKey]) layoutData[colKey] = [];
-            
-            layoutData[colKey].push({ id: newId, name: "VỊ TRÍ MỚI", fill: "fill-purple" });
             columnOrder[colKey].push(newId);
-            
             saveLocal();
             renderAll();
-            showToast('Đã thêm chỗ ngồi mới!', 'success');
         }
 
         function deleteSeat(colKey, id) {
-            if (confirm("Bạn có chắc chắn muốn xóa vị trí này khỏi sơ đồ?")) {
+            if (confirm("Xóa vị trí ngồi này khỏi sơ đồ?")) {
                 columnOrder[colKey] = columnOrder[colKey].filter(x => x !== id);
                 saveLocal();
                 renderAll();
-                showToast('Đã loại bỏ vị trí!', 'warning');
             }
         }
 
-        // LOGIC KÉO THẢ VỊ TRÍ (DRAG & DROP)
-        let dragInfo = null;
-
-        function handleDragStart(e, seatId, fromCol) {
-            dragInfo = { seatId, fromCol };
-            e.currentTarget.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        function handleDragEnd(e) {
-            e.currentTarget.classList.remove('dragging');
-            document.querySelectorAll('.seat-box').forEach(b => b.classList.remove('drop-target'));
-        }
-
-        function handleColumnDragOver(e) {
+        function allowDrop(e) { e.preventDefault(); }
+        function handleDrop(e, toCol) {
             e.preventDefault();
-            const box = e.target.closest('.seat-box');
-            if (box && !box.classList.contains('dragging')) {
-                box.classList.add('drop-target');
-            }
+            try {
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                if (!data || !data.id) return;
+                
+                columnOrder[data.fromCol] = columnOrder[data.fromCol].filter(x => x !== data.id);
+                columnOrder[toCol].push(data.id);
+                saveLocal();
+                renderAll();
+            } catch(err) {}
         }
 
-        function handleColumnDrop(e, toCol) {
-            e.preventDefault();
-            if (!dragInfo) return;
-
-            const { seatId, fromCol } = dragInfo;
-            const targetBox = e.target.closest('.seat-box');
-            
-            // Xóa ID khỏi cột cũ
-            columnOrder[fromCol] = columnOrder[fromCol].filter(id => id !== seatId);
-
-            let targetIndex = columnOrder[toCol].length;
-            if (targetBox && targetBox.id) {
-                const targetId = targetBox.id.replace('card-', '');
-                targetIndex = columnOrder[toCol].indexOf(targetId);
-            }
-
-            columnOrder[toCol].splice(targetIndex, 0, seatId);
-            dragInfo = null;
-
-            saveLocal();
-            renderAll();
-        }
-
-        // TÍNH TOÁN THỐNG KÊ TOÀN SÀN
+        // TÍNH TOÁN DỮ LIỆU ĐỒNG BỘ CHUẨN XÁC TOÀN SÀN
         function calculateStats() {
             let total = { thung: 0, man20: 0, man24: 0, chuot: 0, phim: 0, tai: 0, laptop: 0, laptopTui: 0 };
+            const allActiveIds = [...columnOrder.col1, ...columnOrder.col2a, ...columnOrder.col2b, ...columnOrder.col3, "L1", "L2A", "L2B", "L3"];
 
-            const allActiveIds = [...columnOrder.col1, ...columnOrder.col2a, ...columnOrder.col2b, ...columnOrder.col3];
-            
             allActiveIds.forEach(id => {
                 const state = inventoryState[id];
                 if (state) {
@@ -1245,7 +671,6 @@
             document.getElementById('count-laptop-tui').innerText = total.laptopTui;
         }
 
-        // TÌM KIẾM NHÂN VIÊN
         function searchEmployee() {
             const val = document.getElementById('search-input').value.toLowerCase();
             document.querySelectorAll('.seat-column .seat-box').forEach(box => {
@@ -1253,142 +678,87 @@
                 const nameEl = box.querySelector('.seat-name');
                 if (nameEl && nameEl.innerText.toLowerCase().includes(val)) {
                     box.style.display = 'block';
-                } else if (nameEl) {
-                    box.style.display = 'none';
-                }
+                } else if (nameEl) { box.style.display = 'none'; }
             });
         }
 
-        // XUẤT NHẬP FILE DỮ LIỆU (EXCEL / JSON)
         function exportJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ customNames, inventoryState, columnOrder }));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `kiem_ke_lau2_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            const dBtn = document.createElement('a'); dBtn.href = dataStr;
+            dBtn.download = `kiem_ke_lau2_${new Date().toISOString().slice(0,10)}.json`;
+            dBtn.click();
         }
 
         function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (parsed.customNames) customNames = parsed.customNames;
-                    if (parsed.inventoryState) inventoryState = parsed.inventoryState;
-                    if (parsed.columnOrder) columnOrder = parsed.columnOrder;
-                    saveLocal();
-                    renderAll();
-                    showToast('Nhập dữ liệu JSON hoàn tất!', 'success');
-                } catch (err) {
-                    showToast('File JSON không đúng định dạng chuẩn!', 'danger');
-                }
+            const file = event.target.files[0]; if (!file) return;
+            const r = new FileReader();
+            r.onload = function(e) {
+                const parsed = JSON.parse(e.target.result);
+                if (parsed.customNames) customNames = parsed.customNames;
+                if (parsed.inventoryState) inventoryState = parsed.inventoryState;
+                if (parsed.columnOrder) columnOrder = parsed.columnOrder;
+                saveLocal(); renderAll(); showToast('Nhập JSON hoàn tất!', 'success');
             };
-            reader.readAsText(file);
+            r.readAsText(file);
         }
 
         function exportExcel() {
             let flatData = [];
             const cols = { 'Cột A': 'col1', 'Cột B': 'col2a', 'Cột C': 'col2b', 'Cột D': 'col3' };
-            
             for (const [colName, colKey] of Object.entries(cols)) {
-                (columnOrder[colKey] || []).forEach((id, index) => {
-                    const seat = findSeatById(id);
-                    if (!seat || seat.fill === 'empty-space') return;
+                (columnOrder[colKey] || []).forEach((id, idx) => {
+                    const seat = findSeatById(id); if (!seat || seat.fill === 'empty-space') return;
                     const state = inventoryState[id] || {};
                     flatData.push({
-                        'Vị trí sàn': colName,
-                        'Thứ tự': index + 1,
-                        'Mã Ghế': id,
-                        'Tên Nhân Viên': customNames[id] || seat.name,
-                        'PC Thùng Máy': state.thung ? 1 : 0,
-                        'Màn hình 20 inch': state.man20 || 0,
-                        'Màn hình 24 inch': state.man24 || 0,
-                        'Chuột': state.chuot ? 1 : 0,
-                        'Bàn Phím': state.phim ? 1 : 0,
-                        'Tai Nghe': state.tai ? 1 : 0,
-                        'Laptop Thường': state.laptop || 0,
-                        'Laptop Kèm Túi': state.laptopTui || 0
+                        'Vị trí sàn': colName, 'Thứ tự': idx + 1, 'Mã Ghế': id,
+                        'Tên Nhân Viên': customNames[id] || seat.name, 'PC Thùng Máy': state.thung ? 1 : 0,
+                        'Màn hình 20 inch': state.man20 || 0, 'Màn hình 24 inch': state.man24 || 0,
+                        'Chuột': state.chuot ? 1 : 0, 'Bàn Phím': state.phim ? 1 : 0, 'Tai Nghe': state.tai ? 1 : 0,
+                        'Laptop Thường': state.laptop || 0, 'Laptop Kèm Túi': state.laptopTui || 0
                     });
                 });
             }
-
             const worksheet = XLSX.utils.json_to_sheet(flatData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "KiemKe_Lau2");
-            XLSX.writeFile(workbook, `KiemKe_SanLau2_${new Date().toISOString().slice(0,10)}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Lau2");
+            XLSX.writeFile(workbook, `KiemKe_Lau2.xlsx`);
         }
 
         function importExcel(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-                    rows.forEach(row => {
-                        const id = row['Mã Ghế'];
-                        if (!id) return;
-                        if (row['Tên Nhân Viên']) customNames[id] = row['Tên Nhân Viên'];
-                        
-                        inventoryState[id] = {
-                            thung: !!row['PC Thùng Máy'],
-                            man20: parseInt(row['Màn hình 20 inch']) || 0,
-                            man24: parseInt(row['Màn hình 24 inch']) || 0,
-                            chuot: !!row['Chuột'],
-                            phim: !!row['Bàn Phím'],
-                            tai: !!row['Tai Nghe'],
-                            laptop: parseInt(row['Laptop Thường']) || 0,
-                            laptopTui: parseInt(row['Laptop Kèm Túi']) || 0
-                        };
-                    });
-
-                    saveLocal();
-                    renderAll();
-                    showToast('Đã đồng bộ dữ liệu nhập từ Excel!', 'success');
-                } catch (err) {
-                    showToast('Không thể đọc file Excel. Vui lòng kiểm tra lại cấu trúc hàng!', 'danger');
-                }
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                rows.forEach(row => {
+                    const id = row['Mã Ghế']; if (!id) return;
+                    if (row['Tên Nhân Viên']) customNames[id] = row['Tên Nhân Viên'];
+                    inventoryState[id] = {
+                        thung: !!row['PC Thùng Máy'], man20: parseInt(row['Màn hình 20 inch']) || 0,
+                        man24: parseInt(row['Màn hình 24 inch']) || 0, chuột: !!row['Chuột'],
+                        phim: !!row['Bàn Phím'], tai: !!row['Tai Nghe'],
+                        laptop: parseInt(row['Laptop Thường']) || 0, laptopTui: parseInt(row['Laptop Kèm Túi']) || 0
+                    };
+                });
+                saveLocal(); renderAll(); showToast('Nhập Excel hoàn tất!', 'success');
             };
             reader.readAsArrayBuffer(file);
         }
 
         function resetAllInventory() {
-            if (confirm("Hành động này sẽ xóa toàn bộ trạng thái kiểm kê tài sản và tên tùy chỉnh hiện tại trên bộ nhớ. Bạn có chắc chắn?")) {
-                customNames = {};
-                inventoryState = {};
-                initDefaultOrder();
-                saveLocal();
-                renderAll();
-                showToast('Đã xóa sạch dữ liệu lưu cấu hình sàn!', 'warning');
+            if (confirm("Xóa toàn bộ dữ liệu cấu hình sàn?")) {
+                customNames = {}; inventoryState = {}; initDefaultOrder();
+                saveLocal(); renderAll();
             }
         }
 
-        let toastTimeout;
         function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = 'show';
-            
-            if(type === 'success') t.style.borderLeftColor = 'var(--green)';
-            else if(type === 'danger') t.style.borderLeftColor = 'var(--red)';
-            else if(type === 'warning') t.style.borderLeftColor = 'var(--yellow)';
-            else t.style.borderLeftColor = 'var(--blue)';
-
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                t.className = 'hide';
-            }, 3000);
+            const t = document.getElementById('toast'); t.innerText = msg; t.className = 'show';
+            setTimeout(() => { t.className = ''; }, 3000);
         }
 
-        // KHỞI CHẠY KHÔNG GIAN ỨNG DỤNG
+        // KHỞI CHẠY HỆ THỐNG
         loadData();
     </script>
 </body>
