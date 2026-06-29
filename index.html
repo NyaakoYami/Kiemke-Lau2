@@ -207,6 +207,33 @@
             font-weight: 600;
         }
 
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .status-green {
+            background: #4caf50;
+        }
+
+        .status-red {
+            background: #f03e3e;
+        }
+
+        .status-yellow {
+            background: #f59f00;
+        }
+
+        .status-label {
+            font-size: 12px;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
         /* ─── STAT CARDS ─── */
         .detail-grid {
             display: grid;
@@ -432,6 +459,16 @@
             z-index: 2;
         }
 
+        .seat-box.dragging {
+            opacity: 0.45;
+            transform: scale(0.98);
+        }
+
+        .seat-box.drop-target {
+            outline: 2px dashed #3b5bdb;
+            outline-offset: -4px;
+        }
+
         .seat-box.empty-space {
             background: transparent !important;
             border: none !important;
@@ -632,6 +669,7 @@
             </div>
             <div class="header-right">
                 <span class="header-badge" id="date-badge"></span>
+                <span class="header-badge" id="sync-status-badge">● <span class="status-label">Sẵn sàng</span></span>
             </div>
         </div>
 
@@ -684,7 +722,6 @@
                 <input type="text" id="search-input" placeholder="Tìm kiếm tên nhân viên..." oninput="searchEmployee()">
             </div>
             <div class="btn-group">
-                <div id="sync-status-badge">💾 Sẵn sàng</div>
                 <button class="btn btn-sync" id="btn-sync" onclick="syncNow()">☁️ Đồng bộ ngay</button>
                 <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất JSON</button>
                 <button class="btn btn-success" onclick="exportExcel()"
@@ -712,21 +749,25 @@
         <div class="layout-grid" id="main-grid">
             <div class="col-wrapper">
                 <div class="column-main-header" style="background:#eef2ff; color:#3b5bdb; border-color:#bac8ff;">A</div>
-                <div class="seat-column" id="col-1"></div>
+                <div class="seat-column" id="col-1" ondragover="handleColumnDragOver(event)"
+                    ondrop="handleColumnDrop(event,'col1')"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
                 <div class="column-main-header" style="background:#fff5f5; color:#e03131; border-color:#fca5a5;">B</div>
-                <div class="seat-column" id="col-2a"></div>
+                <div class="seat-column" id="col-2a" ondragover="handleColumnDragOver(event)"
+                    ondrop="handleColumnDrop(event,'col2a')"></div>
             </div>
             <div class="col-wrapper">
                 <div class="column-main-header" style="background:#fff0f6; color:#c2255c; border-color:#fbb6ce;">C</div>
-                <div class="seat-column" id="col-2b"></div>
+                <div class="seat-column" id="col-2b" ondragover="handleColumnDragOver(event)"
+                    ondrop="handleColumnDrop(event,'col2b')"></div>
             </div>
             <div class="aisle">LỐI ĐI</div>
             <div class="col-wrapper">
                 <div class="column-main-header" style="background:#f3f0ff; color:#7048e8; border-color:#d0bfff;">D</div>
-                <div class="seat-column" id="col-3"></div>
+                <div class="seat-column" id="col-3" ondragover="handleColumnDragOver(event)"
+                    ondrop="handleColumnDrop(event,'col3')"></div>
             </div>
         </div>
     </div>
@@ -738,7 +779,7 @@
         document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         const STORAGE_KEY = 'inventoryDataV2';
-        
+
         // ĐƯỜNG DẪN WEB APP ĐÃ ĐƯỢC KẾT NỐI CHUẨN XÁC
         const WEB_APP_URL = 'https://script.google.com/a/macros/now.vn/s/AKfycbzvSHG8V58sygXBWu2fdPQ_KDuUwKs7p_Gx6eLpNOW_i9cuvm6tCew_LSNLbM8skOmW/exec';
 
@@ -789,21 +830,46 @@
             };
         }
 
+        function ensureSeatState(id) {
+            if (!inventoryState[id]) initSeatState(id);
+            return inventoryState[id];
+        }
+
+        function normalizeInventoryState() {
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(col => {
+                layoutData[col].forEach(seat => {
+                    if (seat.id.indexOf('blank') === -1) {
+                        ensureSeatState(seat.id);
+                    }
+                });
+            });
+            layoutData.leaders.forEach(leader => ensureSeatState(leader.id));
+        }
+
         // TỰ ĐỘNG TẢI DỮ LIỆU TỪ ĐÁM MÂY KHI LOAD TRANG
         function loadData() {
             // Bước 1: Đọc dữ liệu từ bộ nhớ trình duyệt làm nền trước
             const stored = localStorage.getItem(STORAGE_KEY);
+            let hasValidStorage = false;
             if (stored) {
                 try {
                     const data = JSON.parse(stored);
-                    if (data.columnOrder) columnOrder = data.columnOrder;
-                    if (data.layoutData) layoutData = data.layoutData;
-                    if (data.inventoryState) inventoryState = data.inventoryState;
-                    if (data.customNames) customNames = data.customNames;
-                } catch (e) { initDefaultData(); }
-            } else {
+                    if (data.columnOrder && data.layoutData && data.inventoryState) {
+                        columnOrder = data.columnOrder;
+                        layoutData = data.layoutData;
+                        inventoryState = data.inventoryState;
+                        customNames = data.customNames || {};
+                        hasValidStorage = true;
+                    }
+                } catch (e) {
+                    console.warn('LocalStorage parse failed, using defaults.', e);
+                }
+            }
+            if (!hasValidStorage) {
                 initDefaultData();
             }
+            normalizeInventoryState();
+            saveLocal();
             renderAll();
 
             // Bước 2: Gọi API kéo dữ liệu mới nhất trên Google Sheets về (Bảo toàn đồng bộ đa thiết bị)
@@ -812,27 +878,26 @@
                 method: "GET",
                 redirect: "follow"
             })
-            .then(res => res.json())
-            .then(cloudData => {
-                if (cloudData && cloudData.inventoryState) {
-                    columnOrder = cloudData.columnOrder || columnOrder;
-                    layoutData = cloudData.layoutData || layoutData;
-                    inventoryState = cloudData.inventoryState || inventoryState;
-                    customNames = cloudData.customNames || customNames;
-                    
-                    // Ghi đè lại vào bộ nhớ trình duyệt phòng khi mất mạng
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
-                    renderAll();
-                    updateSyncStatus('synced');
-                    showToast('☁️ Đã tải dữ liệu đồng bộ mới nhất từ đám mây!', 'success');
-                } else {
-                    updateSyncStatus('synced');
-                }
-            })
-            .catch(err => {
-                console.log("Không thể kết nối Cloud, sử dụng dữ liệu Offline tạm thời:", err);
-                updateSyncStatus('unsynced');
-            });
+                .then(res => res.json())
+                .then(cloudData => {
+                    if (cloudData && cloudData.inventoryState) {
+                        columnOrder = cloudData.columnOrder || columnOrder;
+                        layoutData = cloudData.layoutData || layoutData;
+                        inventoryState = cloudData.inventoryState || inventoryState;
+                        customNames = cloudData.customNames || customNames;
+
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
+                        renderAll();
+                        updateSyncStatus('synced');
+                        showToast('☁️ Đã tải dữ liệu đồng bộ mới nhất từ đám mây!', 'success');
+                    } else {
+                        updateSyncStatus('synced');
+                    }
+                })
+                .catch(err => {
+                    console.log("Không thể kết nối Cloud, sử dụng dữ liệu Offline tạm thời:", err);
+                    updateSyncStatus('unsynced');
+                });
         }
 
         function saveLocal() {
@@ -846,11 +911,11 @@
             if (!badge) return;
             const now = new Date().toLocaleTimeString('vi-VN');
             if (status === 'unsynced') {
-                badge.innerHTML = `💾 Lưu lúc ${now} <span style="color:var(--yellow); font-weight:700;">• Chưa đồng bộ</span>`;
+                badge.innerHTML = `<span class="status-dot status-red"></span><span class="status-label">Chưa đồng bộ • ${now}</span>`;
             } else if (status === 'syncing') {
-                badge.innerHTML = `⏳ Đang kết nối...`;
+                badge.innerHTML = `<span class="status-dot status-yellow"></span><span class="status-label">Đang kết nối...</span>`;
             } else if (status === 'synced') {
-                badge.innerHTML = `✅ Đã đồng bộ lúc ${now}`;
+                badge.innerHTML = `<span class="status-dot status-green"></span><span class="status-label">Đã đồng bộ • ${now}</span>`;
             }
         }
 
@@ -878,23 +943,23 @@
                 body: JSON.stringify(dataToSync),
                 redirect: 'follow'
             })
-            .then(res => res.json())
-            .then(res => {
-                if (res.ok) {
-                    updateSyncStatus('synced');
-                    showToast('☁️ Đồng bộ lên đám mây thành công!', 'success');
-                } else {
-                    throw new Error(res.error || "Lỗi lưu dữ liệu");
-                }
-            })
-            .catch(err => {
-                console.error("Lỗi đồng bộ đám mây:", err);
-                updateSyncStatus('unsynced');
-                showToast('❌ Lỗi đồng bộ! Kiểm tra phân quyền Apps Script.', 'error');
-            })
-            .finally(() => {
-                btn.innerHTML = oldHtml;
-            });
+                .then(res => res.json())
+                .then(res => {
+                    if (res.ok) {
+                        updateSyncStatus('synced');
+                        showToast('☁️ Đồng bộ lên đám mây thành công!', 'success');
+                    } else {
+                        throw new Error(res.error || "Lỗi lưu dữ liệu");
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi đồng bộ đám mây:", err);
+                    updateSyncStatus('unsynced');
+                    showToast('❌ Lỗi đồng bộ! Kiểm tra phân quyền Apps Script.', 'error');
+                })
+                .finally(() => {
+                    btn.innerHTML = oldHtml;
+                });
         }
 
         function getItemsHtml(seatId, state, isLeader) {
@@ -1052,7 +1117,7 @@
                 const state = inventoryState[id];
 
                 html += `
-                <div class="seat-box ${seat.fill}">
+                <div class="seat-box ${seat.fill}" draggable="true" ondragstart="handleDragStart(event,'${id}','${colKey}')" ondragend="handleDragEnd(event)">
                     <div class="seat-header">
                         <div id="name-wrap-${seat.id}" class="seat-name" onclick="startRename('${seat.id}', '${colKey}')" title="Nhấn để sửa tên">
                             ${customNames[seat.id] || seat.name} <span style="font-size:10px; color:#9ca3af; margin-left:4px;">✏️</span>
@@ -1263,6 +1328,71 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        let dragPayload = null;
+
+        function handleDragStart(event, seatId, fromCol) {
+            dragPayload = { seatId, fromCol };
+            event.dataTransfer.effectAllowed = 'move';
+            event.currentTarget.classList.add('dragging');
+        }
+
+        function handleDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.seat-box.drop-target').forEach(el => el.classList.remove('drop-target'));
+        }
+
+        function handleColumnDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const box = event.target.closest('.seat-box');
+            document.querySelectorAll('.seat-box.drop-target').forEach(el => el.classList.remove('drop-target'));
+            if (box && !box.classList.contains('empty-space')) {
+                box.classList.add('drop-target');
+            }
+        }
+
+        function handleColumnDrop(event, targetCol) {
+            event.preventDefault();
+            const box = event.target.closest('.seat-box');
+            if (!dragPayload || !box || box.classList.contains('empty-space')) {
+                dragPayload = null;
+                return;
+            }
+            const targetSeatId = box.querySelector('.seat-name')?.id?.replace('name-wrap-', '');
+            if (!targetSeatId) {
+                dragPayload = null;
+                return;
+            }
+            moveSeat(dragPayload.seatId, dragPayload.fromCol, targetCol, targetSeatId);
+            dragPayload = null;
+        }
+
+        function moveSeat(seatId, fromCol, toCol, beforeSeatId) {
+            if (!seatId || !fromCol || !toCol || !beforeSeatId) return;
+            if (fromCol === toCol && columnOrder[fromCol].indexOf(seatId) === -1) return;
+            const fromIndex = columnOrder[fromCol].indexOf(seatId);
+            const targetIndex = columnOrder[toCol].indexOf(beforeSeatId);
+            if (fromIndex === -1 || targetIndex === -1) return;
+
+            columnOrder[fromCol].splice(fromIndex, 1);
+            if (fromCol === toCol && targetIndex > fromIndex) {
+                columnOrder[toCol].splice(targetIndex, 0, seatId);
+            } else {
+                columnOrder[toCol].splice(targetIndex, 0, seatId);
+            }
+
+            if (fromCol !== toCol) {
+                const seatObj = layoutData[fromCol].find(s => s.id === seatId);
+                if (seatObj) {
+                    layoutData[fromCol] = layoutData[fromCol].filter(s => s.id !== seatId);
+                    layoutData[toCol].splice(targetIndex, 0, seatObj);
+                }
+            }
+
+            saveLocal();
+            renderAll();
         }
 
         function searchEmployee() {
