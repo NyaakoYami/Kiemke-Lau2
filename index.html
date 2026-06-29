@@ -113,19 +113,6 @@
             }
         }
 
-        /* Hiệu ứng nhịp đập cho đốm sáng pulse */
-        @keyframes statusPulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-            }
-        }
-
         :root {
             --bg: #f0f2f7;
             --surface: #fff;
@@ -168,18 +155,9 @@
             padding-bottom: 80px;
         }
 
-        /* Thêm hiệu ứng khởi tạo mượt mà khi load trang */
         .container {
             max-width: 1640px;
             margin: 0 auto;
-            opacity: 0;
-            transform: translateY(8px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .container.loaded {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         /* ─── HEADER ─── */
@@ -214,7 +192,7 @@
 
         .header-right {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
@@ -229,41 +207,31 @@
             font-weight: 600;
         }
 
-        /* ─── MINI DASHBOARD CONTROL UI ─── */
-        .sync-mini-dashboard {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 6px 14px;
-            border-radius: 30px;
-            transition: var(--transition);
-        }
-
-        .sync-mini-dashboard:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
-        .pulse-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .status-dot {
             display: inline-block;
-            transition: background-color 0.3s ease;
-            animation: statusPulse 2s infinite ease-in-out;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
         }
 
-        /* Đốm sáng pulse động dựa theo từng trạng thái màu sắc */
-        .sync-mini-dashboard.ready .pulse-indicator { background-color: #4caf50; }
-        .sync-mini-dashboard.syncing .pulse-indicator { background-color: #f59f00; }
-        .sync-mini-dashboard.error .pulse-indicator { background-color: #f03e3e; }
+        .status-green {
+            background: #4caf50;
+        }
 
-        .sync-mini-dashboard .dashboard-status-label {
+        .status-red {
+            background: #f03e3e;
+        }
+
+        .status-yellow {
+            background: #f59f00;
+        }
+
+        .status-label {
             font-size: 12px;
             font-weight: 600;
-            color: #fff;
+            vertical-align: middle;
         }
 
         /* ─── STAT CARDS ─── */
@@ -701,10 +669,7 @@
             </div>
             <div class="header-right">
                 <span class="header-badge" id="date-badge"></span>
-                <div class="sync-mini-dashboard ready" id="sync-mini-dashboard">
-                    <span class="pulse-indicator"></span>
-                    <span class="dashboard-status-label" id="dashboard-status-text">Sẵn sàng</span>
-                </div>
+                <span class="header-badge" id="sync-status-badge">● <span class="status-label">Sẵn sàng</span></span>
             </div>
         </div>
 
@@ -830,625 +795,589 @@
                 { id: "L3", name: "D", count: "19", targetId: "leader-header-3", fill: "fill-purple", team: "TRAN_OANH" }
             ],
             col1: [
-                { id: "1_1", name: "CHỖ TRỐNG", fill: "fill-purple" },
-                { id: "1_2", name: "MINH NHỰT", fill: "fill-purple" },
-                { id: "1_3", name: "ĐAN VY", fill: "fill-purple" },
-                { id: "1_4", name: "LONG NHÂN", fill: "fill-green" },
-                { id: "1_5", name: "TÁN PHÚC", fill: "fill-green" },
-                { id: "1_blank1", name: "", fill: "empty-space" },
-                { id: "1_6", name: "TRỰC", fill: "fill-purple" },
-                { id: "1_7", name: "THẮNG", fill: "fill-purple" },
-                { id: "1_8", name: "KIM NGÂN", fill: "fill-purple" },
-                { id: "1_9", name: "NHẬT KHÁNH", fill: "fill-purple" },
-                { id: "1_10", name: "PHÚ SĨ SENIOR", fill: "fill-yellow" },
-                { id: "1_11", name: "CHÍNH SENIOR", fill: "fill-yellow" },
-                { id: "1_blank2", name: "", fill: "empty-space" },
-                { id: "1_12", name: "PT - PHƯƠNG THẢO", fill: "fill-purple" },
-                { id: "1_13", name: "TÂN TÀI", fill: "fill-purple" },
-                { id: "1_14", name: "TUẤN ANH", fill: "fill-purple" },
-                { id: "1_15", name: "QUANG HẬU", fill: "fill-purple" },
-                { id: "1_16", name: "MINH HOÀNG", fill: "fill-purple" },
-                { id: "1_17", name: "CHỖ TRỐNG", fill: "fill-purple" },
-                { id: "1_18", name: "TOÀN", fill: "fill-purple" }
+                { id: "1_1", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_2", name: "MINH NHỰT", fill: "fill-purple" }, { id: "1_3", name: "ĐAN VY", fill: "fill-purple" }, { id: "1_4", name: "LONG NHÂN", fill: "fill-green" }, { id: "1_5", name: "TÁN PHÚC", fill: "fill-green" }, { id: "1_blank1", name: "", fill: "empty-space" }, { id: "1_6", name: "TRỰC", fill: "fill-purple" }, { id: "1_7", name: "THẮNG", fill: "fill-purple" }, { id: "1_8", name: "KIM NGÂN", fill: "fill-purple" }, { id: "1_9", name: "NHẬT KHÁNH", fill: "fill-purple" }, { id: "1_10", name: "PHÚ SĨ SENIOR", fill: "fill-yellow" }, { id: "1_11", name: "CHÍNH SENIOR", fill: "fill-yellow" }, { id: "1_blank2", name: "", fill: "empty-space" }, { id: "1_12", name: "PT - PHƯƠNG THẢO", fill: "fill-purple" }, { id: "1_13", name: "TÂN TÀI", fill: "fill-purple" }, { id: "1_14", name: "TUẤN ANH", fill: "fill-purple" }, { id: "1_15", name: "QUANG HẬU", fill: "fill-purple" }, { id: "1_16", name: "MINH HOÀNG", fill: "fill-purple" }, { id: "1_17", name: "CHỖ TRỐNG", fill: "fill-purple" }, { id: "1_18", name: "TOÀN", fill: "fill-purple" }
             ],
             col2a: [
-                { id: "2a_1", name: "CHỖ TRỐNG", fill: "fill-red" },
-                { id: "2a_2", name: "PT - KIM NGÂN", fill: "fill-purple" },
-                { id: "2a_3", name: "CHỖ TRỐNG", fill: "fill-red" },
-                { id: "2a_4", name: "PT - NHỊ CẮM", fill: "fill-purple" },
-                { id: "2a_5", name: "PT - DIỄM MY", fill: "fill-purple" },
-                { id: "2a_6", name: "PT - PHỤNG NHI", fill: "fill-purple" },
-                { id: "2a_7", name: "PT - TRÍ PHI", fill: "fill-purple" },
-                { id: "2a_8", name: "THÀNH ĐẠT", fill: "fill-purple" },
-                { id: "2a_9", name: "THU HIỀN", fill: "fill-purple" },
-                { id: "2a_10", name: "HOÀNG MỸ", fill: "fill-purple" },
-                { id: "2a_11", name: "THẢO TRÂM", fill: "fill-purple" },
-                { id: "2a_12", name: "THỊ THỦY", fill: "fill-purple" },
-                { id: "2a_13", name: "Ý LAN", fill: "fill-purple" },
-                { id: "2a_14", name: "THỪA NGHIÊN", fill: "fill-purple" },
-                { id: "2a_15", name: "NGUYỄN NHI", fill: "fill-purple" },
-                { id: "2a_16", name: "HUYỀN TRANG", fill: "fill-purple" },
-                { id: "2a_17", name: "MINH THÁI", fill: "fill-purple" },
-                { id: "2a_18", name: "BẢO ANH SENIOR", fill: "fill-yellow" },
-                { id: "2a_19", name: "PT - PHƯƠNG THY", fill: "fill-pink" },
-                { id: "2a_20", name: "PT - LIÊN ANH", fill: "fill-pink" }
+                { id: "2a_1", name: "CHỖ TRỐNG", fill: "fill-red" }, { id: "2a_2", name: "PT - KIM NGÂN", fill: "fill-purple" }, { id: "2a_3", name: "CHỖ TRỐNG", fill: "fill-red" }, { id: "2a_4", name: "PT - NHỊ CẮM", fill: "fill-purple" }, { id: "2a_5", name: "PT - DIỄM MY", fill: "fill-purple" }, { id: "2a_6", name: "PT - PHỤNG NHI", fill: "fill-purple" }, { id: "2a_7", name: "PT - TRÍ PHI", fill: "fill-purple" }, { id: "2a_8", name: "THÀNH ĐẠT", fill: "fill-purple" }, { id: "2a_9", name: "THU HIỀN", fill: "fill-purple" }, { id: "2a_10", name: "HOÀNG MỸ", fill: "fill-purple" }, { id: "2a_11", name: "THẢO TRÂM", fill: "fill-purple" }, { id: "2a_12", name: "THỊ THỦY", fill: "fill-purple" }, { id: "2a_13", name: "Ý LAN", fill: "fill-purple" }, { id: "2a_14", name: "THỪA NGHIÊN", fill: "fill-purple" }, { id: "2a_15", name: "NGUYỄN NHI", fill: "fill-purple" }, { id: "2a_16", name: "HUYỀN TRANG", fill: "fill-purple" }, { id: "2a_17", name: "MINH THÁI", fill: "fill-purple" }, { id: "2a_18", name: "BẢO ANH SENIOR", fill: "fill-yellow" }, { id: "2a_19", name: "PT - PHƯƠNG THY", fill: "fill-pink" }, { id: "2a_20", name: "PT - LIÊN ANH", fill: "fill-pink" }
             ],
             col2b: [
-                { id: "2b_1", name: "THIÊN NGÂN", fill: "fill-pink" },
-                { id: "2b_2", name: "TÚ TRINH", fill: "fill-pink" },
-                { id: "2b_3", name: "TRUNG NGHỊ", fill: "fill-pink" },
-                { id: "2b_4", name: "MINH TÂM", fill: "fill-pink" },
-                { id: "2b_5", name: "MINH THƯ", fill: "fill-pink" },
-                { id: "2b_6", name: "DUY KHÁNH", fill: "fill-pink" },
-                { id: "2b_7", name: "HỒNG ÂN", fill: "fill-pink" },
-                { id: "2b_8", name: "THIÊN KIM", fill: "fill-yellow" },
-                { id: "2b_9", name: "MINH SENIOR", fill: "fill-yellow" },
-                { id: "2b_10", name: "KHÁNH LY", fill: "fill-pink" },
-                { id: "2b_11", name: "NHẬT LAM", fill: "fill-pink" },
-                { id: "2b_12", name: "HÂN SENIOR", fill: "fill-yellow" },
-                { id: "2b_13", name: "NGUYỄN SENIOR", fill: "fill-yellow" },
-                { id: "2b_14", name: "DIỆU TRINH", fill: "fill-pink" },
-                { id: "2b_15", name: "PHI PHỤNG", fill: "fill-pink" },
-                { id: "2b_16", name: "PT - QUỐC THỊNH", fill: "fill-purple" },
-                { id: "2b_17", name: "PT - THU HỒNG", fill: "fill-purple" },
-                { id: "2b_18", name: "PT - KHOA", fill: "fill-pink" },
-                { id: "2b_19", name: "PT - LOAN", fill: "fill-pink" },
-                { id: "2b_20", name: "KIM CHI", fill: "fill-purple" }
+                { id: "2b_1", name: "THIÊN NGÂN", fill: "fill-pink" }, { id: "2b_2", name: "TÚ TRINH", fill: "fill-pink" }, { id: "2b_3", name: "TRUNG NGHỊ", fill: "fill-pink" }, { id: "2b_4", name: "MINH TÂM", fill: "fill-pink" }, { id: "2b_5", name: "MINH THƯ", fill: "fill-pink" }, { id: "2b_6", name: "DUY KHÁNH", fill: "fill-pink" }, { id: "2b_7", name: "HỒNG ÂN", fill: "fill-pink" }, { id: "2b_8", name: "THIÊN KIM", fill: "fill-yellow" }, { id: "2b_9", name: "MINH SENIOR", fill: "fill-yellow" }, { id: "2b_10", name: "KHÁNH LY", fill: "fill-pink" }, { id: "2b_11", name: "NHẬT LAM", fill: "fill-pink" }, { id: "2b_12", name: "HÂN SENIOR", fill: "fill-yellow" }, { id: "2b_13", name: "NGUYỄN SENIOR", fill: "fill-yellow" }, { id: "2b_14", name: "DIỆU TRINH", fill: "fill-pink" }, { id: "2b_15", name: "PHI PHỤNG", fill: "fill-pink" }, { id: "2b_16", name: "PT - QUỐC THỊNH", fill: "fill-purple" }, { id: "2b_17", name: "PT - THU HỒNG", fill: "fill-purple" }, { id: "2b_18", name: "PT - KHOA", fill: "fill-pink" }, { id: "2b_19", name: "PT - LOAN", fill: "fill-pink" }, { id: "2b_20", name: "KIM CHI", fill: "fill-purple" }
             ],
             col3: [
-                { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" },
-                { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" },
-                { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" },
-                { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" },
-                { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" },
-                { id: "3_blank1", name: "", fill: "empty-space" },
-                { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" },
-                { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" },
-                { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" },
-                { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" },
-                { id: "3_10", name: "BẢO AN", fill: "fill-purple" },
-                { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" },
-                { id: "3_blank2", name: "", fill: "empty-space" },
-                { id: "3_12", name: "THẢO VI", fill: "fill-purple" },
-                { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }
+                { id: "C3_1782579850790", name: "Vị trí mới", fill: "fill-purple" }, { id: "3_1", name: "BẢO NGỌC", fill: "fill-pink" }, { id: "3_2", name: "HOÀNG KHẢI", fill: "fill-pink" }, { id: "3_3", name: "TRUNG HIẾU", fill: "fill-pink" }, { id: "3_4", name: "PT - CÁT TƯỜNG", fill: "fill-pink" }, { id: "3_5", name: "HUY HOÀNG", fill: "fill-pink" }, { id: "3_blank1", name: "", fill: "empty-space" }, { id: "3_6", name: "MINH TRÍ", fill: "fill-pink" }, { id: "3_7", name: "PT - CẨM TÚ", fill: "fill-pink" }, { id: "3_8", name: "MINH ĐẠO", fill: "fill-purple" }, { id: "3_9", name: "PT - PHÚC HẬU", fill: "fill-purple" }, { id: "3_10", name: "BẢO AN", fill: "fill-purple" }, { id: "3_11", name: "PT - VĂN VIỆT", fill: "fill-purple" }, { id: "3_blank2", name: "", fill: "empty-space" }, { id: "3_12", name: "THẢO VI", fill: "fill-purple" }, { id: "3_13", name: "NHƯ XUYẾN", fill: "fill-purple" }, { id: "3_14", name: "THU THẢO", fill: "fill-purple" }, { id: "3_15", name: "MAI XUÂN", fill: "fill-purple" }, { id: "3_16", name: "THỊ HỒNG", fill: "fill-purple" }, { id: "3_17", name: "THỊ QUỲNH", fill: "fill-purple" }, { id: "3_18", name: "CÔNG HIỆP", fill: "fill-purple" }
             ]
         };
 
-        // Hàm cập nhật trạng thái đồng bộ cho cấu trúc Mini Dashboard mới ở Header
-        function updateSyncStatus(status, message) {
-            const dashboard = document.getElementById('sync-mini-dashboard');
-            const statusText = document.getElementById('dashboard-status-text');
-            const legacyBadge = document.getElementById('sync-status-badge'); // Giữ tương thích nếu cần
-            const btnSync = document.getElementById('btn-sync');
+        const colMeta = {
+            col1: { domId: 'col-1', prefix: 'C1' },
+            col2a: { domId: 'col-2a', prefix: 'C2A' },
+            col2b: { domId: 'col-2b', prefix: 'C2B' },
+            col3: { domId: 'col-3', prefix: 'C3' }
+        };
 
-            if (!dashboard || !statusText) return;
-
-            // Xóa class trạng thái cũ
-            dashboard.classList.remove('ready', 'syncing', 'error');
-
-            if (status === 'syncing') {
-                dashboard.classList.add('syncing');
-                statusText.innerText = message || 'Đang đồng bộ...';
-                if (legacyBadge) legacyBadge.innerHTML = `● <span class="status-label">${message || 'Đang đồng bộ...'}</span>`;
-                if (btnSync) {
-                    btnSync.disabled = true;
-                    btnSync.innerHTML = '<span class="spin">⏳</span> Đang đồng bộ...';
-                }
-            } else if (status === 'success') {
-                dashboard.classList.add('ready');
-                statusText.innerText = message || 'Đã đồng bộ';
-                if (legacyBadge) legacyBadge.innerHTML = `● <span class="status-label">${message || 'Đã đồng bộ'}</span>`;
-                if (btnSync) {
-                    btnSync.disabled = false;
-                    btnSync.innerHTML = '☁️ Đồng bộ ngay';
-                }
-            } else if (status === 'error') {
-                dashboard.classList.add('error');
-                statusText.innerText = message || 'Lỗi kết nối';
-                if (legacyBadge) legacyBadge.innerHTML = `● <span class="status-label">${message || 'Lỗi kết nối'}</span>`;
-                if (btnSync) {
-                    btnSync.disabled = false;
-                    btnSync.innerHTML = '☁️ Thử lại';
-                }
-            }
+        function initDefaultData() {
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(k => {
+                columnOrder[k] = layoutData[k].map(s => s.id);
+                layoutData[k].forEach(s => { if (s.id.indexOf('blank') === -1) initSeatState(s.id); });
+            });
+            layoutData.leaders.forEach(s => initSeatState(s.id));
         }
 
-        // Tải dữ liệu ban đầu từ Local / Cloud
-        async function loadData() {
-            updateSyncStatus('syncing', 'Đang tải dữ liệu...');
+        function initSeatState(id) {
+            inventoryState[id] = {
+                thung: false, thung_qty: 1, man20: false, man24: false, chuot: false, chuot_qty: 1,
+                phim: false, phim_qty: 1, tai: false, tai_qty: 1, laptop: false, laptop_tui: false
+            };
+        }
 
-            // Bước 1: Khôi phục cấu trúc và trạng thái dữ liệu từ bộ nhớ Local trước để giao diện hiện lên ngay lập tức
-            const localData = localStorage.getItem(STORAGE_KEY);
-            if (localData) {
+        function ensureSeatState(id) {
+            if (!inventoryState[id]) initSeatState(id);
+            return inventoryState[id];
+        }
+
+        function normalizeInventoryState() {
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(col => {
+                layoutData[col].forEach(seat => {
+                    if (seat.id.indexOf('blank') === -1) {
+                        ensureSeatState(seat.id);
+                    }
+                });
+            });
+            layoutData.leaders.forEach(leader => ensureSeatState(leader.id));
+        }
+
+        // TỰ ĐỘNG TẢI DỮ LIỆU TỪ ĐÁM MÂY KHI LOAD TRANG
+        function loadData() {
+            // Bước 1: Đọc dữ liệu từ bộ nhớ trình duyệt làm nền trước
+            const stored = localStorage.getItem(STORAGE_KEY);
+            let hasValidStorage = false;
+            if (stored) {
                 try {
-                    const parsed = JSON.parse(localData);
-                    customNames = parsed.customNames || {};
-                    inventoryState = parsed.inventoryState || {};
-                    columnOrder = parsed.columnOrder || { col1: [], col2a: [], col2b: [], col3: [] };
+                    const data = JSON.parse(stored);
+                    if (data.columnOrder && data.layoutData && data.inventoryState) {
+                        columnOrder = data.columnOrder;
+                        layoutData = data.layoutData;
+                        inventoryState = data.inventoryState;
+                        customNames = data.customNames || {};
+                        hasValidStorage = true;
+                    }
                 } catch (e) {
-                    console.error("Lỗi parse LocalStorage:", e);
+                    console.warn('LocalStorage parse failed, using defaults.', e);
                 }
             }
-
-            // Nếu không có thứ tự cột local, thiết lập mặc định theo mã ghế ban đầu
-            if (!columnOrder.col1 || columnOrder.col1.length === 0) {
-                columnOrder.col1 = layoutData.col1.map(s => s.id);
-                columnOrder.col2a = layoutData.col2a.map(s => s.id);
-                columnOrder.col2b = layoutData.col2b.map(s => s.id);
-                columnOrder.col3 = layoutData.col3.map(s => s.id);
+            if (!hasValidStorage) {
+                initDefaultData();
             }
-
-            // Dựng giao diện sơ đồ ghế ngay lập tức từ dữ liệu đã nạp
+            normalizeInventoryState();
+            saveLocal();
             renderAll();
 
-            // Kích hoạt hiệu ứng mượt mà lộ diện container
-            document.querySelector('.container').classList.add('loaded');
-
-            // Bước 2: Đồng bộ ngầm với Cloud API
-            try {
-                const response = await fetch(WEB_APP_URL, { method: 'GET', mode: 'cors' });
-                if (response.ok) {
-                    const cloudData = await response.json();
-                    if (cloudData && cloudData.status === 'success') {
-                        customNames = cloudData.customNames || customNames;
-                        inventoryState = cloudData.inventoryState || inventoryState;
+            // Bước 2: Gọi API kéo dữ liệu mới nhất trên Google Sheets về (Bảo toàn đồng bộ đa thiết bị)
+            updateSyncStatus('syncing');
+            fetch(WEB_APP_URL, {
+                method: "GET",
+                redirect: "follow"
+            })
+                .then(res => res.json())
+                .then(cloudData => {
+                    if (cloudData && cloudData.inventoryState) {
                         columnOrder = cloudData.columnOrder || columnOrder;
+                        layoutData = cloudData.layoutData || layoutData;
+                        inventoryState = cloudData.inventoryState || inventoryState;
+                        customNames = cloudData.customNames || customNames;
 
-                        // Cập nhật lại bản đệm local và render lại để khớp dữ liệu Cloud mới nhất
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ customNames, inventoryState, columnOrder }));
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
                         renderAll();
-                        updateSyncStatus('success', 'Hệ thống sẵn sàng');
+                        updateSyncStatus('synced');
+                        showToast('☁️ Đã tải dữ liệu đồng bộ mới nhất từ đám mây!', 'success');
                     } else {
-                        updateSyncStatus('error', 'Lỗi cấu trúc dữ liệu');
+                        updateSyncStatus('synced');
                     }
-                } else {
-                    updateSyncStatus('error', 'Ngoại tuyến (Local)');
-                }
-            } catch (error) {
-                console.warn("Không thể đồng bộ ngầm với Apps Script, giữ dữ liệu đệm:", error);
-                updateSyncStatus('error', 'Ngoại tuyến (Local)');
-            }
-        }
-
-        // Đồng bộ chủ động khi nhấn nút "Đồng bộ ngay"
-        async function syncNow() {
-            updateSyncStatus('syncing', 'Đang đồng bộ...');
-            showToast('Bắt đầu đồng bộ hóa dữ liệu lên Cloud...', 'info');
-
-            const payload = {
-                customNames: customNames,
-                inventoryState: inventoryState,
-                columnOrder: columnOrder
-            };
-
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                })
+                .catch(err => {
+                    console.log("Không thể kết nối Cloud, sử dụng dữ liệu Offline tạm thời:", err);
+                    updateSyncStatus('unsynced');
                 });
-
-                const result = await response.json();
-                if (result.status === 'success') {
-                    updateSyncStatus('success', 'Đã đồng bộ');
-                    showToast('Đồng bộ dữ liệu Cloud thành công!', 'success');
-                } else {
-                    updateSyncStatus('error', 'Lỗi đồng bộ');
-                    showToast('Đồng bộ thất bại: ' + (result.message || 'Lỗi hệ thống'), 'danger');
-                }
-            } catch (error) {
-                console.error("Lỗi đồng bộ:", error);
-                updateSyncStatus('error', 'Lỗi kết nối');
-                showToast('Không thể kết nối Server Cloud. Đã sao lưu Local!', 'danger');
-            }
         }
 
         function saveLocal() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                customNames,
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ columnOrder, layoutData, inventoryState, customNames }));
+            updateSyncStatus('unsynced');
+            updateCounts();
+        }
+
+        function updateSyncStatus(status) {
+            const badge = document.getElementById('sync-status-badge');
+            if (!badge) return;
+            const now = new Date().toLocaleTimeString('vi-VN');
+            if (status === 'unsynced') {
+                badge.innerHTML = `<span class="status-dot status-red"></span><span class="status-label">Chưa đồng bộ • ${now}</span>`;
+            } else if (status === 'syncing') {
+                badge.innerHTML = `<span class="status-dot status-yellow"></span><span class="status-label">Đang kết nối...</span>`;
+            } else if (status === 'synced') {
+                badge.innerHTML = `<span class="status-dot status-green"></span><span class="status-label">Đã đồng bộ • ${now}</span>`;
+            }
+        }
+
+        // HÀM ĐỒNG BỘ THỰC TẾ LÊN GOOGLE SHEETS backend
+        function syncNow() {
+            updateSyncStatus('syncing');
+            const btn = document.getElementById('btn-sync');
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spin">⏳</span> Đang tải lên...';
+
+            const dataToSync = {
+                columnOrder,
+                layoutData,
                 inventoryState,
-                columnOrder
-            }));
+                customNames
+            };
+
+            // Sử dụng fetch loại bỏ CORS preflight để tương thích 100% với Google Apps Script Web App
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify(dataToSync),
+                redirect: 'follow'
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.ok) {
+                        updateSyncStatus('synced');
+                        showToast('☁️ Đồng bộ lên đám mây thành công!', 'success');
+                    } else {
+                        throw new Error(res.error || "Lỗi lưu dữ liệu");
+                    }
+                })
+                .catch(err => {
+                    console.error("Lỗi đồng bộ đám mây:", err);
+                    updateSyncStatus('unsynced');
+                    showToast('❌ Lỗi đồng bộ! Kiểm tra phân quyền Apps Script.', 'error');
+                })
+                .finally(() => {
+                    btn.innerHTML = oldHtml;
+                });
+        }
+
+        function getItemsHtml(seatId, state, isLeader) {
+            if (!state) return '';
+            let html = `
+            <label class="item-check">
+                <input type="checkbox" onchange="updateItem('${seatId}','thung',this.checked)" ${state.thung ? 'checked' : ''}> Thùng
+                <input type="number" class="qty-input" value="${state.thung_qty || 1}" onchange="updateQty('${seatId}','thung_qty',this.value)">
+            </label>
+            <label class="item-check">
+                <input type="checkbox" onchange="updateItem('${seatId}','man20',this.checked)" ${state.man20 ? 'checked' : ''}> Màn 20"
+            </label>
+        `;
+
+            if (isLeader) {
+                html += `
+                <label class="item-check">
+                    <input type="checkbox" onchange="updateItem('${seatId}','man24',this.checked)" ${state.man24 ? 'checked' : ''}> Màn 24"
+                </label>
+            `;
+            }
+
+            html += `
+            <label class="item-check">
+                <input type="checkbox" onchange="updateItem('${seatId}','chuot',this.checked)" ${state.chuot ? 'checked' : ''}> Chuột
+                <input type="number" class="qty-input" value="${state.chuot_qty || 1}" onchange="updateQty('${seatId}','chuot_qty',this.value)">
+            </label>
+            <label class="item-check">
+                <input type="checkbox" onchange="updateItem('${seatId}','phim',this.checked)" ${state.phim ? 'checked' : ''}> Phím
+                <input type="number" class="qty-input" value="${state.phim_qty || 1}" onchange="updateQty('${seatId}','phim_qty',this.value)">
+            </label>
+            <label class="item-check">
+                <input type="checkbox" onchange="updateItem('${seatId}','tai',this.checked)" ${state.tai ? 'checked' : ''}> Tai USB
+                <input type="number" class="qty-input" value="${state.tai_qty || 1}" onchange="updateQty('${seatId}','tai_qty',this.value)">
+            </label>
+        `;
+
+            if (isLeader) {
+                html += `
+                <label class="item-check" style="grid-column: span 2;">
+                    <input type="checkbox" onchange="updateItem('${seatId}','laptop',this.checked)" ${state.laptop ? 'checked' : ''}> Laptop + Sạc + chuột
+                </label>
+                <label class="item-check" style="grid-column: span 2;">
+                    <input type="checkbox" onchange="updateItem('${seatId}','laptop_tui',this.checked)" ${state.laptop_tui ? 'checked' : ''}> Laptop + Sạc + chuột + túi chống sốc
+                </label>
+            `;
+            }
+            return html;
+        }
+
+        function updateItem(id, field, isChecked) {
+            if (!inventoryState[id]) initSeatState(id);
+            inventoryState[id][field] = isChecked;
+            saveLocal();
+        }
+        function updateQty(id, field, value) {
+            let val = parseInt(value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (!inventoryState[id]) initSeatState(id);
+            inventoryState[id][field] = val;
+            saveLocal();
+        }
+
+        function startRename(id, colKey) {
+            const wrapper = document.getElementById(`name-wrap-${id}`);
+            if (!wrapper) return;
+            let currentName = customNames[id];
+            if (!currentName) {
+                if (colKey === 'leaders') currentName = layoutData.leaders.find(x => x.id === id)?.name || '';
+                else currentName = layoutData[colKey].find(x => x.id === id)?.name || '';
+            }
+
+            wrapper.outerHTML = `
+            <input type="text" id="rename-input-${id}" class="rename-input" value="${currentName}" 
+                onblur="confirmRename('${id}', '${colKey}')" 
+                onkeydown="if(event.key==='Enter') this.blur();">
+        `;
+            const input = document.getElementById(`rename-input-${id}`);
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }
+
+        function confirmRename(id, colKey) {
+            const input = document.getElementById(`rename-input-${id}`);
+            if (!input) return;
+            const newName = input.value.trim();
+            if (newName) {
+                customNames[id] = newName;
+                saveLocal();
+            }
+            if (colKey === 'leaders') renderLeaders();
+            else renderColumn(colKey);
+        }
+
+        function markFull(id, colKey) {
+            if (!inventoryState[id]) initSeatState(id);
+            const s = inventoryState[id];
+            s.thung = true; s.thung_qty = 1;
+            s.man20 = true;
+            s.chuot = true; s.chuot_qty = 1;
+            s.phim = true; s.phim_qty = 1;
+            s.tai = true; s.tai_qty = 1;
+            if (colKey === 'leaders') s.man24 = true;
+
+            saveLocal();
+            if (colKey === 'leaders') renderLeaders();
+            else renderColumn(colKey);
+        }
+
+        function resetSeat(id, colKey) {
+            initSeatState(id);
+            saveLocal();
+            if (colKey === 'leaders') renderLeaders();
+            else renderColumn(colKey);
+        }
+
+        function renderLeaders() {
+            layoutData.leaders.forEach(leader => {
+                const container = document.getElementById(leader.targetId);
+                if (!container) return;
+                const state = inventoryState[leader.id];
+
+                container.innerHTML = `
+                <div class="seat-box ${leader.fill}">
+                    <div class="seat-header">
+                        <div id="name-wrap-${leader.id}" class="seat-name" onclick="startRename('${leader.id}', 'leaders')" title="Nhấn để sửa tên">
+                            ${customNames[leader.id] || leader.name} <span style="font-size:10px; color:#9ca3af; margin-left:4px;">✏️</span>
+                        </div>
+                        <div class="btn-action-group">
+                            <button class="btn-mini btn-mini-success" onclick="markFull('${leader.id}', 'leaders')">Đủ bộ</button>
+                            <button class="btn-mini" style="background:#e03131; color:white;" onclick="resetSeat('${leader.id}', 'leaders')">Reset</button>
+                        </div>
+                    </div>
+                    <div class="items-grid">
+                        ${getItemsHtml(leader.id, state, true)}
+                    </div>
+                </div>
+            `;
+            });
+        }
+
+        function renderColumn(colKey) {
+            const container = document.getElementById(colMeta[colKey].domId);
+            if (!container) return;
+            let html = '';
+            columnOrder[colKey].forEach(id => {
+                const seat = layoutData[colKey].find(s => s.id === id);
+                if (!seat) return;
+                if (seat.fill === 'empty-space') {
+                    html += `<div class="seat-box empty-space"></div>`;
+                    return;
+                }
+                const state = inventoryState[id];
+
+                html += `
+                <div class="seat-box ${seat.fill}" draggable="true" ondragstart="handleDragStart(event,'${id}','${colKey}')" ondragend="handleDragEnd(event)">
+                    <div class="seat-header">
+                        <div id="name-wrap-${seat.id}" class="seat-name" onclick="startRename('${seat.id}', '${colKey}')" title="Nhấn để sửa tên">
+                            ${customNames[seat.id] || seat.name} <span style="font-size:10px; color:#9ca3af; margin-left:4px;">✏️</span>
+                        </div>
+                        <div class="btn-action-group">
+                            <button class="btn-mini btn-mini-success" onclick="markFull('${seat.id}', '${colKey}')">Đủ bộ</button>
+                            <button class="btn-mini" style="background:#e03131; color:white;" onclick="resetSeat('${seat.id}', '${colKey}')">Reset</button>
+                            <button class="btn-mini btn-mini-danger" onclick="deleteSpecificSeat('${seat.id}', '${colKey}')">Xóa</button>
+                        </div>
+                    </div>
+                    <div class="items-grid">
+                        ${getItemsHtml(seat.id, state, false)}
+                    </div>
+                </div>
+            `;
+            });
+            html += `
+            <div class="col-actions">
+                <button class="btn-col-action btn-col-add" onclick="addSeatTop('${colKey}')">➕ Thêm ở đầu</button>
+                <button class="btn-col-action btn-col-remove" onclick="removeSeatTop('${colKey}')">➖ Xóa ở đầu</button>
+            </div>
+        `;
+            container.innerHTML = html;
+        }
+
+        function addSeatTop(colKey) {
+            const nextId = colMeta[colKey].prefix + '_' + Date.now();
+            layoutData[colKey].unshift({ id: nextId, name: 'Vị trí mới', fill: 'fill-purple' });
+            columnOrder[colKey].unshift(nextId);
+            initSeatState(nextId);
+            saveLocal();
+            renderColumn(colKey);
+        }
+        function removeSeatTop(colKey) {
+            if (!columnOrder[colKey].length) return;
+            if (confirm('Xóa vị trí ở ĐẦU TIÊN của cột này?')) {
+                const removedId = columnOrder[colKey].shift();
+                layoutData[colKey] = layoutData[colKey].filter(s => s.id !== removedId);
+                delete inventoryState[removedId];
+                delete customNames[removedId];
+                saveLocal();
+                renderColumn(colKey);
+            }
+        }
+        function deleteSpecificSeat(id, colKey) {
+            if (confirm('Xóa dữ liệu kiểm kê vị trí này?')) {
+                columnOrder[colKey] = columnOrder[colKey].filter(x => x !== id);
+                layoutData[colKey] = layoutData[colKey].filter(s => s.id !== id);
+                delete inventoryState[id];
+                delete customNames[id];
+                saveLocal();
+                renderColumn(colKey);
+            }
         }
 
         function renderAll() {
             renderLeaders();
-            renderColumn('col1', 'col-1');
-            renderColumn('col2a', 'col-2a');
-            renderColumn('col2b', 'col-2b');
-            renderColumn('col3', 'col-3');
-            calculateStats();
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(k => renderColumn(k));
+            updateCounts();
         }
 
-        function renderLeaders() {
-            layoutData.leaders.forEach(lead => {
-                const el = document.getElementById(lead.targetId);
-                if (!el) return;
-                const displayName = customNames[lead.id] || lead.name;
-                el.innerHTML = `
-                    <div class="seat-box ${lead.fill}" style="border: 2px solid var(--purple); text-align: center; font-weight: bold;">
-                        <div style="font-size: 10px; color: var(--purple); margin-bottom: 2px;">LEADER (${lead.team})</div>
-                        <span class="seat-name" onclick="startRename('${lead.id}', this)">${displayName}</span>
-                    </div>
-                `;
+        function updateCounts() {
+            let thung = 0, man20 = 0, man24 = 0, chuot = 0, phim = 0, tai = 0, laptop = 0, laptop_tui = 0;
+            Object.keys(inventoryState).forEach(id => {
+                const s = inventoryState[id];
+                if (s.thung) thung += (s.thung_qty || 1);
+                if (s.man20) man20 += 1;
+                if (s.man24) man24 += 1;
+                if (s.chuot) chuot += (s.chuot_qty || 1);
+                if (s.phim) phim += (s.phim_qty || 1);
+                if (s.tai) tai += (s.tai_qty || 1);
+                if (s.laptop) laptop += 1;
+                if (s.laptop_tui) laptop_tui += 1;
             });
+            document.getElementById('count-thung').innerText = thung;
+            document.getElementById('count-man20').innerText = man20;
+            document.getElementById('count-man24').innerText = man24;
+            document.getElementById('count-chuot').innerText = chuot;
+            document.getElementById('count-phim').innerText = phim;
+            document.getElementById('count-tai').innerText = tai;
+            document.getElementById('count-laptop').innerText = laptop;
+            document.getElementById('count-laptop-tui').innerText = laptop_tui;
         }
 
-        function renderColumn(colKey, elementId) {
-            const container = document.getElementById(elementId);
-            if (!container) return;
-            container.innerHTML = '';
-
-            const ids = columnOrder[colKey];
-            ids.forEach(id => {
-                const seat = findSeatById(id);
-                if (!seat) return;
-
-                if (seat.fill === 'empty-space') {
-                    const blank = document.createElement('div');
-                    blank.className = 'seat-box empty-space';
-                    container.appendChild(blank);
-                    return;
-                }
-
-                const card = document.createElement('div');
-                card.className = `seat-box ${seat.fill}`;
-                card.draggable = true;
-                card.id = `card-${id}`;
-
-                card.ondragstart = (e) => handleSeatDragStart(e, id, colKey);
-                card.ondragend = handleSeatDragEnd;
-
-                const displayName = customNames[id] || seat.name;
-                const state = inventoryState[id] || { thung: false, man20: 0, man24: 0, chuot: false, phim: false, tai: false, laptop: 0, laptopTui: 0 };
-
-                card.innerHTML = `
-                    <div class="seat-header">
-                        <span class="seat-name" onclick="startRename('${id}', this)">${displayName}</span>
-                        <div class="btn-action-group">
-                            <button class="btn-mini btn-mini-danger" onclick="deleteSeat('${colKey}','${id}')">✕</button>
-                        </div>
-                    </div>
-                    <div class="items-grid">
-                        <label class="item-check">
-                            <input type="checkbox" ${state.thung ? 'checked' : ''} onchange="toggleHardware('${id}', 'thung')"> PC
-                        </label>
-                        <div class="item-check">
-                            🖥️20: <input type="number" class="qty-input" min="0" max="9" value="${state.man20 || 0}" onchange="changeQty('${id}', 'man20', this.value)">
-                        </div>
-                        <div class="item-check">
-                            🖥️24: <input type="number" class="qty-input" min="0" max="9" value="${state.man24 || 0}" onchange="changeQty('${id}', 'man24', this.value)">
-                        </div>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.chuot ? 'checked' : ''} onchange="toggleHardware('${id}', 'chuot')"> Chuột
-                        </label>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.phim ? 'checked' : ''} onchange="toggleHardware('${id}', 'phim')"> Phím
-                        </label>
-                        <label class="item-check">
-                            <input type="checkbox" ${state.tai ? 'checked' : ''} onchange="toggleHardware('${id}', 'tai')"> TaiNghe
-                        </label>
-                        <div class="item-check" style="grid-column: span 2;">
-                            💻 Thường: <input type="number" class="qty-input" min="0" max="9" value="${state.laptop || 0}" onchange="changeQty('${id}', 'laptop', this.value)">
-                        </div>
-                        <div class="item-check" style="grid-column: span 2;">
-                            💼 Có Túi: <input type="number" class="qty-input" min="0" max="9" value="${state.laptopTui || 0}" onchange="changeQty('${id}', 'laptopTui', this.value)">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
-            const colActions = document.createElement('div');
-            colActions.className = 'col-actions';
-            colActions.innerHTML = `<button class="btn-col-action" onclick="addNewSeat('${colKey}')">＋ Thêm Chỗ Ngồi</button>`;
-            container.appendChild(colActions);
-        }
-
-        function findSeatById(id) {
-            for (const key in layoutData) {
-                if (Array.isArray(layoutData[key])) {
-                    const found = layoutData[key].find(s => s.id === id);
-                    if (found) return found;
-                }
-            }
-            return null;
-        }
-
-        function startRename(id, element) {
-            const currentText = element.innerText;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'rename-input';
-            input.value = currentText === 'CHỖ TRỐNG' || currentText === 'A' || currentText === 'B' || currentText === 'C' || currentText === 'D' ? '' : currentText;
-
-            input.onblur = () => {
-                const val = input.value.trim().toUpperCase();
-                if (val === '') {
-                    const originalSeat = findSeatById(id);
-                    customNames[id] = originalSeat ? originalSeat.name : "CHỖ TRỐNG";
-                } else {
-                    customNames[id] = val;
-                }
+        function resetAllInventory() {
+            if (confirm('BẠN CÓ CHẮC CHẮN MUỐN RESET TOÀN BỘ DỮ LIỆU KIỂM KÊ?')) {
+                initDefaultData();
                 saveLocal();
                 renderAll();
-            };
-
-            input.onkeydown = (e) => {
-                if (e.key === 'Enter') input.blur();
-            };
-
-            element.replaceWith(input);
-            input.focus();
-            input.select();
-        }
-
-        function toggleHardware(seatId, field) {
-            if (!inventoryState[seatId]) {
-                inventoryState[seatId] = { thung: false, man20: 0, man24: 0, chuot: false, phim: false, tai: false, laptop: 0, laptopTui: 0 };
+                showToast('🗑️ Đã làm sạch toàn bộ dữ liệu kiểm kê.', 'success');
             }
-            inventoryState[seatId][field] = !inventoryState[seatId][field];
-            saveLocal();
-            calculateStats();
-        }
-
-        function changeQty(seatId, field, value) {
-            if (!inventoryState[seatId]) {
-                inventoryState[seatId] = { thung: false, man20: 0, man24: 0, chuot: false, phim: false, tai: false, laptop: 0, laptopTui: 0 };
-            }
-            inventoryState[seatId][field] = parseInt(value) || 0;
-            saveLocal();
-            calculateStats();
-        }
-
-        function addNewSeat(colKey) {
-            const name = prompt("Nhập tên nhân viên mới (Để trống nếu là CHỖ TRỐNG):");
-            const finalName = name && name.trim() ? name.trim().toUpperCase() : "CHỖ TRỐNG";
-
-            const newId = 'C_' + Date.now();
-            const newSeat = { id: newId, name: finalName, fill: "fill-purple" };
-
-            layoutData[colKey].push(newSeat);
-            columnOrder[colKey].push(newId);
-
-            customNames[newId] = finalName;
-
-            saveLocal();
-            renderAll();
-            showToast('Đã thêm chỗ ngồi mới thành công!', 'success');
-        }
-
-        function deleteSeat(colKey, id) {
-            if (confirm("Bạn có chắc chắn muốn xóa vị trí ngồi này khỏi sơ đồ?")) {
-                columnOrder[colKey] = columnOrder[colKey].filter(x => x !== id);
-                layoutData[colKey] = layoutData[colKey].filter(x => x.id !== id);
-
-                if (customNames[id]) delete customNames[id];
-                if (inventoryState[id]) delete inventoryState[id];
-
-                saveLocal();
-                renderAll();
-                showToast('Đã xóa vị trí ngồi.', 'warning');
-            }
-        }
-
-        function calculateStats() {
-            let total = { thung: 0, man20: 0, man24: 0, chuot: 0, phim: 0, tai: 0, laptop: 0, laptopTui: 0 };
-
-            const allSeatIds = [
-                ...columnOrder.col1,
-                ...columnOrder.col2a,
-                ...columnOrder.col2b,
-                ...columnOrder.col3,
-                "L1", "L2A", "L2B", "L3"
-            ];
-
-            allSeatIds.forEach(id => {
-                const state = inventoryState[id];
-                if (state) {
-                    if (state.thung) total.thung++;
-                    if (state.man20) total.man20 += (parseInt(state.man20) || 0);
-                    if (state.man24) total.man24 += (parseInt(state.man24) || 0);
-                    if (state.chuot) total.chuot++;
-                    if (state.phim) total.phim++;
-                    if (state.tai) total.tai++;
-                    if (state.laptop) total.laptop += (parseInt(state.laptop) || 0);
-                    if (state.laptopTui) total.laptopTui += (parseInt(state.laptopTui) || 0);
-                }
-            });
-
-            document.getElementById('count-thung').innerText = total.thung;
-            document.getElementById('count-man20').innerText = total.man20;
-            document.getElementById('count-man24').innerText = total.man24;
-            document.getElementById('count-chuot').innerText = total.chuot;
-            document.getElementById('count-phim').innerText = total.phim;
-            document.getElementById('count-tai').innerText = total.tai;
-            document.getElementById('count-laptop').innerText = total.laptop;
-            document.getElementById('count-laptop-tui').innerText = total.laptopTui;
         }
 
         function exportJSON() {
-            const backup = {
-                customNames: customNames,
-                inventoryState: inventoryState,
-                columnOrder: columnOrder
-            };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
-            const dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `KiemKe_Lau2_Backup_${new Date().toISOString().slice(0, 10)}.json`);
-            dlAnchorElem.click();
-            showToast('Xuất file cấu hình JSON thành công!', 'success');
-        }
-
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (imported.customNames && imported.inventoryState && imported.columnOrder) {
-                        customNames = imported.customNames;
-                        inventoryState = imported.inventoryState;
-                        columnOrder = imported.columnOrder;
-
-                        // Tạo đồng bộ lại dữ liệu layoutData cục bộ cho các ghế tự tạo mới qua file JSON
-                        for (const colKey in columnOrder) {
-                            columnOrder[colKey].forEach(id => {
-                                if (!findSeatById(id)) {
-                                    const cName = customNames[id] || "VỊ TRÍ MỚI";
-                                    layoutData[colKey].push({ id: id, name: cName, fill: "fill-purple" });
-                                }
-                            });
-                        }
-
-                        saveLocal();
-                        renderAll();
-                        showToast('Nhập dữ liệu JSON cấu hình thành công!', 'success');
-                    } else {
-                        showToast('Cấu trúc file JSON cấu hình không hợp lệ!', 'danger');
-                    }
-                } catch (err) {
-                    showToast('Lỗi đọc file JSON!', 'danger');
-                }
-            };
-            reader.readAsText(file);
+            const data = { columnOrder, layoutData, inventoryState, customNames };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'inventory_lau2_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            showToast('💾 Đã xuất JSON thành công!', 'success');
         }
 
         function exportExcel() {
-            let dataRows = [];
-            const mapping = { 'Cột A': 'col1', 'Cột B': 'col2a', 'Cột C': 'col2b', 'Cột D': 'col3' };
+            let html = '<table border="1"><tr><th>Tên</th><th>Thùng</th><th>Màn 20"</th><th>Màn 24"</th><th>Chuột</th><th>Phím</th><th>Tai USB</th><th>Laptop + Sạc + chuột</th><th>Laptop + Sạc + chuột + túi</th></tr>';
 
-            for (const [colTitle, colKey] of Object.entries(mapping)) {
-                columnOrder[colKey].forEach((id, idx) => {
-                    const seat = findSeatById(id);
-                    if (!seat || seat.fill === 'empty-space') return;
-
-                    const state = inventoryState[id] || {};
-                    dataRows.push({
-                        'Dãy Bản Đồ': colTitle,
-                        'Thứ Tự Ghế': idx + 1,
-                        'Mã Định Danh Ghế': id,
-                        'Tên Nhân Viên': customNames[id] || seat.name,
-                        'Thùng Máy Tính (PC)': state.thung ? 1 : 0,
-                        'Màn Hình 20 inch': state.man20 || 0,
-                        'Màn Hình 24 inch': state.man24 || 0,
-                        'Chuột Máy Tính': state.chuot ? 1 : 0,
-                        'Bàn Phím Máy Tính': state.phim ? 1 : 0,
-                        'Tai Nghe USB Tổng': state.tai ? 1 : 0,
-                        'Laptop Thường': state.laptop || 0,
-                        'Laptop Có Túi + Sạc': state.laptopTui || 0
-                    });
+            ['col1', 'col2a', 'col2b', 'col3'].forEach(colKey => {
+                columnOrder[colKey].forEach(seatId => {
+                    const seat = layoutData[colKey].find(s => s.id === seatId);
+                    if (!seat || seat.id.indexOf('blank') !== -1) return;
+                    const name = customNames[seatId] || seat.name || '';
+                    const state = inventoryState[seatId] || {};
+                    html += '<tr>';
+                    html += `<td>${name}</td>`;
+                    html += `<td>${state.thung ? (state.thung_qty || 1) : ''}</td>`;
+                    html += `<td>${state.man20 ? 1 : ''}</td>`;
+                    html += `<td>${state.man24 ? 1 : ''}</td>`;
+                    html += `<td>${state.chuot ? (state.chuot_qty || 1) : ''}</td>`;
+                    html += `<td>${state.phim ? (state.phim_qty || 1) : ''}</td>`;
+                    html += `<td>${state.tai ? (state.tai_qty || 1) : ''}</td>`;
+                    html += `<td>${state.laptop ? 1 : ''}</td>`;
+                    html += `<td>${state.laptop_tui ? 1 : ''}</td>`;
+                    html += '</tr>';
                 });
-            }
+            });
+            html += '</table>';
 
-            const worksheet = XLSX.utils.json_to_sheet(dataRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "InventoryFloor2");
-            XLSX.writeFile(workbook, `BaoCao_KiemKe_Lau2_${new Date().toISOString().slice(0, 10)}.xlsx`);
-            showToast('Xuất báo cáo Excel thành công!', 'success');
+            const blob = new Blob([html], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'inventory_lau2_' + new Date().toISOString().slice(0, 10) + '.xls';
+            a.click();
+            showToast('📊 Đã xuất Excel thành công!', 'success');
         }
 
         function importExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
-            reader.onload = function (e) {
+            reader.onload = e => {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
                     const sheetName = workbook.SheetNames[0];
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-                    rows.forEach(row => {
-                        const id = row['Mã Định Danh Ghế'];
-                        if (!id) return;
+                    jsonData.forEach(row => {
+                        const name = row['Tên'] || row['Name'] || '';
+                        const seatId = ['col1', 'col2a', 'col2b', 'col3'].reduce((found, colKey) => {
+                            if (found) return found;
+                            return columnOrder[colKey].find(id => {
+                                const seat = layoutData[colKey].find(s => s.id === id);
+                                const currentName = customNames[id] || seat.name || '';
+                                return currentName === name;
+                            });
+                        }, null);
 
-                        if (row['Tên Nhân Viên']) customNames[id] = row['Tên Nhân Viên'].toString().trim().toUpperCase();
-
-                        inventoryState[id] = {
-                            thung: parseInt(row['Thùng Máy Tính (PC)']) === 1,
-                            man20: parseInt(row['Màn Hình 20 inch']) || 0,
-                            man24: parseInt(row['Màn Hình 24 inch']) || 0,
-                            chuot: parseInt(row['Chuột Máy Tính']) === 1,
-                            phim: parseInt(row['Bàn Phím Máy Tính']) === 1,
-                            tai: parseInt(row['Tai Nghe USB Tổng']) === 1,
-                            laptop: parseInt(row['Laptop Thường']) || 0,
-                            laptopTui: parseInt(row['Laptop Có Túi + Sạc']) || 0
-                        };
+                        if (seatId) {
+                            inventoryState[seatId] = {
+                                thung: row['Thùng'] ? true : false,
+                                thung_qty: row['Thùng'] ? parseInt(row['Thùng']) || 1 : 1,
+                                man20: row['Màn 20"'] ? true : false,
+                                man24: row['Màn 24"'] ? true : false,
+                                chuot: row['Chuột'] ? true : false,
+                                chuot_qty: row['Chuột'] ? parseInt(row['Chuột']) || 1 : 1,
+                                phim: row['Phím'] ? true : false,
+                                phim_qty: row['Phím'] ? parseInt(row['Phím']) || 1 : 1,
+                                tai: row['Tai USB'] ? true : false,
+                                tai_qty: row['Tai USB'] ? parseInt(row['Tai USB']) || 1 : 1,
+                                laptop: row['Laptop + Sạc + chuột'] ? true : false,
+                                laptop_tui: row['Laptop + Sạc + chuột + túi'] ? true : false
+                            };
+                        }
                     });
+                    saveLocal();
+                    renderAll();
+                    showToast('📊 Đã nhập Excel thành công!', 'success');
+                } catch (err) {
+                    showToast('❌ File Excel không hợp lệ! Vui lòng dùng thư viện XLSX.', 'error');
+                }
+            };
+            reader.readAsBinaryString(file);
+            event.target.value = '';
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const jsonContent = JSON.parse(e.target.result);
+
+                    // Cập nhật dữ liệu từ JSON file
+                    if (jsonContent.columnOrder) columnOrder = jsonContent.columnOrder;
+                    if (jsonContent.layoutData) layoutData = jsonContent.layoutData;
+                    if (jsonContent.inventoryState) inventoryState = jsonContent.inventoryState;
+                    if (jsonContent.customNames) customNames = jsonContent.customNames;
 
                     saveLocal();
                     renderAll();
-                    showToast('Đồng bộ dữ liệu từ Excel thành công!', 'success');
+                    showToast('📂 Đã nhập JSON thành công!', 'success');
                 } catch (err) {
-                    showToast('Lỗi cấu trúc tệp Excel nhập vào!', 'danger');
+                    showToast('❌ File JSON không hợp lệ!', 'error');
+                    console.error('JSON Import Error:', err);
                 }
             };
-            reader.readAsArrayBuffer(file);
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
-        function resetAllInventory() {
-            if (confirm("CẢNH BÁO: Hành động này sẽ xóa toàn bộ tùy chỉnh tên nhân viên và đưa số lượng thiết bị phần cứng sàn lầu 2 về 0. Bạn vẫn muốn tiếp tục?")) {
-                customNames = {};
-                inventoryState = {};
+        let dragPayload = null;
 
-                columnOrder.col1 = layoutData.col1.map(s => s.id);
-                columnOrder.col2a = layoutData.col2a.map(s => s.id);
-                columnOrder.col2b = layoutData.col2b.map(s => s.id);
-                columnOrder.col3 = layoutData.col3.map(s => s.id);
+        function handleDragStart(event, seatId, fromCol) {
+            dragPayload = { seatId, fromCol };
+            event.dataTransfer.effectAllowed = 'move';
+            event.currentTarget.classList.add('dragging');
+        }
 
-                saveLocal();
-                renderAll();
-                showToast('Hệ thống kiểm kê đã được khôi phục về trạng thái trống ban đầu.', 'warning');
+        function handleDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.seat-box.drop-target').forEach(el => el.classList.remove('drop-target'));
+        }
+
+        function handleColumnDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const box = event.target.closest('.seat-box');
+            document.querySelectorAll('.seat-box.drop-target').forEach(el => el.classList.remove('drop-target'));
+            if (box && !box.classList.contains('empty-space')) {
+                box.classList.add('drop-target');
             }
         }
 
-        let dragSeatId = null;
-        let dragFromCol = null;
-
-        function handleSeatDragStart(e, seatId, fromCol) {
-            dragSeatId = seatId;
-            dragFromCol = fromCol;
-            e.currentTarget.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        function handleSeatDragEnd(e) {
-            e.currentTarget.classList.remove('dragging');
-            document.querySelectorAll('.seat-box').forEach(box => box.classList.remove('drop-target'));
-        }
-
-        function handleColumnDragOver(e) {
-            e.preventDefault();
-            const targetBox = e.target.closest('.seat-box');
-            if (targetBox && !targetBox.classList.contains('dragging') && !targetBox.classList.contains('empty-space')) {
-                targetBox.classList.add('drop-target');
+        function handleColumnDrop(event, targetCol) {
+            event.preventDefault();
+            const box = event.target.closest('.seat-box');
+            if (!dragPayload || !box || box.classList.contains('empty-space')) {
+                dragPayload = null;
+                return;
             }
+            const targetSeatId = box.querySelector('.seat-name')?.id?.replace('name-wrap-', '');
+            if (!targetSeatId) {
+                dragPayload = null;
+                return;
+            }
+            moveSeat(dragPayload.seatId, dragPayload.fromCol, targetCol, targetSeatId);
+            dragPayload = null;
         }
 
-        function handleColumnDrop(e, toCol) {
-            e.preventDefault();
-            if (!dragSeatId) return;
+        function moveSeat(seatId, fromCol, toCol, beforeSeatId) {
+            if (!seatId || !fromCol || !toCol || !beforeSeatId) return;
+            if (fromCol === toCol && columnOrder[fromCol].indexOf(seatId) === -1) return;
+            const fromIndex = columnOrder[fromCol].indexOf(seatId);
+            const targetIndex = columnOrder[toCol].indexOf(beforeSeatId);
+            if (fromIndex === -1 || targetIndex === -1) return;
 
-            const fromCol = dragFromCol;
-            const seatId = dragSeatId;
-
-            dragSeatId = null;
-            dragFromCol = null;
-
-            const targetBox = e.target.closest('.seat-box');
-
-            columnOrder[fromCol] = columnOrder[fromCol].filter(id => id !== seatId);
-
-            let targetIndex = columnOrder[toCol].length;
-            if (targetBox && targetBox.id) {
-                const targetId = targetBox.id.replace('card-', '');
-                targetIndex = columnOrder[toCol].indexOf(targetId);
+            columnOrder[fromCol].splice(fromIndex, 1);
+            if (fromCol === toCol && targetIndex > fromIndex) {
                 columnOrder[toCol].splice(targetIndex, 0, seatId);
             } else {
                 columnOrder[toCol].splice(targetIndex, 0, seatId);
