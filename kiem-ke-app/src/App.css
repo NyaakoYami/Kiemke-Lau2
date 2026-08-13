@@ -57,6 +57,17 @@ html, body, #root {
   background: rgba(37, 99, 235, 0.18);
 }
 
+/* Tên thành viên cabin: Chữ nhỏ, xuống dòng tự nhiên, không truncation */
+.inline-edit-name {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
 /* Team Tag Styling */
 .team-tag {
   font-size: 10px;
@@ -150,6 +161,9 @@ html, body, #root {
 /* Seat card hover & active transitions */
 .seat-card {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
 }
 
 .seat-card:hover {
@@ -157,3 +171,98 @@ html, body, #root {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
   z-index: 5;
 }
+
+/* Bảng chọn màu Team Grid Layout trong cabin */
+.team-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 18rem;
+  padding: 4px;
+}
+
+.team-grid-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #94a3b8;
+}
+
+.team-grid-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.team-grid-card .color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.team-grid-card .team-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+}
+
+/* Thanh chọn Team bên dưới Header chính */
+.team-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.team-bar-item:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.team-bar-item.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.team-bar-item .team-count {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(0,0,0,0.06);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.team-bar-item.active .team-count {
+  background: rgba(255,255,255,0.25);
+  color: #ffffff;
+}
+

@@ -16,7 +16,7 @@ import "./App.css";
 // COMPONENT NHẬP LIỆU INLINE (Click để sửa)
 // Hiển thị dạng chữ đậm chìm, gọn - chỉ hiện khung InputText khi click
 // -------------------------------------------------------------
-function InlineEdit({ value, onChange, placeholder, className, isStt = false }) {
+function InlineEdit({ value, onChange, placeholder, className, isStt = false, isName = false }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
 
@@ -39,14 +39,14 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false }) 
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleSave}
         onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        className={`p-1 text-sm font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
+        className={`p-1 text-xs font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
       />
     );
   }
 
   return (
     <div
-      className={`${className} inline-edit-display ${isStt ? "stt-display" : ""} cursor-pointer text-overflow-ellipsis white-space-nowrap overflow-hidden`}
+      className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
       onClick={() => setIsEdit(true)}
       title="Click để sửa"
     >
@@ -224,6 +224,8 @@ export default function App() {
   const toast = useRef(null);
   const colorPanel = useRef(null);
   const bulkColorPanel = useRef(null);
+  const teamColorPickerPanel = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [appState, setAppState] = useState({
     floors: JSON.parse(JSON.stringify(defaultData)),
@@ -238,6 +240,7 @@ export default function App() {
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn Lầu
   const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
+  const [activeTeamForColorChange, setActiveTeamForColorChange] = useState(null);
 
   // Trạng thái kết nối / đồng bộ Supabase
   const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
@@ -384,6 +387,116 @@ export default function App() {
     markDirty();
   };
 
+  // XUẤT VÀ NHẬP JSON
+  const exportToJson = () => {
+    try {
+      const dataStr =
+        "data:text/json;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute(
+        "download",
+        `kiem_ke_tai_san_backup_${dateStr}.json`,
+      );
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      toast.current?.show({
+        severity: "success",
+        summary: "Xuất dữ liệu",
+        detail: "Đã xuất file JSON thành công",
+        life: 3000,
+      });
+    } catch (err) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Lỗi xuất JSON",
+        detail: err.message || "Không thể xuất file JSON",
+        life: 3000,
+      });
+    }
+  };
+
+  const importFromJson = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target.result);
+        if (parsed && parsed.floors && Array.isArray(parsed.floors)) {
+          setAppState(parsed);
+          markDirty();
+          toast.current?.show({
+            severity: "success",
+            summary: "Nhập dữ liệu thành công",
+            detail: "Đã nạp thành công dữ liệu từ file JSON",
+            life: 3000,
+          });
+        } else {
+          throw new Error("Cấu trúc file JSON không đúng định dạng kiểm kê");
+        }
+      } catch (err) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Lỗi đọc file JSON",
+          detail: err.message || "File JSON không hợp lệ",
+          life: 4000,
+        });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  // Thay đổi màu sắc áp dụng cho toàn bộ Team
+  const changeTeamColorGlobally = (targetTeamId, newColorId) => {
+    updateState((st) => {
+      st.floors.forEach((f) =>
+        f.lanes.forEach((l) => {
+          l.leads.forEach((ld) => {
+            const current = st.colors[ld.id] || "fill-lead";
+            if (current === targetTeamId) st.colors[ld.id] = newColorId;
+          });
+          l.agents.forEach((ag) => {
+            const current = st.colors[ag.id] || autoColor(ag.name);
+            if (current === targetTeamId) st.colors[ag.id] = newColorId;
+          });
+        }),
+      );
+    });
+    toast.current?.show({
+      severity: "info",
+      summary: "Đổi màu Team",
+      detail: `Đã đổi màu toàn bộ Team sang màu mới`,
+      life: 2500,
+    });
+  };
+
+  // Thống kê số lượng theo từng Team
+  const getTeamCounts = () => {
+    const counts = { total: 0 };
+    teamColors.forEach((c) => (counts[c.id] = 0));
+    appState.floors.forEach((f) =>
+      f.lanes.forEach((l) => {
+        l.leads.forEach((ld) => {
+          counts.total++;
+          const cId = appState.colors[ld.id] || "fill-lead";
+          counts[cId] = (counts[cId] || 0) + 1;
+        });
+        l.agents.forEach((ag) => {
+          counts.total++;
+          const cId = appState.colors[ag.id] || autoColor(ag.name);
+          counts[cId] = (counts[cId] || 0) + 1;
+        });
+      }),
+    );
+    return counts;
+  };
+  const teamCounts = getTeamCounts();
+
   // Thao tác chỉnh sửa
   const updateProp = (fIdx, lIdx, type, sIdx, prop, val) => {
     updateState((st) => {
@@ -529,40 +642,37 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
-  // Color Menu Popover với dấu ✔ cho Team được chọn
-  const ColorMenu = ({ onClick, activeColorId }) => (
-    <div className="flex flex-column gap-1 w-14rem p-2">
-      <div className="text-xs font-bold text-500 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-1">
-        🎨 Đổi Màu Team
+  // BẢNG CHỌN TEAM DẠNG GRID (Bảng Team màu sắc trực quan)
+  const TeamGridMenu = ({ onClick, activeColorId }) => (
+    <div className="p-2">
+      <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 flex align-items-center justify-content-between">
+        <span>🎨 BẢNG CHỌN TEAM</span>
+        <span className="text-500 font-normal text-xs">
+          {teamColors.length} Team
+        </span>
       </div>
-      {teamColors.map((c) => {
-        const isSelected = activeColorId === c.id;
-        return (
-          <div
-            key={c.id}
-            className={`flex align-items-center gap-3 p-2 border-round cursor-pointer transition-all ${
-              isSelected
-                ? "surface-200 border-1 border-primary shadow-1"
-                : "hover:surface-100"
-            }`}
-            onClick={() => onClick(c.id)}
-          >
-            <div className={`w-1.5rem h-1.5rem border-round shadow-1 ${c.id}`} />
-            <span className={`font-bold text-sm flex-1 ${isSelected ? "text-primary" : "text-700"}`}>
-              {c.name}
-            </span>
-            {isSelected && (
-              <i className="pi pi-check text-primary font-bold text-sm" />
-            )}
-          </div>
-        );
-      })}
+      <div className="team-grid-container">
+        {teamColors.map((c) => {
+          const isSelected = activeColorId === c.id;
+          return (
+            <div
+              key={c.id}
+              className={`team-grid-card ${isSelected ? "selected" : ""}`}
+              onClick={() => onClick(c.id)}
+            >
+              <span className={`color-dot ${c.id}`} />
+              <span className="team-name">{c.name}</span>
+              {isSelected && (
+                <i className="pi pi-check text-primary font-extrabold text-xs ml-auto" />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 
   // Nhãn Team nhỏ trên đầu mỗi cabin:
-  // - Click: lọc tất cả cabin cùng team
-  // - Rê chuột (hover): mở ngay bảng chọn team để đổi màu
   const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
     <div
       className={`team-tag flex align-items-center gap-1 cursor-pointer ${
@@ -570,7 +680,7 @@ export default function App() {
       }`}
       onClick={onFilter}
       onMouseEnter={onOpen}
-      title="Click để lọc team này / Rê chuột để đổi màu"
+      title="Click để lọc team này / Rê chuột để mở Bảng Team chọn màu"
     >
       <span className={`team-tag-dot ${colorId}`} />
       <span className="team-tag-label">{teamNameOf(colorId)}</span>
@@ -582,9 +692,9 @@ export default function App() {
     <div className="p-3 md:p-4 surface-ground min-h-screen">
       <Toast ref={toast} />
 
-      {/* Bảng chọn màu cho cabin */}
+      {/* Bảng chọn màu Team dạng Grid cho Cabin */}
       <Popover ref={colorPanel}>
-        <ColorMenu
+        <TeamGridMenu
           activeColorId={appState.colors[activeSeat]}
           onClick={(cId) => {
             setSeatColor(activeSeat, cId);
@@ -595,12 +705,31 @@ export default function App() {
 
       {/* Bảng chọn màu cho toàn dãy */}
       <Popover ref={bulkColorPanel}>
-        <ColorMenu
+        <TeamGridMenu
           onClick={(cId) => {
             applyBulkColor(cId);
             bulkColorPanel.current?.hide();
           }}
         />
+      </Popover>
+
+      {/* Popover chọn màu mới áp dụng cho toàn bộ Team */}
+      <Popover ref={teamColorPickerPanel}>
+        <div className="p-1">
+          <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 px-2">
+            🎨 Thay đổi màu cho toàn Team {teamNameOf(activeTeamForColorChange)}
+          </div>
+          <TeamGridMenu
+            activeColorId={activeTeamForColorChange}
+            onClick={(newColorId) => {
+              if (activeTeamForColorChange) {
+                changeTeamColorGlobally(activeTeamForColorChange, newColorId);
+                setSelectedTeamId(newColorId);
+              }
+              teamColorPickerPanel.current?.hide();
+            }}
+          />
+        </div>
       </Popover>
 
       {/* HEADER */}
@@ -610,7 +739,8 @@ export default function App() {
             <span>📋</span> Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
           </h1>
           <p className="mt-2 mb-0 text-300 text-sm">
-            Tự động đổi màu Team • Inline Edit gọn • Đồng bộ Cloud Supabase
+            Tự động đổi màu Team • Inline Edit chữ nhỏ gọn • Bảng màu Team • Đồng
+            bộ Supabase & JSON
           </p>
         </div>
         <div className="flex align-items-center gap-3 flex-wrap">
@@ -656,7 +786,63 @@ export default function App() {
         ))}
       </div>
 
-      {/* TOOLBAR: BỘ LỌC SÀN LẦU & TEAM */}
+      {/* THANH NÚT CHỌN TEAM BÊN DƯỚI TIÊU ĐỀ CHÍNH */}
+      <div className="surface-card p-3 border-round-2xl shadow-2 mb-4 border-1 surface-border">
+        <div className="flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+          <div className="text-xs font-extrabold text-700 uppercase tracking-wider flex align-items-center gap-2">
+            <span>👥</span> DANH SÁCH TEAM & ĐỔI MÀU TOÀN TEAM
+            <span className="text-500 font-normal">
+              (Click team để lọc & mở bảng màu áp dụng cho cả team)
+            </span>
+          </div>
+          {selectedTeamId && (
+            <Button
+              label="Hiển thị tất cả Team"
+              icon="pi pi-filter-slash"
+              size="small"
+              text
+              severity="secondary"
+              className="py-0 px-2 text-xs font-bold"
+              onClick={() => setSelectedTeamId(null)}
+            />
+          )}
+        </div>
+        <div className="flex align-items-center gap-2 flex-wrap">
+          {/* Nút Tất cả */}
+          <div
+            className={`team-bar-item ${selectedTeamId === null ? "active" : ""}`}
+            onClick={() => setSelectedTeamId(null)}
+          >
+            <span>Tất cả</span>
+            <span className="team-count">{teamCounts.total}</span>
+          </div>
+
+          {/* Các nút từng Team */}
+          {teamColors.map((team) => {
+            const isSelected = selectedTeamId === team.id;
+            const count = teamCounts[team.id] || 0;
+            return (
+              <div
+                key={team.id}
+                className={`team-bar-item ${isSelected ? "active" : ""}`}
+                onClick={(e) => {
+                  setSelectedTeamId(team.id);
+                  setActiveTeamForColorChange(team.id);
+                  teamColorPickerPanel.current?.toggle(e);
+                }}
+                title={`Click để lọc Team ${team.name} và đổi màu toàn team`}
+              >
+                <span className={`team-tag-dot ${team.id}`} />
+                <span>{team.name}</span>
+                <span className="team-count">{count}</span>
+                <i className="pi pi-palette text-xs opacity-70 ml-1" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* TOOLBAR: BỘ LỌC SÀN LẦU, TÌM KIẾM & XUẤT/NHẬP JSON */}
       <Toolbar
         className="mb-4 shadow-2 border-1 surface-border border-round-xl p-3"
         left={
@@ -690,12 +876,13 @@ export default function App() {
               ))}
             </div>
 
-            {/* BỘ LỌC TEAM */}
+            {/* HIỂN THỊ THẺ ĐANG LỌC TEAM */}
             {selectedTeamId && (
-              <div className="flex align-items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 border-round-pill text-xs font-bold">
-                <span>Team: {teamNameOf(selectedTeamId)}</span>
+              <div className="flex align-items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 border-round-pill text-xs font-bold shadow-1">
+                <span className={`team-tag-dot ${selectedTeamId}`} />
+                <span>Đang lọc: {teamNameOf(selectedTeamId)}</span>
                 <i
-                  className="pi pi-times cursor-pointer hover:text-blue-900"
+                  className="pi pi-times cursor-pointer hover:text-blue-900 ml-1"
                   onClick={() => setSelectedTeamId(null)}
                   title="Bỏ lọc team"
                 />
@@ -704,14 +891,42 @@ export default function App() {
           </div>
         }
         right={
-          <Button
-            label={isSyncing ? "Đang lưu Cloud..." : "Lưu Cloud"}
-            icon="pi pi-cloud-upload"
-            severity="success"
-            className="font-bold px-4 py-2"
-            onClick={syncOnline}
-            disabled={isSyncing}
-          />
+          <div className="flex align-items-center gap-2 flex-wrap">
+            {/* INPUT ĐỌC FILE JSON ẨN */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={importFromJson}
+              accept=".json"
+              style={{ display: "none" }}
+            />
+            <Button
+              label="Xuất JSON"
+              icon="pi pi-download"
+              severity="help"
+              outlined
+              className="font-bold px-3 py-2 text-xs"
+              onClick={exportToJson}
+              title="Xuất dữ liệu dự phòng ra file JSON"
+            />
+            <Button
+              label="Nhập JSON"
+              icon="pi pi-upload"
+              severity="warning"
+              outlined
+              className="font-bold px-3 py-2 text-xs"
+              onClick={() => fileInputRef.current?.click()}
+              title="Nhập dữ liệu từ file JSON"
+            />
+            <Button
+              label={isSyncing ? "Đang lưu..." : "Lưu Cloud"}
+              icon="pi pi-cloud-upload"
+              severity="success"
+              className="font-bold px-4 py-2 text-xs"
+              onClick={syncOnline}
+              disabled={isSyncing}
+            />
+          </div>
         }
       />
 
@@ -833,7 +1048,7 @@ export default function App() {
                               }}
                             />
 
-                            {/* TÊN LEAD INLINE EDIT */}
+                            {/* TÊN LEAD INLINE EDIT: CHỮ NHỎ, FULL TÊN */}
                             <InlineEdit
                               value={seat.name}
                               onChange={(val) =>
@@ -847,7 +1062,8 @@ export default function App() {
                                 )
                               }
                               placeholder="Tên Lead"
-                              className="text-sm w-full mt-2"
+                              isName={true}
+                              className="text-xs w-full mt-2"
                             />
 
                             {/* CHECKLIST THIẾT BỊ */}
@@ -902,25 +1118,13 @@ export default function App() {
                 {/* --- AGENT ZONE --- */}
                 <div className="flex flex-column ml-2 flex-1">
                   <div className="flex align-items-center gap-3 mb-2 flex-wrap px-1">
-                    <span className="text-xs font-extrabold text-700 uppercase">
-                      👥 AGENTS DÃY {lane.laneLetter}
+                    <span className="text-sm font-extrabold text-800 uppercase flex align-items-center gap-1">
+                      <span>👥</span> AGENTS DÃY {lane.laneLetter}
                     </span>
 
-                    <Button
-                      icon="pi pi-palette"
-                      label="Đổi màu dãy"
-                      size="small"
-                      outlined
-                      severity="info"
-                      className="py-1 px-2 text-xs font-bold"
-                      onClick={(e) => {
-                        setActiveLane({ fIdx, lIdx });
-                        bulkColorPanel.current?.toggle(e);
-                      }}
-                    />
-
-                    <div className="flex align-items-center gap-2 surface-100 px-2 py-1 border-round-lg ml-auto">
-                      <span className="text-xs font-bold text-600">
+                    {/* STT BẮT ĐẦU VẬN HÀNH NỔI BẬT CHO CẢ DÃY */}
+                    <div className="flex align-items-center gap-2 bg-blue-50 border-1 border-blue-200 px-2.5 py-1 border-round-xl shadow-1">
+                      <span className="text-xs font-bold text-blue-800">
                         STT Bắt đầu:
                       </span>
                       <InputText
@@ -929,9 +1133,33 @@ export default function App() {
                         onChange={(e) =>
                           updateSttGlobal(fIdx, lIdx, e.target.value)
                         }
-                        className="w-4rem p-1 text-center font-bold text-xs"
+                        className="w-4rem p-1 text-center font-extrabold text-xs text-blue-900 surface-0 border-blue-300"
+                      />
+                      <Button
+                        icon="pi pi-bolt"
+                        label="Áp dụng STT"
+                        size="small"
+                        severity="info"
+                        className="py-1 px-2 text-xs font-bold"
+                        title="Tự động áp dụng đánh số thứ tự nối tiếp cho tất cả các cabin trong dãy"
+                        onClick={() =>
+                          updateSttGlobal(fIdx, lIdx, lane.startStt)
+                        }
                       />
                     </div>
+
+                    <Button
+                      icon="pi pi-palette"
+                      label="Đổi màu dãy"
+                      size="small"
+                      outlined
+                      severity="secondary"
+                      className="py-1 px-2 text-xs font-bold ml-auto"
+                      onClick={(e) => {
+                        setActiveLane({ fIdx, lIdx });
+                        bulkColorPanel.current?.toggle(e);
+                      }}
+                    />
 
                     <Button
                       icon="pi pi-plus"
@@ -973,7 +1201,7 @@ export default function App() {
                               onDragStart(e, fIdx, lIdx, "agent", sIdx)
                             }
                             className={`seat-card p-2 border-round-xl shadow-1 border-1 cursor-move ${colorId}`}
-                            style={{ width: "148px" }}
+                            style={{ width: "152px" }}
                           >
                             <div className="flex justify-content-between align-items-center mb-1">
                               <div className="flex gap-1">
@@ -1029,7 +1257,7 @@ export default function App() {
                               }}
                             />
 
-                            {/* STT & TÊN AGENT INLINE EDIT */}
+                            {/* STT & TÊN AGENT INLINE EDIT: CHỮ NHỎ, FULL TÊN (30-35 KÝ TỰ) */}
                             <div className="flex align-items-center gap-1 mt-1">
                               <InlineEdit
                                 value={seat.stt || ""}
@@ -1059,12 +1287,13 @@ export default function App() {
                                   )
                                 }
                                 placeholder="Tên Agent..."
-                                className="text-xs font-bold flex-1"
+                                isName={true}
+                                className="flex-1"
                               />
                             </div>
 
                             {/* CHECKLIST THIẾT BỊ */}
-                            <div className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1">
+                            <div className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1 mt-auto">
                               {[
                                 { key: "thung", label: "Thùng" },
                                 { key: "man20", label: 'Màn 20"' },
