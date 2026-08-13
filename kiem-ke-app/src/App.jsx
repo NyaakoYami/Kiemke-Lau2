@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
 import { Toast } from "primereact/toast";
-import { Popover } from "primereact/popover";
 import { Toolbar } from "primereact/toolbar";
 import { Card } from "primereact/card";
 import { Badge } from "primereact/badge";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import "./App.css";
+
 
 // -------------------------------------------------------------
 // COMPONENT NHẬP LIỆU INLINE (Click để sửa)
@@ -271,10 +271,11 @@ const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
 
 export default function App() {
   const toast = useRef(null);
-  const colorPanel = useRef(null);
-  const bulkColorPanel = useRef(null);
-  const teamColorPickerPanel = useRef(null);
   const fileInputRef = useRef(null);
+
+  // openMenu: { type: 'seat'|'bulk'|'team', seatId, laneKey, event }
+  const [openMenu, setOpenMenu] = useState(null);
+  const closeMenu = useCallback(() => setOpenMenu(null), []);
 
   const [appState, setAppState] = useState({
     floors: JSON.parse(JSON.stringify(defaultData)),
@@ -690,48 +691,48 @@ export default function App() {
 
 
   return (
-    <div className="p-3 md:p-4 surface-ground min-h-screen">
+    <div className="p-3 md:p-4 surface-ground min-h-screen" onClick={closeMenu}>
       <Toast ref={toast} />
 
-      {/* Bảng chọn màu Team dạng Grid cho Cabin */}
-      <Popover ref={colorPanel}>
-        <TeamGridMenu
-          activeColorId={appState.colors[activeSeat]}
-          onClick={(cId) => {
-            setSeatColor(activeSeat, cId);
-            colorPanel.current?.hide();
-          }}
-        />
-      </Popover>
-
-      {/* Bảng chọn màu cho toàn dãy */}
-      <Popover ref={bulkColorPanel}>
-        <TeamGridMenu
-          onClick={(cId) => {
-            applyBulkColor(cId);
-            bulkColorPanel.current?.hide();
-          }}
-        />
-      </Popover>
-
-      {/* Popover chọn màu mới áp dụng cho toàn bộ Team */}
-      <Popover ref={teamColorPickerPanel}>
-        <div className="p-1">
-          <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 px-2">
-            🎨 Thay đổi màu cho toàn Team {teamNameOf(activeTeamForColorChange)}
+      {/* CUSTOM DROPDOWN MENU - thay thế Popover */}
+      {openMenu && (
+        <div
+          className="fixed z-50"
+          style={{ top: openMenu.y, left: openMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="surface-0 shadow-4 border-round-xl border-1 surface-border overflow-hidden" style={{ minWidth: '18rem' }}>
+            {openMenu.type === 'seat' && (
+              <TeamGridMenu
+                activeColorId={appState.colors[openMenu.seatId]}
+                onClick={(cId) => { setSeatColor(openMenu.seatId, cId); closeMenu(); }}
+              />
+            )}
+            {openMenu.type === 'bulk' && (
+              <TeamGridMenu
+                onClick={(cId) => { applyBulkColor(cId); closeMenu(); }}
+              />
+            )}
+            {openMenu.type === 'team' && (
+              <div className="p-1">
+                <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 px-2">
+                  🎨 Thay đổi màu toàn Team {teamNameOf(activeTeamForColorChange)}
+                </div>
+                <TeamGridMenu
+                  activeColorId={activeTeamForColorChange}
+                  onClick={(newColorId) => {
+                    if (activeTeamForColorChange) {
+                      changeTeamColorGlobally(activeTeamForColorChange, newColorId);
+                      setSelectedTeamId(newColorId);
+                    }
+                    closeMenu();
+                  }}
+                />
+              </div>
+            )}
           </div>
-          <TeamGridMenu
-            activeColorId={activeTeamForColorChange}
-            onClick={(newColorId) => {
-              if (activeTeamForColorChange) {
-                changeTeamColorGlobally(activeTeamForColorChange, newColorId);
-                setSelectedTeamId(newColorId);
-              }
-              teamColorPickerPanel.current?.hide();
-            }}
-          />
         </div>
-      </Popover>
+      )}
 
       {/* HEADER */}
       <div className="surface-900 text-white p-4 border-round-2xl shadow-4 mb-4 flex justify-content-between align-items-center flex-wrap gap-3">
