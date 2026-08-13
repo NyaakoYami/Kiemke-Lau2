@@ -1,5 +1,14 @@
 /* App.css - Custom styling for Kiềm Kê Lầu 2 & Lầu 3 */
 
+html, body, #root {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
 @keyframes pulseDot {
   0% { transform: scale(0.88); opacity: 0.7; }
   50% { transform: scale(1.2); opacity: 1; }

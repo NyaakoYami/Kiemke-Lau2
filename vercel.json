@@ -1,4 +1,4 @@
 {
-  "buildCommand": "cd kiem-ke-app && npm install && npm run build",
-  "outputDirectory": "kiem-ke-app/dist"
+  "buildCommand": "npm run build",
+  "outputDirectory": "."
 }
