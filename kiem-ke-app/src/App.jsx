@@ -220,6 +220,55 @@ const defaultData = [
   },
 ];
 
+const teamNameOf = (colorId) =>
+  teamColors.find((c) => c.id === colorId)?.name || "Khác";
+
+// BẢNG CHỌN TEAM DẠNG GRID (Bảng Team màu sắc trực quan)
+const TeamGridMenu = ({ onClick, activeColorId }) => (
+  <div className="p-2">
+    <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 flex align-items-center justify-content-between">
+      <span>🎨 BẢNG CHỌN TEAM</span>
+      <span className="text-500 font-normal text-xs">
+        {teamColors.length} Team
+      </span>
+    </div>
+    <div className="team-grid-container">
+      {teamColors.map((c) => {
+        const isSelected = activeColorId === c.id;
+        return (
+          <div
+            key={c.id}
+            className={`team-grid-card ${isSelected ? "selected" : ""}`}
+            onClick={() => onClick(c.id)}
+          >
+            <span className={`color-dot ${c.id}`} />
+            <span className="team-name">{c.name}</span>
+            {isSelected && (
+              <i className="pi pi-check text-primary font-extrabold text-xs ml-auto" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+// Nhãn Team nhỏ trên đầu mỗi cabin:
+const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
+  <div
+    className={`team-tag flex align-items-center gap-1 cursor-pointer ${
+      isSelected ? "team-tag-selected" : ""
+    }`}
+    onClick={onFilter}
+    onMouseEnter={onOpen}
+    title="Click để lọc team này / Rê chuột để mở Bảng Team chọn màu"
+  >
+    <span className={`team-tag-dot ${colorId}`} />
+    <span className="team-tag-label">{teamNameOf(colorId)}</span>
+    <i className="pi pi-chevron-down text-xs opacity-60" />
+  </div>
+);
+
 export default function App() {
   const toast = useRef(null);
   const colorPanel = useRef(null);
@@ -282,9 +331,6 @@ export default function App() {
     if (n === "FULL") return "fill-cyan";
     return "fill-pink";
   };
-
-  const teamNameOf = (colorId) =>
-    teamColors.find((c) => c.id === colorId)?.name || "Khác";
 
   useEffect(() => {
     loadOnline();
@@ -642,51 +688,6 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
-  // BẢNG CHỌN TEAM DẠNG GRID (Bảng Team màu sắc trực quan)
-  const TeamGridMenu = ({ onClick, activeColorId }) => (
-    <div className="p-2">
-      <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 flex align-items-center justify-content-between">
-        <span>🎨 BẢNG CHỌN TEAM</span>
-        <span className="text-500 font-normal text-xs">
-          {teamColors.length} Team
-        </span>
-      </div>
-      <div className="team-grid-container">
-        {teamColors.map((c) => {
-          const isSelected = activeColorId === c.id;
-          return (
-            <div
-              key={c.id}
-              className={`team-grid-card ${isSelected ? "selected" : ""}`}
-              onClick={() => onClick(c.id)}
-            >
-              <span className={`color-dot ${c.id}`} />
-              <span className="team-name">{c.name}</span>
-              {isSelected && (
-                <i className="pi pi-check text-primary font-extrabold text-xs ml-auto" />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  // Nhãn Team nhỏ trên đầu mỗi cabin:
-  const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
-    <div
-      className={`team-tag flex align-items-center gap-1 cursor-pointer ${
-        isSelected ? "team-tag-selected" : ""
-      }`}
-      onClick={onFilter}
-      onMouseEnter={onOpen}
-      title="Click để lọc team này / Rê chuột để mở Bảng Team chọn màu"
-    >
-      <span className={`team-tag-dot ${colorId}`} />
-      <span className="team-tag-label">{teamNameOf(colorId)}</span>
-      <i className="pi pi-chevron-down text-xs opacity-60" />
-    </div>
-  );
 
   return (
     <div className="p-3 md:p-4 surface-ground min-h-screen">
