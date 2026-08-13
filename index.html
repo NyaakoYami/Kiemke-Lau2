@@ -625,51 +625,47 @@
       color: var(--red)
     }
 
-    .color-picker-modal {
+    .color-picker-wrap {
+      position: relative;
+      display: inline-block
+    }
+
+    .color-dropdown {
       display: none;
-      position: fixed;
-      top: 0;
+      position: absolute;
+      top: 100%;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, .5);
-      z-index: 10000;
-      align-items: center;
-      justify-content: center
-    }
-
-    .color-picker-modal.show {
-      display: flex
-    }
-
-    .color-picker-content {
       background: var(--surface);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-xl);
-      max-width: 400px;
-      width: 90%
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      box-shadow: var(--shadow-md);
+      z-index: 100;
+      min-width: 200px
     }
 
-    .color-picker-content h3 {
-      margin-bottom: 16px;
-      color: var(--text-primary)
+    .color-picker-wrap:hover .color-dropdown {
+      display: grid
+    }
+
+    .color-dropdown.show {
+      display: grid
     }
 
     .color-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px
+      gap: 8px;
+      margin: 0
     }
 
     .color-option {
-      padding: 12px;
+      padding: 10px;
       border: 2px solid transparent;
       border-radius: var(--radius-sm);
       cursor: pointer;
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       transition: all var(--transition)
     }
@@ -681,88 +677,86 @@
 
     .color-option.active {
       border-color: var(--blue);
-      box-shadow: 0 0 0 3px var(--blue-light)
-    }
 
-    .modal-footer {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end
-    }
+      box-shadow: 0 0 0 2px var(--blue-light) .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end
+      }
 
-    .modal-footer .btn {
-      padding: 8px 14px;
-      font-size: 12px
-    }
+      .modal-footer .btn {
+        padding: 8px 14px;
+        font-size: 12px
+      }
 
-    /* Chữ nhỏ checklist xếp thành 1 cột gọn bên dưới tên */
-    .items-list {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      background: rgba(255, 255, 255, .7);
-      padding: 5px 6px;
-      border-radius: 5px
-    }
+      /* Chữ nhỏ checklist xếp thành 1 cột gọn bên dưới tên */
+      .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        background: rgba(255, 255, 255, .7);
+        padding: 5px 6px;
+        border-radius: 5px
+      }
 
-    .item-check {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 9px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding: 1px 2px;
-      border-radius: 3px
-    }
+      .item-check {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        padding: 1px 2px;
+        border-radius: 3px
+      }
 
-    .item-check input[type=checkbox] {
-      cursor: pointer;
-      width: 10px;
-      height: 10px;
-      accent-color: var(--green);
-      flex-shrink: 0
-    }
+      .item-check input[type=checkbox] {
+        cursor: pointer;
+        width: 10px;
+        height: 10px;
+        accent-color: var(--green);
+        flex-shrink: 0
+      }
 
-    .item-check .item-lbl {
-      flex: 1
-    }
+      .item-check .item-lbl {
+        flex: 1
+      }
 
-    .qty-input {
-      width: 24px;
-      padding: 0 2px;
-      font-size: 9px;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      text-align: center;
-      outline: none;
-      font-family: 'Inter', sans-serif
-    }
+      .qty-input {
+        width: 24px;
+        padding: 0 2px;
+        font-size: 9px;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        text-align: center;
+        outline: none;
+        font-family: 'Inter', sans-serif
+      }
 
-    #toast {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      background: #1a1d2e;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: var(--shadow-xl);
-      z-index: 9999;
-      display: none;
-      border-left: 4px solid var(--blue)
-    }
+      #toast {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: #1a1d2e;
+        color: #fff;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        box-shadow: var(--shadow-xl);
+        z-index: 9999;
+        display: none;
+        border-left: 4px solid var(--blue)
+      }
 
-    #toast.show {
-      display: block;
-      animation: toastSlide .3s ease
-    }
+      #toast.show {
+        display: block;
+        animation: toastSlide .3s ease
+      }
 
-    #toast.hide {
-      animation: toastFade .3s ease forwards
-    }
+      #toast.hide {
+        animation: toastFade .3s ease forwards
+      }
   </style>
 </head>
 
@@ -835,17 +829,6 @@
     <div id="floors-root"></div>
   </div>
 
-  <!-- Color Picker Modal -->
-  <div id="color-modal" class="color-picker-modal">
-    <div class="color-picker-content">
-      <h3>Chọn màu theo team</h3>
-      <div class="color-grid" id="color-grid"></div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" onclick="closeColorModal()">Đóng</button>
-      </div>
-    </div>
-  </div>
-
   <div id="toast"></div>
   <script>
     document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -902,6 +885,12 @@
             "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh", "PT - Phương Thy",
             "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng", "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
           ]
+        },
+        {
+          lane: "D", leadName: "Buyer - TL", startStt: 75, agents: [
+            "Trống", "Trống", "Trống", "Trống", "Trống",
+            "Trống", "Trống", "Trống", "Trống", "Trống"
+          ]
         }
       ],
       "Sàn Lầu 2": [
@@ -927,6 +916,12 @@
             "Thiếu 1 màn hình + tai nghe", "Hoàng Khôi Do", "Full", "Minh Đạo", "Văn Anh",
             "Kim Chi", "Thảo Vi", "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi",
             "Thị Hồng", "Chấn Điền Do", "Nhật Khánh", "Tú Quyền Do", "Tân Tài", "Tuấn Anh", "Toàn"
+          ]
+        },
+        {
+          lane: "D", leadName: "Buyer - TL", startStt: 77, agents: [
+            "Trống", "Trống", "Trống", "Trống", "Trống",
+            "Trống", "Trống", "Trống", "Trống", "Trống"
           ]
         }
       ]
@@ -984,7 +979,6 @@
       }
       normalizeState();
       saveLocal(false);
-      initColorPicker();
       renderAll();
     }
     function saveLocal(refresh = true) {
@@ -1249,33 +1243,37 @@
     ];
 
     let currentEditingId = null;
-    function initColorPicker() {
-      const grid = document.getElementById('color-grid');
-      if (!grid) return;
-      grid.innerHTML = teamColors.map(tc =>
-        `<div class="color-option ${tc.cls}" data-color="${tc.cls}" onclick="selectColor('${tc.cls}')" title="${tc.name}">${tc.name}</div>`
-      ).join('');
-    }
-    function openColorModal(id) {
-      currentEditingId = id;
-      const modal = document.getElementById('color-modal');
-      if (!modal) return;
+    
+    function openColorDropdown(e, id) {
+      e.stopPropagation();
+      const existingDropdowns = document.querySelectorAll('.color-dropdown.show');
+      existingDropdowns.forEach(dd => dd.classList.remove('show'));
+      
+      const dropdownId = `color-dropdown-${id}`;
+      const dropdown = document.getElementById(dropdownId);
+      if (!dropdown) return;
+      
       const current = customColors[id] || colorFor(customNames[id] || seatIndex[id].name);
-      document.querySelectorAll('.color-option').forEach(opt => {
-        opt.classList.toggle('active', opt.getAttribute('data-color') === current);
-      });
-      modal.classList.add('show');
+      dropdown.innerHTML = teamColors.map(tc =>
+        `<div class="color-option ${tc.cls} ${tc.cls === current ? 'active' : ''}" data-color="${tc.cls}" onclick="selectColor(event,'${id}','${tc.cls}')" title="${tc.name}">${tc.name}</div>`
+      ).join('');
+      
+      dropdown.classList.add('show');
+      currentEditingId = id;
     }
-    function closeColorModal() {
-      document.getElementById('color-modal').classList.remove('show');
-      currentEditingId = null;
-    }
-    function selectColor(colorClass) {
-      if (!currentEditingId) return;
-      customColors[currentEditingId] = colorClass;
+    
+    function selectColor(e, id, colorClass) {
+      e.stopPropagation();
+      if (!id) return;
+      customColors[id] = colorClass;
       saveLocal(false); renderAll();
-      closeColorModal();
+      document.getElementById(`color-dropdown-${id}`).classList.remove('show');
     }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.color-dropdown.show').forEach(dd => dd.classList.remove('show'));
+    });
 
     /* ───────── ADD / REMOVE CABIN ───────── */
     function addAgent(floor, lIdx) {
@@ -1328,7 +1326,10 @@
        <div id="name-wrap-${lid}" class="seat-name" onclick="startRename('${lid}')" title="Nhấn để sửa tên">${leadDisplay}</div>
       </div>
       <div class="btn-action-group">
-       <button class="btn-mini btn-mini-success" onclick="openColorModal('${lid}')" title="Chỉnh màu">🎨</button>
+       <div class="color-picker-wrap">
+        <button class="btn-mini btn-mini-success" onclick="openColorDropdown(event,'${lid}')" title="Rê để chọn màu">🎨</button>
+        <div class="color-dropdown" id="color-dropdown-${lid}"></div>
+       </div>
        <button class="btn-mini btn-mini-success" onclick="markFull('${lid}')">Đủ bộ</button>
        <button class="btn-mini btn-mini-danger" onclick="resetSeat('${lid}')">Reset</button>
       </div>
@@ -1358,7 +1359,10 @@
        <div id="name-wrap-${id}" class="seat-name" onclick="startRename('${id}')" title="Nhấn để sửa tên">${displayName}</div>
       </div>
       <div class="btn-action-group">
-       <button class="btn-mini btn-mini-success" onclick="openColorModal('${id}')" title="Chỉnh màu">🎨</button>
+       <div class="color-picker-wrap">
+        <button class="btn-mini btn-mini-success" onclick="openColorDropdown(event,'${id}')" title="Rê để chọn màu">🎨</button>
+        <div class="color-dropdown" id="color-dropdown-${id}"></div>
+       </div>
        <button class="btn-mini btn-mini-success" onclick="markFull('${id}')">Đủ bộ</button>
        <button class="btn-mini btn-mini-danger" onclick="resetSeat('${id}')">Reset</button>
        <button class="btn-mini btn-mini-danger" onclick="removeAgent('${floor}',${lIdx},${i})" title="Xoá cabin">✕</button>
