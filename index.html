@@ -875,21 +875,20 @@
         {
           lane: "B", leadName: "Vy - DA", startStt: 38, agents: [
             "Nguyễn Khanh", "Lý - Senior", "Nguyễn Hậu", "Võ Hiền", "Phan Loan", "Võ Lan", "NB Content", "NB Content",
-            "Tuyến - Senior", "Nguyễn Thúy", "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi", "NB Tele",
+            "Tuyến - Senior", "Nguyễn Thúy"
+          ]
+        },
+        {
+          lane: "C", leadName: "Anh Thư - SUP", startStt: 48, agents: [
+            "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi", "NB Tele",
             "Trống", "Trống", "Trống", "Trống"
           ]
         },
         {
-          lane: "C", leadName: "Anh Thư - SUP", startStt: 58, agents: [
+          lane: "D", leadName: "Buyer - TL", startStt: 58, agents: [
             "Full", "Full", "PT - Phúc Hậu", "Trung Hiếu", "Quốc Khánh", "Trống",
             "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh", "PT - Phương Thy",
             "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng", "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
-          ]
-        },
-        {
-          lane: "D", leadName: "Buyer - TL", startStt: 75, agents: [
-            "Trống", "Trống", "Trống", "Trống", "Trống",
-            "Trống", "Trống", "Trống", "Trống", "Trống"
           ]
         }
       ],
@@ -905,26 +904,23 @@
           lane: "B", leadName: "Chinh - TL", startStt: 19, agents: [
             "Thiên Ngân", "Tú Trinh", "Trung Nghị", "Minh Tâm", "Minh Thư", "Duy Khánh", "Hồng Ân", "Nhật Lam",
             "Khánh Ly", "Hoàng Gấm NB", "Hoàng Khải", "Phi Phụng", "Bảo Anh Senior", "Ngọc Tú", "Uyên", "Thanh",
-            "PT Bảo My", "Full", "Cảnh", "Trúc",
+            "PT Bảo My", "Full", "Cảnh", "Trúc"
+          ]
+        },
+        {
+          lane: "C", leadName: "Ngân - TL", startStt: 39, agents: [
             "Thiếu 1 màn hình + tai nghe", "Thiếu 1 màn hình + tai nghe", "Full", "Trực", "Kim Ngân", "Đan Vy",
             "Nguyễn Senior", "Thắng", "Full", "Nguyễn Kim Ngân", "Thị Thủy", "Ý Lan", "Hải Yến", "Ái Linh",
             "Hân Senior", "Minh Thái", "Quang Hậu", "Công Hiệp", "Full", "Minh Hoàng"
           ]
         },
         {
-          lane: "C", leadName: "Phương - TL QA", startStt: 59, agents: [
+          lane: "D", leadName: "Phương - TL QA", startStt: 59, agents: [
             "Thiếu 1 màn hình + tai nghe", "Hoàng Khôi Do", "Full", "Minh Đạo", "Văn Anh",
             "Kim Chi", "Thảo Vi", "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi",
             "Thị Hồng", "Chấn Điền Do", "Nhật Khánh", "Tú Quyền Do", "Tân Tài", "Tuấn Anh", "Toàn"
           ]
-        },
-        {
-          lane: "D", leadName: "Buyer - TL", startStt: 77, agents: [
-            "Trống", "Trống", "Trống", "Trống", "Trống",
-            "Trống", "Trống", "Trống", "Trống", "Trống"
-          ]
         }
-      ]
     };
 
     /* ───────── STATE ───────── */
@@ -1243,25 +1239,25 @@
     ];
 
     let currentEditingId = null;
-    
+
     function openColorDropdown(e, id) {
       e.stopPropagation();
       const existingDropdowns = document.querySelectorAll('.color-dropdown.show');
       existingDropdowns.forEach(dd => dd.classList.remove('show'));
-      
+
       const dropdownId = `color-dropdown-${id}`;
       const dropdown = document.getElementById(dropdownId);
       if (!dropdown) return;
-      
+
       const current = customColors[id] || colorFor(customNames[id] || seatIndex[id].name);
       dropdown.innerHTML = teamColors.map(tc =>
         `<div class="color-option ${tc.cls} ${tc.cls === current ? 'active' : ''}" data-color="${tc.cls}" onclick="selectColor(event,'${id}','${tc.cls}')" title="${tc.name}">${tc.name}</div>`
       ).join('');
-      
+
       dropdown.classList.add('show');
       currentEditingId = id;
     }
-    
+
     function selectColor(e, id, colorClass) {
       e.stopPropagation();
       if (!id) return;
@@ -1269,7 +1265,7 @@
       saveLocal(false); renderAll();
       document.getElementById(`color-dropdown-${id}`).classList.remove('show');
     }
-    
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', () => {
       document.querySelectorAll('.color-dropdown.show').forEach(dd => dd.classList.remove('show'));
