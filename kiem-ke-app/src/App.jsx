@@ -4,14 +4,10 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
 import { Toast } from "primereact/toast";
-import { OverlayPanel } from "primereact/overlaypanel";
+import { Popover } from "primereact/popover";
 import { Toolbar } from "primereact/toolbar";
 import { Card } from "primereact/card";
 import { Badge } from "primereact/badge";
-import { SelectButton } from "primereact/selectbutton";
-// Import CSS PrimeReact
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import "./App.css";
@@ -324,6 +320,7 @@ export default function App() {
   const [activeSeat, setActiveSeat] = useState(null);
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
 
   // Trạng thái kết nối / đồng bộ Supabase
   const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
@@ -455,14 +452,18 @@ export default function App() {
     setAppState(newState);
   };
 
+  const markDirty = () => {
+    setConnectionStatus((prev) => (prev === "error" ? "error" : "connected"));
+    setSyncStatus((prev) => (prev === "syncing" ? "syncing" : "idle"));
+  };
+
   const updateState = (updater) => {
     setAppState((prev) => {
       const next = JSON.parse(JSON.stringify(prev));
       updater(next);
       return next;
     });
-    // Bất kỳ chỉnh sửa nào cũng coi như "chưa đồng bộ" với bản mới nhất trên cloud
-    setSyncStatus((s) => (s === "synced" ? "idle" : s));
+    markDirty();
   };
 
   // Các thao tác
@@ -629,12 +630,15 @@ export default function App() {
     </div>
   );
 
-  // Nhãn Team nhỏ hiện ngay trên cabin - click để mở bảng chọn màu
-  const TeamTag = ({ colorId, onOpen }) => (
+  // Nhãn Team nhỏ hiện ngay trên cabin:
+  // - click: lọc tất cả cabin cùng team
+  // - hover: mở bảng chọn màu để đổi team ngay
+  const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
     <div
-      className="team-tag flex align-items-center gap-1 cursor-pointer"
-      onClick={onOpen}
-      title="Đổi team / màu"
+      className={`team-tag flex align-items-center gap-1 cursor-pointer ${isSelected ? "team-tag-selected" : ""}`}
+      onClick={onFilter}
+      onMouseEnter={onOpen}
+      title="Click để lọc team / rê chuột để đổi màu"
     >
       <span className={`team-tag-dot ${colorId}`}></span>
       <span className="team-tag-label">{teamNameOf(colorId)}</span>
@@ -659,17 +663,24 @@ export default function App() {
           height: 10px;
           border-radius: 50%;
         }
-        .inline-edit-display {
+        .inline-edit-display,
+        .inline-edit-display.p-inputtext {
           font-weight: 700;
           opacity: 0.92;
-          padding: 2px 4px;
+          padding: 2px 6px;
           border-radius: 4px;
-          border: 1px dashed transparent;
+          border: 1px solid transparent;
+          background: transparent;
+          box-shadow: none;
+          color: #1f2937;
         }
-        .inline-edit-display:hover {
+        .inline-edit-display:hover,
+        .inline-edit-display:focus,
+        .inline-edit-display.p-inputtext:focus {
           opacity: 1;
-          border-color: rgba(0,0,0,0.25);
-          background: rgba(255,255,255,0.35);
+          border-color: rgba(59, 91, 219, 0.28);
+          background: rgba(255,255,255,0.55);
+          box-shadow: none;
         }
         .team-tag {
           font-size: 10px;
@@ -680,8 +691,11 @@ export default function App() {
           border-radius: 999px;
           padding: 1px 6px;
           width: fit-content;
+          border: 1px solid transparent;
+          transition: all 0.2s ease;
         }
-        .team-tag:hover { background: rgba(255,255,255,0.85); }
+        .team-tag:hover { background: rgba(255,255,255,0.85); border-color: rgba(59, 91, 219, 0.2); }
+        .team-tag-selected { background: rgba(219,234,254,0.9); border-color: rgba(59, 91, 219, 0.45); }
         .team-tag-dot {
           width: 8px;
           height: 8px;
@@ -689,26 +703,40 @@ export default function App() {
           display: inline-block;
         }
         .team-tag-label { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .fill-lead { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .fill-pink { background: linear-gradient(135deg, #fce7f3, #f9a8d4); }
+        .fill-orange { background: linear-gradient(135deg, #ffedd5, #fdba74); }
+        .fill-cyan { background: linear-gradient(135deg, #cffafe, #67e8f9); }
+        .fill-yellow { background: linear-gradient(135deg, #fef3c7, #fcd34d); }
+        .fill-purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
+        .fill-grey { background: linear-gradient(135deg, #e5e7eb, #d1d5db); }
+        .team-tag-dot.fill-lead { background: #2563eb; }
+        .team-tag-dot.fill-pink { background: #ec4899; }
+        .team-tag-dot.fill-orange { background: #f97316; }
+        .team-tag-dot.fill-cyan { background: #06b6d4; }
+        .team-tag-dot.fill-yellow { background: #eab308; }
+        .team-tag-dot.fill-purple { background: #8b5cf6; }
+        .team-tag-dot.fill-grey { background: #6b7280; }
       `}</style>
       <Toast ref={toast} />
       {/* Popovers */}
-      <OverlayPanel ref={colorPanel}>
+      <Popover ref={colorPanel}>
         <ColorMenu
           activeColorId={appState.colors[activeSeat]}
           onClick={(cId) => {
             setSeatColor(activeSeat, cId);
-            colorPanel.current.hide();
+            colorPanel.current?.hide();
           }}
         />
-      </OverlayPanel>
-      <OverlayPanel ref={bulkColorPanel}>
+      </Popover>
+      <Popover ref={bulkColorPanel}>
         <ColorMenu
           onClick={(cId) => {
             applyBulkColor(cId);
-            bulkColorPanel.current.hide();
+            bulkColorPanel.current?.hide();
           }}
         />
-      </OverlayPanel>
+      </Popover>
       <div className="surface-900 text-white p-4 border-round-xl shadow-4 mb-4 flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
           <h1 className="m-0 text-3xl font-bold">
@@ -765,11 +793,22 @@ export default function App() {
                 className="w-18rem"
               />
             </span>
-            <SelectButton
-              value={selectedFloor}
-              onChange={(e) => setSelectedFloor(e.value || "Tất cả")}
-              options={["Tất cả", "Sàn Lầu 2", "Sàn Lầu 3"]}
-            />
+            <div className="flex align-items-center gap-2 p-1 border-round surface-100">
+              {["Tất cả", "Sàn Lầu 2", "Sàn Lầu 3"].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`px-3 py-2 border-round text-sm font-semibold border-none cursor-pointer transition-colors ${
+                    selectedFloor === option
+                      ? "surface-900 text-white"
+                      : "surface-0 text-700"
+                  }`}
+                  onClick={() => setSelectedFloor(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         }
         right={
@@ -820,9 +859,16 @@ export default function App() {
                     onDrop={(e) => onDrop(e, fIdx, lIdx, "lead")}
                   >
                     {lane.leads
-                      .filter((s) =>
-                        s.name.toLowerCase().includes(search.toLowerCase()),
-                      )
+                      .filter((s) => {
+                        const q = s.name
+                          .toLowerCase()
+                          .includes(search.toLowerCase());
+                        const teamMatch =
+                          !selectedTeamId ||
+                          (appState.colors[s.id] || autoColor(s.name)) ===
+                            selectedTeamId;
+                        return q && teamMatch;
+                      })
                       .map((seat, sIdx) => {
                         const colorId = appState.colors[seat.id] || "fill-lead";
                         return (
@@ -872,9 +918,15 @@ export default function App() {
                             </div>
                             <TeamTag
                               colorId={colorId}
+                              isSelected={selectedTeamId === colorId}
+                              onFilter={() =>
+                                setSelectedTeamId((prev) =>
+                                  prev === colorId ? null : colorId,
+                                )
+                              }
                               onOpen={(e) => {
                                 setActiveSeat(seat.id);
-                                colorPanel.current.toggle(e);
+                                colorPanel.current?.show(e);
                               }}
                             />
                             <InlineEdit
@@ -997,11 +1049,16 @@ export default function App() {
                     onDrop={(e) => onDrop(e, fIdx, lIdx, "agent")}
                   >
                     {lane.agents
-                      .filter((s) =>
-                        (s.name + s.stt)
+                      .filter((s) => {
+                        const q = (s.name + s.stt)
                           .toLowerCase()
-                          .includes(search.toLowerCase()),
-                      )
+                          .includes(search.toLowerCase());
+                        const teamMatch =
+                          !selectedTeamId ||
+                          (appState.colors[s.id] || autoColor(s.name)) ===
+                            selectedTeamId;
+                        return q && teamMatch;
+                      })
                       .map((seat, sIdx) => {
                         const colorId =
                           appState.colors[seat.id] || autoColor(seat.name);
@@ -1053,9 +1110,15 @@ export default function App() {
                             </div>
                             <TeamTag
                               colorId={colorId}
+                              isSelected={selectedTeamId === colorId}
+                              onFilter={() =>
+                                setSelectedTeamId((prev) =>
+                                  prev === colorId ? null : colorId,
+                                )
+                              }
                               onOpen={(e) => {
                                 setActiveSeat(seat.id);
-                                colorPanel.current.toggle(e);
+                                colorPanel.current?.show(e);
                               }}
                             />
                             <InlineEdit

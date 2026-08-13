@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "primeflex": "^4.0.0",
+    "primeicons": "^8.0.0",
+    "primereact": "^11.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
