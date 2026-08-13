@@ -9,7 +9,6 @@ import { Toolbar } from "primereact/toolbar";
 import { Card } from "primereact/card";
 import { Badge } from "primereact/badge";
 import { SelectButton } from "primereact/selectbutton";
-
 // Import CSS PrimeReact
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
@@ -18,19 +17,17 @@ import "primeflex/primeflex.css";
 import "./App.css";
 
 // -------------------------------------------------------------
-// COMPONENT NHẬP LIỆU INLINE (Click để sửa)
+// COMPONENT NHẬP LIỆU INLINE (Click để sửa) - hiển thị dạng text
+// chìm/gọn, chỉ hiện khung nhập khi click vào.
 // -------------------------------------------------------------
 function InlineEdit({ value, onChange, placeholder, className }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
-
   useEffect(() => setVal(value), [value]);
-
   const handleSave = () => {
     onChange(val);
     setIsEdit(false);
   };
-
   if (isEdit) {
     return (
       <InputText
@@ -43,14 +40,61 @@ function InlineEdit({ value, onChange, placeholder, className }) {
       />
     );
   }
-
   return (
     <div
-      className={`${className} p-1 cursor-pointer border-round hover:surface-300 transition-colors text-overflow-ellipsis white-space-nowrap overflow-hidden bg-white-alpha-40 border-1 border-transparent hover:border-400`}
+      className={`${className} inline-edit-display cursor-pointer text-overflow-ellipsis white-space-nowrap overflow-hidden`}
       onClick={() => setIsEdit(true)}
       title="Click để sửa"
     >
       {value || placeholder}
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// CHẤM TRẠNG THÁI KẾT NỐI SUPABASE
+// Xanh dương (chớp) = đang kết nối / đã kết nối nhưng chưa đồng bộ
+// Vàng (chớp)       = đang đồng bộ
+// Xanh lá           = đã đồng bộ thành công
+// Đỏ                = mất kết nối / lỗi
+// -------------------------------------------------------------
+function StatusDot({ connectionStatus, syncStatus }) {
+  let color = "#ef4444"; // đỏ mặc định
+  let label = "Mất kết nối Cloud";
+  let pulse = false;
+
+  if (connectionStatus === "checking") {
+    color = "#3b82f6"; // xanh dương
+    label = "Đang kết nối...";
+    pulse = true;
+  } else if (connectionStatus === "error") {
+    color = "#ef4444"; // đỏ
+    label = "Mất kết nối Cloud";
+  } else if (connectionStatus === "connected") {
+    if (syncStatus === "syncing") {
+      color = "#eab308"; // vàng
+      label = "Đang đồng bộ...";
+      pulse = true;
+    } else if (syncStatus === "synced") {
+      color = "#22c55e"; // xanh lá
+      label = "Đã đồng bộ";
+    } else {
+      color = "#3b82f6"; // xanh dương
+      label = "Đã kết nối (chưa đồng bộ)";
+    }
+  }
+
+  return (
+    <div className="flex align-items-center gap-2">
+      <span
+        className="status-dot"
+        style={{
+          backgroundColor: color,
+          boxShadow: `0 0 0 3px ${color}33`,
+          animation: pulse ? "pulseDot 1.1s ease-in-out infinite" : "none",
+        }}
+      />
+      <span className="text-xs text-300 font-medium">{label}</span>
     </div>
   );
 }
@@ -61,7 +105,6 @@ function InlineEdit({ value, onChange, placeholder, className }) {
 const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
 const teamColors = [
   { id: "fill-lead", name: "Lead" },
@@ -72,7 +115,6 @@ const teamColors = [
   { id: "fill-purple", name: "SPT/PT" },
   { id: "fill-grey", name: "Trống" },
 ];
-
 const defaultData = [
   {
     floorName: "Sàn Lầu 3",
@@ -271,7 +313,6 @@ export default function App() {
   const toast = useRef(null);
   const colorPanel = useRef(null);
   const bulkColorPanel = useRef(null);
-
   const [appState, setAppState] = useState({
     floors: defaultFloorsInit(),
     inventory: {},
@@ -283,6 +324,10 @@ export default function App() {
   const [activeSeat, setActiveSeat] = useState(null);
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn
+
+  // Trạng thái kết nối / đồng bộ Supabase
+  const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
+  const [syncStatus, setSyncStatus] = useState("idle"); // idle | syncing | synced | error
 
   function defaultFloorsInit() {
     return JSON.parse(JSON.stringify(defaultData));
@@ -325,11 +370,15 @@ export default function App() {
     return "fill-pink";
   };
 
+  const teamNameOf = (colorId) =>
+    teamColors.find((c) => c.id === colorId)?.name || "Khác";
+
   useEffect(() => {
     loadOnline();
   }, []);
 
   const loadOnline = async () => {
+    setConnectionStatus("checking");
     try {
       const { data, error } = await supabase
         .from("inventory_sync")
@@ -337,8 +386,10 @@ export default function App() {
         .eq("id", 1)
         .single();
       if (error) throw error;
+      setConnectionStatus("connected");
       if (data && data.data) {
         setAppState(data.data);
+        setSyncStatus("synced");
         toast.current.show({
           severity: "success",
           summary: "Thành công",
@@ -350,12 +401,14 @@ export default function App() {
       }
     } catch (err) {
       console.log("No existing data or error:", err);
+      setConnectionStatus("error");
       ensureInventoryValid(appState);
     }
   };
 
   const syncOnline = async () => {
     setIsSyncing(true);
+    setSyncStatus("syncing");
     try {
       const { error } = await supabase.from("inventory_sync").upsert({
         id: 1,
@@ -363,6 +416,8 @@ export default function App() {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
+      setConnectionStatus("connected");
+      setSyncStatus("synced");
       toast.current.show({
         severity: "success",
         summary: "Thành công",
@@ -370,6 +425,8 @@ export default function App() {
         life: 3000,
       });
     } catch (err) {
+      setConnectionStatus("error");
+      setSyncStatus("error");
       toast.current.show({
         severity: "error",
         summary: "Lỗi",
@@ -404,6 +461,8 @@ export default function App() {
       updater(next);
       return next;
     });
+    // Bất kỳ chỉnh sửa nào cũng coi như "chưa đồng bộ" với bản mới nhất trên cloud
+    setSyncStatus((s) => (s === "synced" ? "idle" : s));
   };
 
   // Các thao tác
@@ -421,6 +480,7 @@ export default function App() {
     updateState((st) => {
       st.inventory[id][key] = val;
     });
+
   const updateSttGlobal = (fIdx, lIdx, val) =>
     updateState((st) => {
       const lane = st.floors[fIdx].lanes[lIdx];
@@ -483,6 +543,9 @@ export default function App() {
     });
   };
 
+  const setSeatColor = (id, colorId) =>
+    updateState((st) => (st.colors[id] = colorId));
+
   const applyBulkColor = (colorId) => {
     if (!activeLane) return;
     updateState((st) => {
@@ -497,6 +560,7 @@ export default function App() {
     setDraggedItem({ fIdx, lIdx, type, sIdx });
     e.dataTransfer.effectAllowed = "move";
   };
+
   const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
     e.preventDefault();
     if (!draggedItem) return;
@@ -540,7 +604,7 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
-  const ColorMenu = ({ onClick }) => (
+  const ColorMenu = ({ onClick, activeColorId }) => (
     <div className="flex flex-column gap-1 w-13rem p-1">
       <div className="text-sm font-bold text-600 mb-2 border-bottom-1 surface-border pb-1">
         Chọn Team
@@ -548,13 +612,33 @@ export default function App() {
       {teamColors.map((c) => (
         <div
           key={c.id}
-          className="flex align-items-center gap-3 p-2 border-round cursor-pointer hover:surface-200 transition-colors"
+          className={`flex align-items-center gap-3 p-2 border-round cursor-pointer hover:surface-200 transition-colors ${
+            activeColorId === c.id ? "surface-200 border-1 border-primary" : ""
+          }`}
           onClick={() => onClick(c.id)}
         >
           <div className={`w-2rem h-2rem border-round shadow-1 ${c.id}`}></div>
-          <span className="font-semibold text-sm text-700">{c.name}</span>
+          <span className="font-semibold text-sm text-700 flex-1">
+            {c.name}
+          </span>
+          {activeColorId === c.id && (
+            <i className="pi pi-check text-primary text-sm" />
+          )}
         </div>
       ))}
+    </div>
+  );
+
+  // Nhãn Team nhỏ hiện ngay trên cabin - click để mở bảng chọn màu
+  const TeamTag = ({ colorId, onOpen }) => (
+    <div
+      className="team-tag flex align-items-center gap-1 cursor-pointer"
+      onClick={onOpen}
+      title="Đổi team / màu"
+    >
+      <span className={`team-tag-dot ${colorId}`}></span>
+      <span className="team-tag-label">{teamNameOf(colorId)}</span>
+      <i className="pi pi-chevron-down text-xs opacity-60" />
     </div>
   );
 
@@ -563,13 +647,56 @@ export default function App() {
       className="p-4"
       style={{ backgroundColor: "var(--surface-ground)", minHeight: "100vh" }}
     >
+      <style>{`
+        @keyframes pulseDot {
+          0% { transform: scale(0.85); opacity: 0.7; }
+          50% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(0.85); opacity: 0.7; }
+        }
+        .status-dot {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+        }
+        .inline-edit-display {
+          font-weight: 700;
+          opacity: 0.92;
+          padding: 2px 4px;
+          border-radius: 4px;
+          border: 1px dashed transparent;
+        }
+        .inline-edit-display:hover {
+          opacity: 1;
+          border-color: rgba(0,0,0,0.25);
+          background: rgba(255,255,255,0.35);
+        }
+        .team-tag {
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .02em;
+          background: rgba(255,255,255,0.55);
+          border-radius: 999px;
+          padding: 1px 6px;
+          width: fit-content;
+        }
+        .team-tag:hover { background: rgba(255,255,255,0.85); }
+        .team-tag-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .team-tag-label { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      `}</style>
       <Toast ref={toast} />
-
       {/* Popovers */}
       <OverlayPanel ref={colorPanel}>
         <ColorMenu
+          activeColorId={appState.colors[activeSeat]}
           onClick={(cId) => {
-            updateState((st) => (st.colors[activeSeat] = cId));
+            setSeatColor(activeSeat, cId);
             colorPanel.current.hide();
           }}
         />
@@ -582,23 +709,27 @@ export default function App() {
           }}
         />
       </OverlayPanel>
-
-      <div className="surface-900 text-white p-4 border-round-xl shadow-4 mb-4 flex justify-content-between align-items-center">
+      <div className="surface-900 text-white p-4 border-round-xl shadow-4 mb-4 flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
           <h1 className="m-0 text-3xl font-bold">
             📋 Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
           </h1>
           <p className="mt-2 text-400">
-            Inline Edit, Chọn màu theo List, Tính năng Đủ bộ/Reset.
+            Inline Edit, Chọn màu theo Team, Tính năng Đủ bộ/Reset.
           </p>
         </div>
-        <Badge
-          value={new Date().toLocaleDateString("vi-VN")}
-          size="large"
-          severity="info"
-        />
+        <div className="flex flex-column align-items-end gap-2">
+          <Badge
+            value={new Date().toLocaleDateString("vi-VN")}
+            size="large"
+            severity="info"
+          />
+          <StatusDot
+            connectionStatus={connectionStatus}
+            syncStatus={syncStatus}
+          />
+        </div>
       </div>
-
       <div className="grid mb-4">
         {[
           { label: "Thùng máy", val: stats.thung, icon: "📦" },
@@ -620,7 +751,6 @@ export default function App() {
           </div>
         ))}
       </div>
-
       {/* Toolbar & Sàn Lọc */}
       <Toolbar
         className="mb-4 shadow-2 border-1 surface-border"
@@ -652,7 +782,6 @@ export default function App() {
           />
         }
       />
-
       {/* Render Sàn & Dãy */}
       {appState.floors.map((floor, fIdx) => {
         if (selectedFloor !== "Tất cả" && floor.floorName !== selectedFloor)
@@ -662,7 +791,6 @@ export default function App() {
             <h2 className="text-2xl font-extrabold text-800 mb-3 border-bottom-1 surface-border pb-2">
               {floor.floorName}
             </h2>
-
             {floor.lanes.map((lane, lIdx) => (
               <div
                 key={lIdx}
@@ -695,122 +823,124 @@ export default function App() {
                       .filter((s) =>
                         s.name.toLowerCase().includes(search.toLowerCase()),
                       )
-                      .map((seat, sIdx) => (
-                        <div
-                          key={seat.id}
-                          draggable
-                          onDragStart={(e) =>
-                            onDragStart(e, fIdx, lIdx, "lead", sIdx)
-                          }
-                          className={`p-2 border-round shadow-2 w-full cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || "fill-lead"}`}
-                        >
-                          <div className="flex justify-content-between mb-2">
-                            <div className="flex gap-1">
+                      .map((seat, sIdx) => {
+                        const colorId = appState.colors[seat.id] || "fill-lead";
+                        return (
+                          <div
+                            key={seat.id}
+                            draggable
+                            onDragStart={(e) =>
+                              onDragStart(e, fIdx, lIdx, "lead", sIdx)
+                            }
+                            className={`p-2 border-round shadow-2 w-full cursor-move transition-transform hover:shadow-4 ${colorId}`}
+                          >
+                            <div className="flex justify-content-between align-items-start mb-2">
+                              <div className="flex gap-1">
+                                <Button
+                                  icon="pi pi-check-circle"
+                                  size="small"
+                                  rounded
+                                  text
+                                  severity="success"
+                                  className="p-0 w-1.5rem h-1.5rem"
+                                  title="Đủ bộ"
+                                  onClick={() => markFull(seat.id, true)}
+                                />
+                                <Button
+                                  icon="pi pi-refresh"
+                                  size="small"
+                                  rounded
+                                  text
+                                  severity="secondary"
+                                  className="p-0 w-1.5rem h-1.5rem"
+                                  title="Reset"
+                                  onClick={() => markReset(seat.id)}
+                                />
+                              </div>
                               <Button
-                                icon="pi pi-check-circle"
+                                icon="pi pi-times"
                                 size="small"
                                 rounded
                                 text
-                                severity="success"
+                                severity="danger"
                                 className="p-0 w-1.5rem h-1.5rem"
-                                title="Đủ bộ"
-                                onClick={() => markFull(seat.id, true)}
-                              />
-                              <Button
-                                icon="pi pi-refresh"
-                                size="small"
-                                rounded
-                                text
-                                severity="secondary"
-                                className="p-0 w-1.5rem h-1.5rem"
-                                title="Reset"
-                                onClick={() => markReset(seat.id)}
-                              />
-                              <Button
-                                icon="pi pi-palette"
-                                size="small"
-                                rounded
-                                text
-                                className="p-0 w-1.5rem h-1.5rem"
-                                title="Đổi màu"
-                                onClick={(e) => {
-                                  setActiveSeat(seat.id);
-                                  colorPanel.current.toggle(e);
-                                }}
+                                title="Xoá"
+                                onClick={() =>
+                                  removeSeat(fIdx, lIdx, "lead", sIdx)
+                                }
                               />
                             </div>
-                            <Button
-                              icon="pi pi-times"
-                              size="small"
-                              rounded
-                              text
-                              severity="danger"
-                              className="p-0 w-1.5rem h-1.5rem"
-                              title="Xoá"
-                              onClick={() =>
-                                removeSeat(fIdx, lIdx, "lead", sIdx)
-                              }
+                            <TeamTag
+                              colorId={colorId}
+                              onOpen={(e) => {
+                                setActiveSeat(seat.id);
+                                colorPanel.current.toggle(e);
+                              }}
                             />
-                          </div>
-
-                          <InlineEdit
-                            value={seat.name}
-                            onChange={(val) =>
-                              updateProp(fIdx, lIdx, "lead", sIdx, "name", val)
-                            }
-                            placeholder="Tên Lead"
-                            className="text-sm font-bold w-full"
-                          />
-
-                          <div className="surface-0 p-2 border-round shadow-1 mt-2">
-                            {[
-                              "thung",
-                              "man20",
-                              "man24",
-                              "chuot",
-                              "phim",
-                              "tai",
-                              "laptop",
-                            ].map((k) => (
-                              <div
-                                key={k}
-                                className="flex align-items-center mb-1 gap-2"
-                              >
-                                <Checkbox
-                                  inputId={`${seat.id}_${k}`}
-                                  checked={
-                                    !!(appState.inventory[seat.id] || {})[k]
-                                  }
-                                  onChange={(e) =>
-                                    updateInventory(seat.id, k, e.checked)
-                                  }
-                                />
-                                <label
-                                  htmlFor={`${seat.id}_${k}`}
-                                  className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                            <InlineEdit
+                              value={seat.name}
+                              onChange={(val) =>
+                                updateProp(
+                                  fIdx,
+                                  lIdx,
+                                  "lead",
+                                  sIdx,
+                                  "name",
+                                  val,
+                                )
+                              }
+                              placeholder="Tên Lead"
+                              className="text-sm w-full mt-1"
+                            />
+                            <div className="surface-0 p-2 border-round shadow-1 mt-2">
+                              {[
+                                "thung",
+                                "man20",
+                                "man24",
+                                "chuot",
+                                "phim",
+                                "tai",
+                                "laptop",
+                              ].map((k) => (
+                                <div
+                                  key={k}
+                                  className="flex align-items-center mb-1 gap-2"
                                 >
-                                  {k === "thung"
-                                    ? "Thùng"
-                                    : k === "man20"
-                                      ? 'Màn 20"'
-                                      : k === "man24"
-                                        ? 'Màn 24"'
-                                        : k === "chuot"
-                                          ? "Chuột"
-                                          : k === "phim"
-                                            ? "Phím"
-                                            : k === "tai"
-                                              ? "Tai USB"
-                                              : "Laptop"}
-                                </label>
-                              </div>
-                            ))}
+                                  <Checkbox
+                                    inputId={`${seat.id}_${k}`}
+                                    checked={
+                                      !!(appState.inventory[seat.id] || {})[k]
+                                    }
+                                    onChange={(e) =>
+                                      updateInventory(seat.id, k, e.checked)
+                                    }
+                                  />
+                                  <label
+                                    htmlFor={`${seat.id}_${k}`}
+                                    className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                                  >
+                                    {k === "thung"
+                                      ? "Thùng"
+                                      : k === "man20"
+                                        ? 'Màn 20"'
+                                        : k === "man24"
+                                          ? 'Màn 24"'
+                                          : k === "chuot"
+                                            ? "Chuột"
+                                            : k === "phim"
+                                              ? "Phím"
+                                              : k === "tai"
+                                                ? "Tai USB"
+                                                : "Laptop"}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
-
                 <div className="flex align-items-center mx-2 relative">
                   <div className="bg-300 w-1rem h-full border-round-xl"></div>
                   <Badge
@@ -821,7 +951,6 @@ export default function App() {
                     style={{ left: "-8px" }}
                   />
                 </div>
-
                 {/* --- AGENT ZONE --- */}
                 <div className="flex flex-column ml-3 flex-1">
                   <div className="flex align-items-center gap-3 mb-2 flex-wrap">
@@ -862,7 +991,6 @@ export default function App() {
                       onClick={() => addSeat(fIdx, lIdx, "agent")}
                     />
                   </div>
-
                   <div
                     className="flex flex-wrap gap-2 drop-zone p-2 border-round min-w-full"
                     onDragOver={(e) => e.preventDefault()}
@@ -874,118 +1002,129 @@ export default function App() {
                           .toLowerCase()
                           .includes(search.toLowerCase()),
                       )
-                      .map((seat, sIdx) => (
-                        <div
-                          key={seat.id}
-                          draggable
-                          onDragStart={(e) =>
-                            onDragStart(e, fIdx, lIdx, "agent", sIdx)
-                          }
-                          className={`p-2 border-round shadow-1 border-1 surface-border cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || autoColor(seat.name)}`}
-                          style={{ width: "150px" }}
-                        >
-                          <div className="flex justify-content-between mb-1">
-                            <div className="flex gap-1">
+                      .map((seat, sIdx) => {
+                        const colorId =
+                          appState.colors[seat.id] || autoColor(seat.name);
+                        return (
+                          <div
+                            key={seat.id}
+                            draggable
+                            onDragStart={(e) =>
+                              onDragStart(e, fIdx, lIdx, "agent", sIdx)
+                            }
+                            className={`p-2 border-round shadow-1 border-1 surface-border cursor-move transition-transform hover:shadow-4 ${colorId}`}
+                            style={{ width: "150px" }}
+                          >
+                            <div className="flex justify-content-between align-items-start mb-1">
+                              <div className="flex gap-1">
+                                <Button
+                                  icon="pi pi-check-circle"
+                                  size="small"
+                                  rounded
+                                  text
+                                  severity="success"
+                                  className="p-0 w-1.2rem h-1.2rem text-xs"
+                                  title="Đủ bộ"
+                                  onClick={() => markFull(seat.id, false)}
+                                />
+                                <Button
+                                  icon="pi pi-refresh"
+                                  size="small"
+                                  rounded
+                                  text
+                                  severity="secondary"
+                                  className="p-0 w-1.2rem h-1.2rem text-xs"
+                                  title="Reset"
+                                  onClick={() => markReset(seat.id)}
+                                />
+                              </div>
                               <Button
-                                icon="pi pi-check-circle"
+                                icon="pi pi-times"
                                 size="small"
                                 rounded
                                 text
-                                severity="success"
+                                severity="danger"
                                 className="p-0 w-1.2rem h-1.2rem text-xs"
-                                title="Đủ bộ"
-                                onClick={() => markFull(seat.id, false)}
-                              />
-                              <Button
-                                icon="pi pi-refresh"
-                                size="small"
-                                rounded
-                                text
-                                severity="secondary"
-                                className="p-0 w-1.2rem h-1.2rem text-xs"
-                                title="Reset"
-                                onClick={() => markReset(seat.id)}
-                              />
-                              <Button
-                                icon="pi pi-palette"
-                                size="small"
-                                rounded
-                                text
-                                className="p-0 w-1.2rem h-1.2rem text-xs"
-                                title="Đổi màu"
-                                onClick={(e) => {
-                                  setActiveSeat(seat.id);
-                                  colorPanel.current.toggle(e);
-                                }}
+                                title="Xoá"
+                                onClick={() =>
+                                  removeSeat(fIdx, lIdx, "agent", sIdx)
+                                }
                               />
                             </div>
-                            <Button
-                              icon="pi pi-times"
-                              size="small"
-                              rounded
-                              text
-                              severity="danger"
-                              className="p-0 w-1.2rem h-1.2rem text-xs"
-                              title="Xoá"
-                              onClick={() =>
-                                removeSeat(fIdx, lIdx, "agent", sIdx)
-                              }
+                            <TeamTag
+                              colorId={colorId}
+                              onOpen={(e) => {
+                                setActiveSeat(seat.id);
+                                colorPanel.current.toggle(e);
+                              }}
                             />
-                          </div>
-
-                          <InlineEdit
-                            value={seat.stt || ""}
-                            onChange={(val) =>
-                              updateProp(fIdx, lIdx, "agent", sIdx, "stt", val)
-                            }
-                            placeholder="STT"
-                            className="text-xs font-bold text-primary mb-1 inline-block min-w-min"
-                          />
-                          <InlineEdit
-                            value={seat.name}
-                            onChange={(val) =>
-                              updateProp(fIdx, lIdx, "agent", sIdx, "name", val)
-                            }
-                            placeholder="Tên..."
-                            className="text-sm font-bold w-full"
-                          />
-
-                          <div className="surface-0 p-2 border-round shadow-1 mt-2">
-                            {["man20", "thung", "chuot", "phim", "tai"].map(
-                              (k) => (
-                                <div
-                                  key={k}
-                                  className="flex align-items-center mb-1 gap-2"
-                                >
-                                  <Checkbox
-                                    inputId={`${seat.id}_${k}`}
-                                    checked={
-                                      !!(appState.inventory[seat.id] || {})[k]
-                                    }
-                                    onChange={(e) =>
-                                      updateInventory(seat.id, k, e.checked)
-                                    }
-                                  />
-                                  <label
-                                    htmlFor={`${seat.id}_${k}`}
-                                    className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                            <InlineEdit
+                              value={seat.stt || ""}
+                              onChange={(val) =>
+                                updateProp(
+                                  fIdx,
+                                  lIdx,
+                                  "agent",
+                                  sIdx,
+                                  "stt",
+                                  val,
+                                )
+                              }
+                              placeholder="STT"
+                              className="text-xs text-primary mt-1 inline-block min-w-min"
+                            />
+                            <InlineEdit
+                              value={seat.name}
+                              onChange={(val) =>
+                                updateProp(
+                                  fIdx,
+                                  lIdx,
+                                  "agent",
+                                  sIdx,
+                                  "name",
+                                  val,
+                                )
+                              }
+                              placeholder="Tên..."
+                              className="text-sm w-full"
+                            />
+                            <div className="surface-0 p-2 border-round shadow-1 mt-2">
+                              {["man20", "thung", "chuot", "phim", "tai"].map(
+                                (k) => (
+                                  <div
+                                    key={k}
+                                    className="flex align-items-center mb-1 gap-2"
                                   >
-                                    {k === "thung"
-                                      ? "Thùng"
-                                      : k === "man20"
-                                        ? 'Màn 20"'
-                                        : k === "chuot"
-                                          ? "Chuột"
-                                          : k === "phim"
-                                            ? "Phím"
-                                            : "Tai nghe"}
-                                  </label>
-                                </div>
-                              ),
-                            )}
+                                    <Checkbox
+                                      inputId={`${seat.id}_${k}`}
+                                      checked={
+                                        !!(appState.inventory[seat.id] || {})[k]
+                                      }
+                                      onChange={(e) =>
+                                        updateInventory(seat.id, k, e.checked)
+                                      }
+                                    />
+                                    <label
+                                      htmlFor={`${seat.id}_${k}`}
+                                      className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                                    >
+                                      {k === "thung"
+                                        ? "Thùng"
+                                        : k === "man20"
+                                          ? 'Màn 20"'
+                                          : k === "chuot"
+                                            ? "Chuột"
+                                            : k === "phim"
+                                              ? "Phím"
+                                              : "Tai nghe"}
+                                    </label>
+                                  </div>
+                                ),
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
               </div>
