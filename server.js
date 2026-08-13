@@ -1,9 +1,13 @@
-// Simple Node.js server for local testing
+// Node.js server for local testing and serving built/static files
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
 const PORT = 3000;
+
+// Determine static build path or fallback to root
+const DIST_DIR = path.join(__dirname, "kiem-ke-app", "dist");
+const ROOT_DIR = __dirname;
 
 const server = http.createServer((req, res) => {
   // CORS headers
@@ -17,26 +21,49 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Helper to serve file
+  const serveFile = (filePath, defaultContentType = "text/html") => {
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end("Not found");
+        return;
+      }
+      const ext = path.extname(filePath).toLowerCase();
+      let contentType = defaultContentType;
+      if (ext === ".js") contentType = "application/javascript";
+      else if (ext === ".css") contentType = "text/css";
+      else if (ext === ".json") contentType = "application/json";
+      else if (ext === ".svg") contentType = "image/svg+xml";
+
+      res.writeHead(200, { "Content-Type": contentType });
+      res.end(data);
+    });
+  };
+
   // Serve static files
   if (req.method === "GET") {
-    if (req.url === "/" || req.url === "/index.html") {
-      const filePath = path.join(__dirname, "index.html");
-      fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) {
-          res.writeHead(404);
-          res.end("Not found");
-          return;
-        }
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(data);
-      });
-      return;
+    let requestPath = req.url.split("?")[0];
+    if (requestPath === "/") requestPath = "/index.html";
+
+    // Try dist directory first, then root directory
+    const distPath = path.join(DIST_DIR, requestPath);
+    if (fs.existsSync(distPath) && fs.statSync(distPath).isFile()) {
+      return serveFile(distPath);
     }
 
-    // 404 for other GET requests
-    res.writeHead(404);
-    res.end("Not found");
-    return;
+    const rootPath = path.join(ROOT_DIR, requestPath);
+    if (fs.existsSync(rootPath) && fs.statSync(rootPath).isFile()) {
+      return serveFile(rootPath);
+    }
+
+    // Fallback to dist index.html or root index.html
+    const fallbackDist = path.join(DIST_DIR, "index.html");
+    if (fs.existsSync(fallbackDist)) {
+      return serveFile(fallbackDist);
+    }
+    const fallbackRoot = path.join(ROOT_DIR, "index.html");
+    return serveFile(fallbackRoot);
   }
 
   // Handle API requests
@@ -54,7 +81,7 @@ const server = http.createServer((req, res) => {
           res.end(
             JSON.stringify({
               success: true,
-              message: "Data saved (local test only - data not persisted)",
+              message: "Data saved (local test only)",
               timestamp: new Date().toISOString(),
             }),
           );
@@ -96,9 +123,6 @@ server.listen(PORT, () => {
   ╚═══════════════════════════════════╝
 
   🌐 Open: http://localhost:${PORT}
-  
-  ℹ️  Note: This is for local testing only.
-     Data will NOT be persisted to disk.
   
   Press Ctrl+C to stop.
   `);

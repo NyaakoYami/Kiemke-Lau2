@@ -13,17 +13,24 @@ import "primeflex/primeflex.css";
 import "./App.css";
 
 // -------------------------------------------------------------
-// COMPONENT NHẬP LIỆU INLINE (Click để sửa) - hiển thị dạng text
-// chìm/gọn, chỉ hiện khung nhập khi click vào.
+// COMPONENT NHẬP LIỆU INLINE (Click để sửa)
+// Hiển thị dạng chữ đậm chìm, gọn - chỉ hiện khung InputText khi click
 // -------------------------------------------------------------
-function InlineEdit({ value, onChange, placeholder, className }) {
+function InlineEdit({ value, onChange, placeholder, className, isStt = false }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
-  useEffect(() => setVal(value), [value]);
+
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
+
   const handleSave = () => {
-    onChange(val);
+    if (val !== value) {
+      onChange(val);
+    }
     setIsEdit(false);
   };
+
   if (isEdit) {
     return (
       <InputText
@@ -32,13 +39,14 @@ function InlineEdit({ value, onChange, placeholder, className }) {
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleSave}
         onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        className={`${className} p-1 w-full`}
+        className={`p-1 text-sm font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
       />
     );
   }
+
   return (
     <div
-      className={`${className} inline-edit-display cursor-pointer text-overflow-ellipsis white-space-nowrap overflow-hidden`}
+      className={`${className} inline-edit-display ${isStt ? "stt-display" : ""} cursor-pointer text-overflow-ellipsis white-space-nowrap overflow-hidden`}
       onClick={() => setIsEdit(true)}
       title="Click để sửa"
     >
@@ -48,40 +56,43 @@ function InlineEdit({ value, onChange, placeholder, className }) {
 }
 
 // -------------------------------------------------------------
-// CHẤM TRẠNG THÁI KẾT NỐI SUPABASE
-// Xanh dương (chớp) = đang kết nối / đã kết nối nhưng chưa đồng bộ
-// Vàng (chớp)       = đang đồng bộ
-// Xanh lá           = đã đồng bộ thành công
-// Đỏ                = mất kết nối / lỗi
+// CHẤM TRẠNG THÁI KẾT NỐI & ĐỒNG BỘ SUPABASE
+// 🔵 xanh dương chớp: đang kiểm tra kết nối, hoặc đã kết nối nhưng có thay đổi chưa lưu lên cloud
+// 🟡 vàng chớp: đang trong lúc bấm "Lưu Cloud"
+// 🟢 xanh lá: vừa đồng bộ thành công
+// 🔴 đỏ: mất kết nối / lỗi khi gọi Supabase
 // -------------------------------------------------------------
 function StatusDot({ connectionStatus, syncStatus }) {
-  let color = "#ef4444"; // đỏ mặc định
+  let color = "#ef4444"; // Đỏ mặc định (lỗi / mất kết nối)
   let label = "Mất kết nối Cloud";
   let pulse = false;
 
   if (connectionStatus === "checking") {
-    color = "#3b82f6"; // xanh dương
-    label = "Đang kết nối...";
+    color = "#3b82f6"; // Xanh dương
+    label = "Đang kiểm tra kết nối...";
     pulse = true;
   } else if (connectionStatus === "error") {
-    color = "#ef4444"; // đỏ
-    label = "Mất kết nối Cloud";
+    color = "#ef4444"; // Đỏ
+    label = "Lỗi kết nối Supabase";
   } else if (connectionStatus === "connected") {
     if (syncStatus === "syncing") {
-      color = "#eab308"; // vàng
-      label = "Đang đồng bộ...";
+      color = "#eab308"; // Vàng
+      label = "Đang lưu Cloud...";
       pulse = true;
     } else if (syncStatus === "synced") {
-      color = "#22c55e"; // xanh lá
-      label = "Đã đồng bộ";
+      color = "#22c55e"; // Xanh lá
+      label = "Đã đồng bộ thành công";
+      pulse = false;
     } else {
-      color = "#3b82f6"; // xanh dương
-      label = "Đã kết nối (chưa đồng bộ)";
+      // "dirty" hoặc "idle" -> Chưa đồng bộ
+      color = "#3b82f6"; // Xanh dương
+      label = "Chưa lưu lên Cloud";
+      pulse = true;
     }
   }
 
   return (
-    <div className="flex align-items-center gap-2">
+    <div className="flex align-items-center gap-2 surface-0 px-3 py-2 border-round-xl border-1 surface-border shadow-1">
       <span
         className="status-dot"
         style={{
@@ -90,7 +101,7 @@ function StatusDot({ connectionStatus, syncStatus }) {
           animation: pulse ? "pulseDot 1.1s ease-in-out infinite" : "none",
         }}
       />
-      <span className="text-xs text-300 font-medium">{label}</span>
+      <span className="text-xs font-bold text-700">{label}</span>
     </div>
   );
 }
@@ -101,16 +112,19 @@ function StatusDot({ connectionStatus, syncStatus }) {
 const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
+
 const teamColors = [
-  { id: "fill-lead", name: "Lead" },
-  { id: "fill-pink", name: "User" },
-  { id: "fill-orange", name: "Social" },
-  { id: "fill-cyan", name: "Merchant" },
-  { id: "fill-yellow", name: "Night/Senior" },
-  { id: "fill-purple", name: "SPT/PT" },
-  { id: "fill-grey", name: "Trống" },
+  { id: "fill-lead", name: "Lead", dotColor: "#2563eb" },
+  { id: "fill-pink", name: "User", dotColor: "#ec4899" },
+  { id: "fill-orange", name: "Social", dotColor: "#f97316" },
+  { id: "fill-cyan", name: "Merchant", dotColor: "#06b6d4" },
+  { id: "fill-yellow", name: "Night/Senior", dotColor: "#eab308" },
+  { id: "fill-purple", name: "SPT/PT", dotColor: "#8b5cf6" },
+  { id: "fill-grey", name: "Trống", dotColor: "#6b7280" },
 ];
+
 const defaultData = [
   {
     floorName: "Sàn Lầu 3",
@@ -120,21 +134,9 @@ const defaultData = [
         startStt: 18,
         leads: [{ id: genId(), name: "Thu Hiền - TL" }],
         agents: [
-          "Trần Chi",
-          "Nguyễn Trâm",
-          "Trần Trinh",
-          "Nguyễn Thiên",
-          "Đoàn Giao",
-          "NB Content",
-          "NB Content",
-          "Lê Trinh",
-          "Nguyễn Tỷ",
-          "Cao Nhung",
-          "Huỳnh Ngà",
-          "Huỳnh Châu",
-          "Lê Châu",
-          "Trống",
-          "Trống",
+          "Trần Chi", "Nguyễn Trâm", "Trần Trinh", "Nguyễn Thiên", "Đoàn Giao",
+          "NB Content", "NB Content", "Lê Trinh", "Nguyễn Tỷ", "Cao Nhung",
+          "Huỳnh Ngà", "Huỳnh Châu", "Lê Châu", "Trống", "Trống"
         ].map((n, i) => ({ id: genId(), name: n, stt: 18 + i })),
       },
       {
@@ -142,16 +144,8 @@ const defaultData = [
         startStt: 38,
         leads: [{ id: genId(), name: "Vy - DA" }],
         agents: [
-          "Nguyễn Khanh",
-          "Lý - Senior",
-          "Nguyễn Hậu",
-          "Võ Hiền",
-          "Phan Loan",
-          "Võ Lan",
-          "NB Content",
-          "NB Content",
-          "Tuyến - Senior",
-          "Nguyễn Thúy",
+          "Nguyễn Khanh", "Lý - Senior", "Nguyễn Hậu", "Võ Hiền", "Phan Loan",
+          "Võ Lan", "NB Content", "NB Content", "Tuyến - Senior", "Nguyễn Thúy"
         ].map((n, i) => ({ id: genId(), name: n, stt: 38 + i })),
       },
       {
@@ -159,16 +153,8 @@ const defaultData = [
         startStt: 48,
         leads: [{ id: genId(), name: "Lead Hỗ Trợ" }],
         agents: [
-          "Huỳnh Giang",
-          "Trần Tâm",
-          "Nguyễn Phương",
-          "Ngô Hằng",
-          "Lai Nghi",
-          "NB Tele",
-          "Trống",
-          "Trống",
-          "Trống",
-          "Trống",
+          "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi",
+          "NB Tele", "Trống", "Trống", "Trống", "Trống"
         ].map((n, i) => ({ id: genId(), name: n, stt: 48 + i })),
       },
       {
@@ -176,23 +162,10 @@ const defaultData = [
         startStt: 58,
         leads: [{ id: genId(), name: "Anh Thư - SUP" }],
         agents: [
-          "Full",
-          "Full",
-          "PT - Phúc Hậu",
-          "Trung Hiếu",
-          "Quốc Khánh",
-          "Trống",
-          "Nhung Huỳnh",
-          "Yến Ly",
-          "Gia Hưng",
-          "Bích Quỳnh",
-          "PT - Phương Thy",
-          "PT - Khánh Vy",
-          "PT - Liên Anh",
-          "PT - Thu Hồng",
-          "PT - Loan",
-          "PT - Cắt Tường",
-          "PT - Khoa",
+          "Full", "Full", "PT - Phúc Hậu", "Trung Hiếu", "Quốc Khánh",
+          "Trống", "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh",
+          "PT - Phương Thy", "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng",
+          "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
         ].map((n, i) => ({ id: genId(), name: n, stt: 58 + i })),
       },
     ],
@@ -205,24 +178,10 @@ const defaultData = [
         startStt: 1,
         leads: [{ id: genId(), name: "Oanh - Senior TL" }],
         agents: [
-          "Trống",
-          "Thiên Kim Senior",
-          "Kim Ái Senior",
-          "Huy Hoàng",
-          "Diệu Trinh",
-          "PT Thảo Phương",
-          "PT Sỹ Danh",
-          "PT Trúc Linh",
-          "PT Thu Hiền",
-          "Full",
-          "PT Thành Đạt",
-          "Full",
-          "PT - Gia Hân",
-          "PT - Sang",
-          "PT - Trang",
-          "PT - Huy",
-          "PT - Gia Bội",
-          "PT - Hào",
+          "Trống", "Thiên Kim Senior", "Kim Ái Senior", "Huy Hoàng", "Diệu Trinh",
+          "PT Thảo Phương", "PT Sỹ Danh", "PT Trúc Linh", "PT Thu Hiền", "Full",
+          "PT Thành Đạt", "Full", "PT - Gia Hân", "PT - Sang", "PT - Trang",
+          "PT - Huy", "PT - Gia Bội", "PT - Hào"
         ].map((n, i) => ({ id: genId(), name: n, stt: 1 + i })),
       },
       {
@@ -230,26 +189,10 @@ const defaultData = [
         startStt: 19,
         leads: [{ id: genId(), name: "Chinh - TL" }],
         agents: [
-          "Thiên Ngân",
-          "Tú Trinh",
-          "Trung Nghị",
-          "Minh Tâm",
-          "Minh Thư",
-          "Duy Khánh",
-          "Hồng Ân",
-          "Nhật Lam",
-          "Khánh Ly",
-          "Hoàng Gấm NB",
-          "Hoàng Khải",
-          "Phi Phụng",
-          "Bảo Anh Senior",
-          "Ngọc Tú",
-          "Uyên",
-          "Thanh",
-          "PT Bảo My",
-          "Full",
-          "Cảnh",
-          "Trúc",
+          "Thiên Ngân", "Tú Trinh", "Trung Nghị", "Minh Tâm", "Minh Thư",
+          "Duy Khánh", "Hồng Ân", "Nhật Lam", "Khánh Ly", "Hoàng Gấm NB",
+          "Hoàng Khải", "Phi Phụng", "Bảo Anh Senior", "Ngọc Tú", "Uyên",
+          "Thanh", "PT Bảo My", "Full", "Cảnh", "Trúc"
         ].map((n, i) => ({ id: genId(), name: n, stt: 19 + i })),
       },
       {
@@ -257,25 +200,10 @@ const defaultData = [
         startStt: 39,
         leads: [{ id: genId(), name: "Lead Hỗ Trợ 2" }],
         agents: [
-          "Thiếu 1 màn hình",
-          "Full",
-          "Trực",
-          "Kim Ngân",
-          "Đan Vy",
-          "Nguyễn Senior",
-          "Thắng",
-          "Full",
-          "Nguyễn Kim Ngân",
-          "Thị Thủy",
-          "Ý Lan",
-          "Hải Yến",
-          "Ái Linh",
-          "Hân Senior",
-          "Minh Thái",
-          "Quang Hậu",
-          "Công Hiệp",
-          "Full",
-          "Minh Hoàng",
+          "Thiếu 1 màn hình", "Full", "Trực", "Kim Ngân", "Đan Vy",
+          "Nguyễn Senior", "Thắng", "Full", "Nguyễn Kim Ngân", "Thị Thủy",
+          "Ý Lan", "Hải Yến", "Ái Linh", "Hân Senior", "Minh Thái",
+          "Quang Hậu", "Công Hiệp", "Full", "Minh Hoàng"
         ].map((n, i) => ({ id: genId(), name: n, stt: 39 + i })),
       },
       {
@@ -283,22 +211,9 @@ const defaultData = [
         startStt: 59,
         leads: [{ id: genId(), name: "Phương - TL QA" }],
         agents: [
-          "Hoàng Khôi",
-          "Minh Đạo",
-          "Văn Anh",
-          "Kim Chi",
-          "Thảo Vi",
-          "Thừa Nghiên",
-          "Mai Xuân",
-          "Thị Quỳnh",
-          "Nguyễn Nhi",
-          "Thị Hồng",
-          "Chấn Điền",
-          "Nhật Khánh",
-          "Tú Quyền",
-          "Tân Tài",
-          "Tuấn Anh",
-          "Toàn",
+          "Hoàng Khôi", "Minh Đạo", "Văn Anh", "Kim Chi", "Thảo Vi",
+          "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi", "Thị Hồng",
+          "Chấn Điền", "Nhật Khánh", "Tú Quyền", "Tân Tài", "Tuấn Anh", "Toàn"
         ].map((n, i) => ({ id: genId(), name: n, stt: 59 + i })),
       },
     ],
@@ -309,26 +224,24 @@ export default function App() {
   const toast = useRef(null);
   const colorPanel = useRef(null);
   const bulkColorPanel = useRef(null);
+
   const [appState, setAppState] = useState({
-    floors: defaultFloorsInit(),
+    floors: JSON.parse(JSON.stringify(defaultData)),
     inventory: {},
     colors: {},
   });
+
   const [search, setSearch] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null);
   const [activeSeat, setActiveSeat] = useState(null);
   const [activeLane, setActiveLane] = useState(null);
-  const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn
-  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn Lầu
+  const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
 
   // Trạng thái kết nối / đồng bộ Supabase
   const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
-  const [syncStatus, setSyncStatus] = useState("idle"); // idle | syncing | synced | error
-
-  function defaultFloorsInit() {
-    return JSON.parse(JSON.stringify(defaultData));
-  }
+  const [syncStatus, setSyncStatus] = useState("synced"); // synced | dirty | syncing | error
 
   const initChecklist = (isLead) =>
     isLead
@@ -361,7 +274,7 @@ export default function App() {
     const n = (name || "").toUpperCase();
     if (n.includes("TRỐNG") || n === "") return "fill-grey";
     if (n.includes("SENIOR") || n.includes("TRAINER")) return "fill-yellow";
-    if (n.startsWith("PT") || n.includes("PT -")) return "fill-purple";
+    if (n.startsWith("PT") || n.includes("PT -") || n.includes("PT ")) return "fill-purple";
     if (n.includes("NB ")) return "fill-orange";
     if (n === "FULL") return "fill-cyan";
     return "fill-pink";
@@ -382,22 +295,25 @@ export default function App() {
         .select("*")
         .eq("id", 1)
         .single();
-      if (error) throw error;
+
+      if (error && error.code !== "PGRST116") throw error;
+
       setConnectionStatus("connected");
-      if (data && data.data) {
+      if (data && data.data && data.data.floors) {
         setAppState(data.data);
         setSyncStatus("synced");
-        toast.current.show({
+        toast.current?.show({
           severity: "success",
           summary: "Thành công",
-          detail: "Đã tải dữ liệu từ Cloud",
+          detail: "Đã tải dữ liệu mới nhất từ Cloud",
           life: 3000,
         });
       } else {
         ensureInventoryValid(appState);
+        setSyncStatus("synced");
       }
     } catch (err) {
-      console.log("No existing data or error:", err);
+      console.error("Supabase load error:", err);
       setConnectionStatus("error");
       ensureInventoryValid(appState);
     }
@@ -413,22 +329,24 @@ export default function App() {
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
+
       setConnectionStatus("connected");
       setSyncStatus("synced");
-      toast.current.show({
+      toast.current?.show({
         severity: "success",
-        summary: "Thành công",
-        detail: "Đã lưu đồng bộ lên Cloud",
+        summary: "Đồng bộ thành công",
+        detail: "Dữ liệu đã được lưu lên Cloud Supabase",
         life: 3000,
       });
     } catch (err) {
+      console.error("Supabase sync error:", err);
       setConnectionStatus("error");
       setSyncStatus("error");
-      toast.current.show({
+      toast.current?.show({
         severity: "error",
-        summary: "Lỗi",
-        detail: "Không thể đồng bộ: " + err.message,
-        life: 3000,
+        summary: "Lỗi đồng bộ",
+        detail: "Không thể lưu Cloud: " + (err.message || "Lỗi mạng"),
+        life: 4000,
       });
     } finally {
       setIsSyncing(false);
@@ -452,9 +370,9 @@ export default function App() {
     setAppState(newState);
   };
 
+  // Đánh dấu dữ liệu đã thay đổi (chưa lưu) -> chuyển chấm trạng thái sang Xanh Dương chớp
   const markDirty = () => {
-    setConnectionStatus((prev) => (prev === "error" ? "error" : "connected"));
-    setSyncStatus((prev) => (prev === "syncing" ? "syncing" : "idle"));
+    setSyncStatus("dirty");
   };
 
   const updateState = (updater) => {
@@ -466,27 +384,29 @@ export default function App() {
     markDirty();
   };
 
-  // Các thao tác
+  // Thao tác chỉnh sửa
   const updateProp = (fIdx, lIdx, type, sIdx, prop, val) => {
     updateState((st) => {
       const seat =
         type === "lead"
           ? st.floors[fIdx].lanes[lIdx].leads[sIdx]
           : st.floors[fIdx].lanes[lIdx].agents[sIdx];
-      seat[prop] = prop === "stt" ? parseInt(val) || "" : val;
+      seat[prop] = prop === "stt" ? parseInt(val) || val : val;
     });
   };
 
   const updateInventory = (id, key, val) =>
     updateState((st) => {
+      if (!st.inventory[id]) st.inventory[id] = initChecklist(false);
       st.inventory[id][key] = val;
     });
 
   const updateSttGlobal = (fIdx, lIdx, val) =>
     updateState((st) => {
       const lane = st.floors[fIdx].lanes[lIdx];
-      lane.startStt = parseInt(val) || 0;
-      lane.agents.forEach((ag, i) => (ag.stt = lane.startStt + i));
+      const start = parseInt(val) || 0;
+      lane.startStt = start;
+      lane.agents.forEach((ag, i) => (ag.stt = start + i));
     });
 
   const addSeat = (fIdx, lIdx, type) =>
@@ -501,7 +421,7 @@ export default function App() {
           name: "Trống",
           stt:
             lane.agents.length > 0
-              ? lane.agents[lane.agents.length - 1].stt + 1
+              ? (parseInt(lane.agents[lane.agents.length - 1].stt) || 0) + 1
               : lane.startStt,
         });
     });
@@ -520,8 +440,10 @@ export default function App() {
     });
   };
 
+  // Nút Nhanh ✔️ (Đủ bộ)
   const markFull = (id, isLead) => {
     updateState((st) => {
+      if (!st.inventory[id]) st.inventory[id] = initChecklist(isLead);
       const inv = st.inventory[id];
       inv.thung = true;
       inv.man20 = true;
@@ -535,8 +457,10 @@ export default function App() {
     });
   };
 
+  // Nút Nhanh 🔄 (Reset)
   const markReset = (id) => {
     updateState((st) => {
+      if (!st.inventory[id]) return;
       const inv = st.inventory[id];
       Object.keys(inv).forEach((k) => {
         if (typeof inv[k] === "boolean") inv[k] = false;
@@ -556,7 +480,7 @@ export default function App() {
     });
   };
 
-  // Drag Drop
+  // Drag & Drop
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
     setDraggedItem({ fIdx, lIdx, type, sIdx });
     e.dataTransfer.effectAllowed = "move";
@@ -583,7 +507,7 @@ export default function App() {
     setDraggedItem(null);
   };
 
-  // Thống Kê
+  // Thống kê tài sản
   const stats = {
     thung: 0,
     man20: 0,
@@ -605,121 +529,60 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
+  // Color Menu Popover với dấu ✔ cho Team được chọn
   const ColorMenu = ({ onClick, activeColorId }) => (
-    <div className="flex flex-column gap-1 w-13rem p-1">
-      <div className="text-sm font-bold text-600 mb-2 border-bottom-1 surface-border pb-1">
-        Chọn Team
+    <div className="flex flex-column gap-1 w-14rem p-2">
+      <div className="text-xs font-bold text-500 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-1">
+        🎨 Đổi Màu Team
       </div>
-      {teamColors.map((c) => (
-        <div
-          key={c.id}
-          className={`flex align-items-center gap-3 p-2 border-round cursor-pointer hover:surface-200 transition-colors ${
-            activeColorId === c.id ? "surface-200 border-1 border-primary" : ""
-          }`}
-          onClick={() => onClick(c.id)}
-        >
-          <div className={`w-2rem h-2rem border-round shadow-1 ${c.id}`}></div>
-          <span className="font-semibold text-sm text-700 flex-1">
-            {c.name}
-          </span>
-          {activeColorId === c.id && (
-            <i className="pi pi-check text-primary text-sm" />
-          )}
-        </div>
-      ))}
+      {teamColors.map((c) => {
+        const isSelected = activeColorId === c.id;
+        return (
+          <div
+            key={c.id}
+            className={`flex align-items-center gap-3 p-2 border-round cursor-pointer transition-all ${
+              isSelected
+                ? "surface-200 border-1 border-primary shadow-1"
+                : "hover:surface-100"
+            }`}
+            onClick={() => onClick(c.id)}
+          >
+            <div className={`w-1.5rem h-1.5rem border-round shadow-1 ${c.id}`} />
+            <span className={`font-bold text-sm flex-1 ${isSelected ? "text-primary" : "text-700"}`}>
+              {c.name}
+            </span>
+            {isSelected && (
+              <i className="pi pi-check text-primary font-bold text-sm" />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
-  // Nhãn Team nhỏ hiện ngay trên cabin:
-  // - click: lọc tất cả cabin cùng team
-  // - hover: mở bảng chọn màu để đổi team ngay
+  // Nhãn Team nhỏ trên đầu mỗi cabin:
+  // - Click: lọc tất cả cabin cùng team
+  // - Rê chuột (hover): mở ngay bảng chọn team để đổi màu
   const TeamTag = ({ colorId, onOpen, onFilter, isSelected }) => (
     <div
-      className={`team-tag flex align-items-center gap-1 cursor-pointer ${isSelected ? "team-tag-selected" : ""}`}
+      className={`team-tag flex align-items-center gap-1 cursor-pointer ${
+        isSelected ? "team-tag-selected" : ""
+      }`}
       onClick={onFilter}
       onMouseEnter={onOpen}
-      title="Click để lọc team / rê chuột để đổi màu"
+      title="Click để lọc team này / Rê chuột để đổi màu"
     >
-      <span className={`team-tag-dot ${colorId}`}></span>
+      <span className={`team-tag-dot ${colorId}`} />
       <span className="team-tag-label">{teamNameOf(colorId)}</span>
       <i className="pi pi-chevron-down text-xs opacity-60" />
     </div>
   );
 
   return (
-    <div
-      className="p-4"
-      style={{ backgroundColor: "var(--surface-ground)", minHeight: "100vh" }}
-    >
-      <style>{`
-        @keyframes pulseDot {
-          0% { transform: scale(0.85); opacity: 0.7; }
-          50% { transform: scale(1.15); opacity: 1; }
-          100% { transform: scale(0.85); opacity: 0.7; }
-        }
-        .status-dot {
-          display: inline-block;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-        }
-        .inline-edit-display,
-        .inline-edit-display.p-inputtext {
-          font-weight: 700;
-          opacity: 0.92;
-          padding: 2px 6px;
-          border-radius: 4px;
-          border: 1px solid transparent;
-          background: transparent;
-          box-shadow: none;
-          color: #1f2937;
-        }
-        .inline-edit-display:hover,
-        .inline-edit-display:focus,
-        .inline-edit-display.p-inputtext:focus {
-          opacity: 1;
-          border-color: rgba(59, 91, 219, 0.28);
-          background: rgba(255,255,255,0.55);
-          box-shadow: none;
-        }
-        .team-tag {
-          font-size: 10px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: .02em;
-          background: rgba(255,255,255,0.55);
-          border-radius: 999px;
-          padding: 1px 6px;
-          width: fit-content;
-          border: 1px solid transparent;
-          transition: all 0.2s ease;
-        }
-        .team-tag:hover { background: rgba(255,255,255,0.85); border-color: rgba(59, 91, 219, 0.2); }
-        .team-tag-selected { background: rgba(219,234,254,0.9); border-color: rgba(59, 91, 219, 0.45); }
-        .team-tag-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-        .team-tag-label { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .fill-lead { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
-        .fill-pink { background: linear-gradient(135deg, #fce7f3, #f9a8d4); }
-        .fill-orange { background: linear-gradient(135deg, #ffedd5, #fdba74); }
-        .fill-cyan { background: linear-gradient(135deg, #cffafe, #67e8f9); }
-        .fill-yellow { background: linear-gradient(135deg, #fef3c7, #fcd34d); }
-        .fill-purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
-        .fill-grey { background: linear-gradient(135deg, #e5e7eb, #d1d5db); }
-        .team-tag-dot.fill-lead { background: #2563eb; }
-        .team-tag-dot.fill-pink { background: #ec4899; }
-        .team-tag-dot.fill-orange { background: #f97316; }
-        .team-tag-dot.fill-cyan { background: #06b6d4; }
-        .team-tag-dot.fill-yellow { background: #eab308; }
-        .team-tag-dot.fill-purple { background: #8b5cf6; }
-        .team-tag-dot.fill-grey { background: #6b7280; }
-      `}</style>
+    <div className="p-3 md:p-4 surface-ground min-h-screen">
       <Toast ref={toast} />
-      {/* Popovers */}
+
+      {/* Bảng chọn màu cho cabin */}
       <Popover ref={colorPanel}>
         <ColorMenu
           activeColorId={appState.colors[activeSeat]}
@@ -729,6 +592,8 @@ export default function App() {
           }}
         />
       </Popover>
+
+      {/* Bảng chọn màu cho toàn dãy */}
       <Popover ref={bulkColorPanel}>
         <ColorMenu
           onClick={(cId) => {
@@ -737,27 +602,38 @@ export default function App() {
           }}
         />
       </Popover>
-      <div className="surface-900 text-white p-4 border-round-xl shadow-4 mb-4 flex justify-content-between align-items-center flex-wrap gap-3">
+
+      {/* HEADER */}
+      <div className="surface-900 text-white p-4 border-round-2xl shadow-4 mb-4 flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h1 className="m-0 text-3xl font-bold">
-            📋 Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
+          <h1 className="m-0 text-2xl md:text-3xl font-extrabold flex align-items-center gap-2">
+            <span>📋</span> Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
           </h1>
-          <p className="mt-2 text-400">
-            Inline Edit, Chọn màu theo Team, Tính năng Đủ bộ/Reset.
+          <p className="mt-2 mb-0 text-300 text-sm">
+            Tự động đổi màu Team • Inline Edit gọn • Đồng bộ Cloud Supabase
           </p>
         </div>
-        <div className="flex flex-column align-items-end gap-2">
+        <div className="flex align-items-center gap-3 flex-wrap">
           <Badge
-            value={new Date().toLocaleDateString("vi-VN")}
+            value={new Date().toLocaleDateString("vi-VN", {
+              weekday: "short",
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
             size="large"
             severity="info"
+            className="px-3 py-2 text-sm"
           />
+          {/* CHẤM TRẠNG THÁI SUPABASE */}
           <StatusDot
             connectionStatus={connectionStatus}
             syncStatus={syncStatus}
           />
         </div>
       </div>
+
+      {/* STATS CARDS */}
       <div className="grid mb-4">
         {[
           { label: "Thùng máy", val: stats.thung, icon: "📦" },
@@ -769,39 +645,43 @@ export default function App() {
           { label: "Laptop", val: stats.laptop, icon: "💻" },
           { label: "Tổng chỗ", val: stats.seats, icon: "👥" },
         ].map((s) => (
-          <div key={s.label} className="col-12 md:col-3 lg:col-1">
-            <Card className="shadow-2 border-1 surface-border h-full text-center p-2">
-              <div className="text-500 text-xs font-bold uppercase mb-2">
+          <div key={s.label} className="col-6 sm:col-4 md:col-3 lg:col-1">
+            <Card className="shadow-2 border-1 surface-border h-full text-center p-1">
+              <div className="text-500 text-xs font-bold uppercase mb-1">
                 {s.icon} {s.label}
               </div>
-              <div className="text-3xl font-extrabold text-900">{s.val}</div>
+              <div className="text-2xl font-extrabold text-900">{s.val}</div>
             </Card>
           </div>
         ))}
       </div>
-      {/* Toolbar & Sàn Lọc */}
+
+      {/* TOOLBAR: BỘ LỌC SÀN LẦU & TEAM */}
       <Toolbar
-        className="mb-4 shadow-2 border-1 surface-border"
+        className="mb-4 shadow-2 border-1 surface-border border-round-xl p-3"
         left={
-          <div className="flex gap-4 align-items-center flex-wrap">
+          <div className="flex gap-3 align-items-center flex-wrap">
+            {/* TÌM KIẾM */}
             <span className="p-input-icon-left">
-              <i className="pi pi-search" />
+              <i className="pi pi-search text-500" />
               <InputText
-                placeholder="Tìm kiếm Agent/STT..."
+                placeholder="🔍 Tìm tên Agent hoặc STT..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-18rem"
+                className="w-16rem p-2 text-sm"
               />
             </span>
-            <div className="flex align-items-center gap-2 p-1 border-round surface-100">
+
+            {/* BỘ LỌC SÀN LẦU: Tất cả / Sàn Lầu 2 / Sàn Lầu 3 */}
+            <div className="flex align-items-center gap-1 p-1 border-round-lg surface-200">
               {["Tất cả", "Sàn Lầu 2", "Sàn Lầu 3"].map((option) => (
                 <button
                   key={option}
                   type="button"
-                  className={`px-3 py-2 border-round text-sm font-semibold border-none cursor-pointer transition-colors ${
+                  className={`px-3 py-1.5 border-round-md text-xs font-extrabold border-none cursor-pointer transition-colors ${
                     selectedFloor === option
-                      ? "surface-900 text-white"
-                      : "surface-0 text-700"
+                      ? "surface-900 text-white shadow-1"
+                      : "surface-0 text-700 hover:surface-100"
                   }`}
                   onClick={() => setSelectedFloor(option)}
                 >
@@ -809,40 +689,56 @@ export default function App() {
                 </button>
               ))}
             </div>
+
+            {/* BỘ LỌC TEAM */}
+            {selectedTeamId && (
+              <div className="flex align-items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 border-round-pill text-xs font-bold">
+                <span>Team: {teamNameOf(selectedTeamId)}</span>
+                <i
+                  className="pi pi-times cursor-pointer hover:text-blue-900"
+                  onClick={() => setSelectedTeamId(null)}
+                  title="Bỏ lọc team"
+                />
+              </div>
+            )}
           </div>
         }
         right={
           <Button
-            label={isSyncing ? "Đang đồng bộ..." : "Lưu Cloud"}
+            label={isSyncing ? "Đang lưu Cloud..." : "Lưu Cloud"}
             icon="pi pi-cloud-upload"
             severity="success"
+            className="font-bold px-4 py-2"
             onClick={syncOnline}
             disabled={isSyncing}
           />
         }
       />
-      {/* Render Sàn & Dãy */}
+
+      {/* RENDER SÀN & DÃY */}
       {appState.floors.map((floor, fIdx) => {
         if (selectedFloor !== "Tất cả" && floor.floorName !== selectedFloor)
           return null;
+
         return (
-          <div key={fIdx} className="mb-6">
-            <h2 className="text-2xl font-extrabold text-800 mb-3 border-bottom-1 surface-border pb-2">
-              {floor.floorName}
+          <div key={fIdx} className="mb-5">
+            <h2 className="text-xl md:text-2xl font-extrabold text-800 mb-3 border-bottom-2 surface-border pb-2 flex align-items-center gap-2">
+              <span>🏢</span> {floor.floorName}
             </h2>
+
             {floor.lanes.map((lane, lIdx) => (
               <div
                 key={lIdx}
-                className="surface-card border-1 surface-border shadow-2 border-round-xl p-3 mb-3 flex overflow-x-auto min-h-15rem lane-container"
+                className="surface-card border-1 surface-border shadow-2 border-round-2xl p-3 mb-3 flex overflow-x-auto min-h-14rem lane-container"
               >
                 {/* --- LEAD ZONE --- */}
                 <div
-                  className="flex flex-column mr-3"
-                  style={{ minWidth: "220px" }}
+                  className="flex flex-column mr-3 surface-50 p-2 border-round-xl border-1 surface-border"
+                  style={{ minWidth: "210px" }}
                 >
-                  <div className="flex justify-content-between align-items-center mb-2">
-                    <span className="text-xs font-bold text-500 uppercase">
-                      LEAD DÃY {lane.laneLetter}
+                  <div className="flex justify-content-between align-items-center mb-2 px-1">
+                    <span className="text-xs font-extrabold text-700 uppercase">
+                      👑 LEAD DÃY {lane.laneLetter}
                     </span>
                     <Button
                       icon="pi pi-plus"
@@ -850,11 +746,13 @@ export default function App() {
                       rounded
                       text
                       severity="success"
+                      title="Thêm Lead"
                       onClick={() => addSeat(fIdx, lIdx, "lead")}
                     />
                   </div>
+
                   <div
-                    className="flex flex-wrap gap-2 flex-1 drop-zone p-2 border-round"
+                    className="flex flex-wrap gap-2 flex-1 drop-zone p-1 border-round"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => onDrop(e, fIdx, lIdx, "lead")}
                   >
@@ -863,14 +761,15 @@ export default function App() {
                         const q = s.name
                           .toLowerCase()
                           .includes(search.toLowerCase());
+                        const colorId = appState.colors[s.id] || "fill-lead";
                         const teamMatch =
-                          !selectedTeamId ||
-                          (appState.colors[s.id] || autoColor(s.name)) ===
-                            selectedTeamId;
+                          !selectedTeamId || colorId === selectedTeamId;
                         return q && teamMatch;
                       })
                       .map((seat, sIdx) => {
                         const colorId = appState.colors[seat.id] || "fill-lead";
+                        const inv = appState.inventory[seat.id] || {};
+
                         return (
                           <div
                             key={seat.id}
@@ -878,44 +777,48 @@ export default function App() {
                             onDragStart={(e) =>
                               onDragStart(e, fIdx, lIdx, "lead", sIdx)
                             }
-                            className={`p-2 border-round shadow-2 w-full cursor-move transition-transform hover:shadow-4 ${colorId}`}
+                            className={`seat-card p-2 border-round-xl shadow-2 border-1 cursor-move w-full ${colorId}`}
                           >
-                            <div className="flex justify-content-between align-items-start mb-2">
+                            <div className="flex justify-content-between align-items-center mb-2">
                               <div className="flex gap-1">
+                                {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
-                                  icon="pi pi-check-circle"
+                                  icon="pi pi-check"
                                   size="small"
                                   rounded
-                                  text
                                   severity="success"
-                                  className="p-0 w-1.5rem h-1.5rem"
-                                  title="Đủ bộ"
+                                  className="w-1.5rem h-1.5rem p-0 text-xs font-bold"
+                                  title="Check đủ bộ"
                                   onClick={() => markFull(seat.id, true)}
                                 />
+                                {/* NÚT NHANH 🔄 RESET */}
                                 <Button
                                   icon="pi pi-refresh"
                                   size="small"
                                   rounded
-                                  text
                                   severity="secondary"
-                                  className="p-0 w-1.5rem h-1.5rem"
-                                  title="Reset"
+                                  outlined
+                                  className="w-1.5rem h-1.5rem p-0 text-xs"
+                                  title="Reset checklist"
                                   onClick={() => markReset(seat.id)}
                                 />
                               </div>
+
                               <Button
                                 icon="pi pi-times"
                                 size="small"
                                 rounded
                                 text
                                 severity="danger"
-                                className="p-0 w-1.5rem h-1.5rem"
-                                title="Xoá"
+                                className="w-1.5rem h-1.5rem p-0 text-xs"
+                                title="Xoá cabin"
                                 onClick={() =>
                                   removeSeat(fIdx, lIdx, "lead", sIdx)
                                 }
                               />
                             </div>
+
+                            {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
                             <TeamTag
                               colorId={colorId}
                               isSelected={selectedTeamId === colorId}
@@ -929,6 +832,8 @@ export default function App() {
                                 colorPanel.current?.show(e);
                               }}
                             />
+
+                            {/* TÊN LEAD INLINE EDIT */}
                             <InlineEdit
                               value={seat.name}
                               onChange={(val) =>
@@ -942,48 +847,36 @@ export default function App() {
                                 )
                               }
                               placeholder="Tên Lead"
-                              className="text-sm w-full mt-1"
+                              className="text-sm w-full mt-2"
                             />
-                            <div className="surface-0 p-2 border-round shadow-1 mt-2">
+
+                            {/* CHECKLIST THIẾT BỊ */}
+                            <div className="surface-0 p-2 border-round-lg shadow-1 mt-2 flex flex-column gap-1">
                               {[
-                                "thung",
-                                "man20",
-                                "man24",
-                                "chuot",
-                                "phim",
-                                "tai",
-                                "laptop",
-                              ].map((k) => (
+                                { key: "thung", label: "Thùng" },
+                                { key: "man20", label: 'Màn 20"' },
+                                { key: "man24", label: 'Màn 24"' },
+                                { key: "chuot", label: "Chuột" },
+                                { key: "phim", label: "Phím" },
+                                { key: "tai", label: "Tai USB" },
+                                { key: "laptop", label: "Laptop" },
+                              ].map(({ key, label }) => (
                                 <div
-                                  key={k}
-                                  className="flex align-items-center mb-1 gap-2"
+                                  key={key}
+                                  className="flex align-items-center gap-2 text-xs"
                                 >
                                   <Checkbox
-                                    inputId={`${seat.id}_${k}`}
-                                    checked={
-                                      !!(appState.inventory[seat.id] || {})[k]
-                                    }
+                                    inputId={`${seat.id}_${key}`}
+                                    checked={!!inv[key]}
                                     onChange={(e) =>
-                                      updateInventory(seat.id, k, e.checked)
+                                      updateInventory(seat.id, key, e.checked)
                                     }
                                   />
                                   <label
-                                    htmlFor={`${seat.id}_${k}`}
-                                    className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                                    htmlFor={`${seat.id}_${key}`}
+                                    className="cursor-pointer font-medium text-700 select-none flex-1"
                                   >
-                                    {k === "thung"
-                                      ? "Thùng"
-                                      : k === "man20"
-                                        ? 'Màn 20"'
-                                        : k === "man24"
-                                          ? 'Màn 24"'
-                                          : k === "chuot"
-                                            ? "Chuột"
-                                            : k === "phim"
-                                              ? "Phím"
-                                              : k === "tai"
-                                                ? "Tai USB"
-                                                : "Laptop"}
+                                    {label}
                                   </label>
                                 </div>
                               ))}
@@ -993,22 +886,26 @@ export default function App() {
                       })}
                   </div>
                 </div>
+
+                {/* VÁCH NGĂN DÃY */}
                 <div className="flex align-items-center mx-2 relative">
-                  <div className="bg-300 w-1rem h-full border-round-xl"></div>
+                  <div className="bg-300 w-1rem h-full border-round-xl" />
                   <Badge
                     value={lane.laneLetter}
                     size="large"
                     severity="warning"
-                    className="absolute top-50"
-                    style={{ left: "-8px" }}
+                    className="absolute top-50 shadow-2 font-black"
+                    style={{ left: "-8px", transform: "translateY(-50%)" }}
                   />
                 </div>
+
                 {/* --- AGENT ZONE --- */}
-                <div className="flex flex-column ml-3 flex-1">
-                  <div className="flex align-items-center gap-3 mb-2 flex-wrap">
-                    <span className="text-xs font-bold text-500 uppercase">
-                      AGENTS DÃY {lane.laneLetter}
+                <div className="flex flex-column ml-2 flex-1">
+                  <div className="flex align-items-center gap-3 mb-2 flex-wrap px-1">
+                    <span className="text-xs font-extrabold text-700 uppercase">
+                      👥 AGENTS DÃY {lane.laneLetter}
                     </span>
+
                     <Button
                       icon="pi pi-palette"
                       label="Đổi màu dãy"
@@ -1018,11 +915,12 @@ export default function App() {
                       className="py-1 px-2 text-xs font-bold"
                       onClick={(e) => {
                         setActiveLane({ fIdx, lIdx });
-                        bulkColorPanel.current.toggle(e);
+                        bulkColorPanel.current?.toggle(e);
                       }}
                     />
-                    <div className="flex align-items-center gap-2 surface-100 p-1 border-round ml-auto">
-                      <span className="text-xs font-semibold text-600">
+
+                    <div className="flex align-items-center gap-2 surface-100 px-2 py-1 border-round-lg ml-auto">
+                      <span className="text-xs font-bold text-600">
                         STT Bắt đầu:
                       </span>
                       <InputText
@@ -1031,37 +929,42 @@ export default function App() {
                         onChange={(e) =>
                           updateSttGlobal(fIdx, lIdx, e.target.value)
                         }
-                        className="w-4rem p-1 text-center font-bold"
+                        className="w-4rem p-1 text-center font-bold text-xs"
                       />
                     </div>
+
                     <Button
                       icon="pi pi-plus"
                       label="Thêm Agent"
                       size="small"
                       outlined
                       severity="success"
+                      className="py-1 px-2 text-xs font-bold"
                       onClick={() => addSeat(fIdx, lIdx, "agent")}
                     />
                   </div>
+
                   <div
-                    className="flex flex-wrap gap-2 drop-zone p-2 border-round min-w-full"
+                    className="flex flex-wrap gap-2 drop-zone p-1 border-round min-w-full"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => onDrop(e, fIdx, lIdx, "agent")}
                   >
                     {lane.agents
                       .filter((s) => {
-                        const q = (s.name + s.stt)
+                        const q = `${s.name} ${s.stt}`
                           .toLowerCase()
                           .includes(search.toLowerCase());
+                        const colorId =
+                          appState.colors[s.id] || autoColor(s.name);
                         const teamMatch =
-                          !selectedTeamId ||
-                          (appState.colors[s.id] || autoColor(s.name)) ===
-                            selectedTeamId;
+                          !selectedTeamId || colorId === selectedTeamId;
                         return q && teamMatch;
                       })
                       .map((seat, sIdx) => {
                         const colorId =
                           appState.colors[seat.id] || autoColor(seat.name);
+                        const inv = appState.inventory[seat.id] || {};
+
                         return (
                           <div
                             key={seat.id}
@@ -1069,45 +972,49 @@ export default function App() {
                             onDragStart={(e) =>
                               onDragStart(e, fIdx, lIdx, "agent", sIdx)
                             }
-                            className={`p-2 border-round shadow-1 border-1 surface-border cursor-move transition-transform hover:shadow-4 ${colorId}`}
-                            style={{ width: "150px" }}
+                            className={`seat-card p-2 border-round-xl shadow-1 border-1 cursor-move ${colorId}`}
+                            style={{ width: "148px" }}
                           >
-                            <div className="flex justify-content-between align-items-start mb-1">
+                            <div className="flex justify-content-between align-items-center mb-1">
                               <div className="flex gap-1">
+                                {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
-                                  icon="pi pi-check-circle"
+                                  icon="pi pi-check"
                                   size="small"
                                   rounded
-                                  text
                                   severity="success"
-                                  className="p-0 w-1.2rem h-1.2rem text-xs"
-                                  title="Đủ bộ"
+                                  className="w-1.3rem h-1.3rem p-0 text-xs font-bold"
+                                  title="Check đủ bộ"
                                   onClick={() => markFull(seat.id, false)}
                                 />
+                                {/* NÚT NHANH 🔄 RESET */}
                                 <Button
                                   icon="pi pi-refresh"
                                   size="small"
                                   rounded
-                                  text
                                   severity="secondary"
-                                  className="p-0 w-1.2rem h-1.2rem text-xs"
-                                  title="Reset"
+                                  outlined
+                                  className="w-1.3rem h-1.3rem p-0 text-xs"
+                                  title="Reset checklist"
                                   onClick={() => markReset(seat.id)}
                                 />
                               </div>
+
                               <Button
                                 icon="pi pi-times"
                                 size="small"
                                 rounded
                                 text
                                 severity="danger"
-                                className="p-0 w-1.2rem h-1.2rem text-xs"
-                                title="Xoá"
+                                className="w-1.3rem h-1.3rem p-0 text-xs"
+                                title="Xoá cabin"
                                 onClick={() =>
                                   removeSeat(fIdx, lIdx, "agent", sIdx)
                                 }
                               />
                             </div>
+
+                            {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
                             <TeamTag
                               colorId={colorId}
                               isSelected={selectedTeamId === colorId}
@@ -1121,69 +1028,69 @@ export default function App() {
                                 colorPanel.current?.show(e);
                               }}
                             />
-                            <InlineEdit
-                              value={seat.stt || ""}
-                              onChange={(val) =>
-                                updateProp(
-                                  fIdx,
-                                  lIdx,
-                                  "agent",
-                                  sIdx,
-                                  "stt",
-                                  val,
-                                )
-                              }
-                              placeholder="STT"
-                              className="text-xs text-primary mt-1 inline-block min-w-min"
-                            />
-                            <InlineEdit
-                              value={seat.name}
-                              onChange={(val) =>
-                                updateProp(
-                                  fIdx,
-                                  lIdx,
-                                  "agent",
-                                  sIdx,
-                                  "name",
-                                  val,
-                                )
-                              }
-                              placeholder="Tên..."
-                              className="text-sm w-full"
-                            />
-                            <div className="surface-0 p-2 border-round shadow-1 mt-2">
-                              {["man20", "thung", "chuot", "phim", "tai"].map(
-                                (k) => (
-                                  <div
-                                    key={k}
-                                    className="flex align-items-center mb-1 gap-2"
+
+                            {/* STT & TÊN AGENT INLINE EDIT */}
+                            <div className="flex align-items-center gap-1 mt-1">
+                              <InlineEdit
+                                value={seat.stt || ""}
+                                onChange={(val) =>
+                                  updateProp(
+                                    fIdx,
+                                    lIdx,
+                                    "agent",
+                                    sIdx,
+                                    "stt",
+                                    val,
+                                  )
+                                }
+                                placeholder="STT"
+                                isStt={true}
+                              />
+                              <InlineEdit
+                                value={seat.name}
+                                onChange={(val) =>
+                                  updateProp(
+                                    fIdx,
+                                    lIdx,
+                                    "agent",
+                                    sIdx,
+                                    "name",
+                                    val,
+                                  )
+                                }
+                                placeholder="Tên Agent..."
+                                className="text-xs font-bold flex-1"
+                              />
+                            </div>
+
+                            {/* CHECKLIST THIẾT BỊ */}
+                            <div className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1">
+                              {[
+                                { key: "thung", label: "Thùng" },
+                                { key: "man20", label: 'Màn 20"' },
+                                { key: "chuot", label: "Chuột" },
+                                { key: "phim", label: "Phím" },
+                                { key: "tai", label: "Tai nghe" },
+                              ].map(({ key, label }) => (
+                                <div
+                                  key={key}
+                                  className="flex align-items-center gap-1.5 text-xs"
+                                >
+                                  <Checkbox
+                                    inputId={`${seat.id}_${key}`}
+                                    checked={!!inv[key]}
+                                    onChange={(e) =>
+                                      updateInventory(seat.id, key, e.checked)
+                                    }
+                                  />
+                                  <label
+                                    htmlFor={`${seat.id}_${key}`}
+                                    className="cursor-pointer font-medium text-700 select-none flex-1 text-xs"
                                   >
-                                    <Checkbox
-                                      inputId={`${seat.id}_${k}`}
-                                      checked={
-                                        !!(appState.inventory[seat.id] || {})[k]
-                                      }
-                                      onChange={(e) =>
-                                        updateInventory(seat.id, k, e.checked)
-                                      }
-                                    />
-                                    <label
-                                      htmlFor={`${seat.id}_${k}`}
-                                      className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
-                                    >
-                                      {k === "thung"
-                                        ? "Thùng"
-                                        : k === "man20"
-                                          ? 'Màn 20"'
-                                          : k === "chuot"
-                                            ? "Chuột"
-                                            : k === "phim"
-                                              ? "Phím"
-                                              : "Tai nghe"}
-                                    </label>
-                                  </div>
-                                ),
-                              )}
+                                    {label}
+                                  </label>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         );
