@@ -8,6 +8,7 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Toolbar } from "primereact/toolbar";
 import { Card } from "primereact/card";
 import { Badge } from "primereact/badge";
+import { SelectButton } from "primereact/selectbutton";
 
 // Import CSS PrimeReact
 import "primereact/resources/themes/lara-light-indigo/theme.css";
@@ -17,24 +18,59 @@ import "primeflex/primeflex.css";
 import "./App.css";
 
 // -------------------------------------------------------------
-// CẤU HÌNH SUPABASE
+// COMPONENT NHẬP LIỆU INLINE (Click để sửa)
+// -------------------------------------------------------------
+function InlineEdit({ value, onChange, placeholder, className }) {
+  const [isEdit, setIsEdit] = useState(false);
+  const [val, setVal] = useState(value);
+
+  useEffect(() => setVal(value), [value]);
+
+  const handleSave = () => {
+    onChange(val);
+    setIsEdit(false);
+  };
+
+  if (isEdit) {
+    return (
+      <InputText
+        autoFocus
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => e.key === "Enter" && handleSave()}
+        className={`${className} p-1 w-full`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${className} p-1 cursor-pointer border-round hover:surface-300 transition-colors text-overflow-ellipsis white-space-nowrap overflow-hidden bg-white-alpha-40 border-1 border-transparent hover:border-400`}
+      onClick={() => setIsEdit(true)}
+      title="Click để sửa"
+    >
+      {value || placeholder}
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// CẤU HÌNH SUPABASE & DỮ LIỆU GỐC
 // -------------------------------------------------------------
 const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// -------------------------------------------------------------
-// DỮ LIỆU MẶC ĐỊNH
-// -------------------------------------------------------------
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
 const teamColors = [
-  { id: "fill-lead", name: "Lead", hex: "#e7f5ff" },
-  { id: "fill-pink", name: "User", hex: "#fff0f6" },
-  { id: "fill-orange", name: "Social", hex: "#fff4e6" },
-  { id: "fill-cyan", name: "Merchant", hex: "#e3fafc" },
-  { id: "fill-yellow", name: "Night/Senior", hex: "#fff9db" },
-  { id: "fill-purple", name: "SPT/PT", hex: "#f0ebff" },
-  { id: "fill-grey", name: "Trống", hex: "#f1f3f5" },
+  { id: "fill-lead", name: "Lead" },
+  { id: "fill-pink", name: "User" },
+  { id: "fill-orange", name: "Social" },
+  { id: "fill-cyan", name: "Merchant" },
+  { id: "fill-yellow", name: "Night/Senior" },
+  { id: "fill-purple", name: "SPT/PT" },
+  { id: "fill-grey", name: "Trống" },
 ];
 
 const defaultData = [
@@ -234,6 +270,7 @@ const defaultData = [
 export default function App() {
   const toast = useRef(null);
   const colorPanel = useRef(null);
+  const bulkColorPanel = useRef(null);
 
   const [appState, setAppState] = useState({
     floors: defaultFloorsInit(),
@@ -243,7 +280,9 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null);
-  const [activeSeat, setActiveSeat] = useState(null); // Cho ColorPicker
+  const [activeSeat, setActiveSeat] = useState(null);
+  const [activeLane, setActiveLane] = useState(null);
+  const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn
 
   function defaultFloorsInit() {
     return JSON.parse(JSON.stringify(defaultData));
@@ -286,14 +325,10 @@ export default function App() {
     return "fill-pink";
   };
 
-  // Lấy dữ liệu khi chạy lần đầu
   useEffect(() => {
     loadOnline();
   }, []);
 
-  // -------------------------------------------------------------
-  // SUPABASE SYNC LOGIC
-  // -------------------------------------------------------------
   const loadOnline = async () => {
     try {
       const { data, error } = await supabase
@@ -371,9 +406,7 @@ export default function App() {
     });
   };
 
-  // -------------------------------------------------------------
-  // EVENT HANDLERS
-  // -------------------------------------------------------------
+  // Các thao tác
   const updateProp = (fIdx, lIdx, type, sIdx, prop, val) => {
     updateState((st) => {
       const seat =
@@ -384,36 +417,33 @@ export default function App() {
     });
   };
 
-  const updateInventory = (id, key, val) => {
+  const updateInventory = (id, key, val) =>
     updateState((st) => {
       st.inventory[id][key] = val;
     });
-  };
-
-  const updateSttGlobal = (fIdx, lIdx, val) => {
+  const updateSttGlobal = (fIdx, lIdx, val) =>
     updateState((st) => {
       const lane = st.floors[fIdx].lanes[lIdx];
       lane.startStt = parseInt(val) || 0;
       lane.agents.forEach((ag, i) => (ag.stt = lane.startStt + i));
     });
-  };
 
-  const addSeat = (fIdx, lIdx, type) => {
+  const addSeat = (fIdx, lIdx, type) =>
     updateState((st) => {
       const id = genId();
       st.inventory[id] = initChecklist(type === "lead");
       const lane = st.floors[fIdx].lanes[lIdx];
-      if (type === "lead") {
-        lane.leads.push({ id, name: "Lead Mới" });
-      } else {
-        const lastStt =
-          lane.agents.length > 0
-            ? lane.agents[lane.agents.length - 1].stt + 1
-            : lane.startStt;
-        lane.agents.push({ id, name: "Trống", stt: lastStt });
-      }
+      if (type === "lead") lane.leads.push({ id, name: "Lead Mới" });
+      else
+        lane.agents.push({
+          id,
+          name: "Trống",
+          stt:
+            lane.agents.length > 0
+              ? lane.agents[lane.agents.length - 1].stt + 1
+              : lane.startStt,
+        });
     });
-  };
 
   const removeSeat = (fIdx, lIdx, type, sIdx) => {
     if (!window.confirm("Bạn muốn xoá cabin này?")) return;
@@ -429,36 +459,48 @@ export default function App() {
     });
   };
 
-  const resetDefault = () => {
-    if (window.confirm("Khôi phục toàn bộ về gốc? Dữ liệu hiện tại sẽ mất!")) {
-      setAppState({ floors: defaultFloorsInit(), inventory: {}, colors: {} });
-      setTimeout(
-        () =>
-          ensureInventoryValid({
-            floors: defaultFloorsInit(),
-            inventory: {},
-            colors: {},
-          }),
-        100,
-      );
-    }
+  const markFull = (id, isLead) => {
+    updateState((st) => {
+      const inv = st.inventory[id];
+      inv.thung = true;
+      inv.man20 = true;
+      inv.chuot = true;
+      inv.phim = true;
+      inv.tai = true;
+      if (isLead) {
+        inv.man24 = true;
+        inv.laptop = true;
+      }
+    });
   };
 
-  // Drag & Drop
+  const markReset = (id) => {
+    updateState((st) => {
+      const inv = st.inventory[id];
+      Object.keys(inv).forEach((k) => {
+        if (typeof inv[k] === "boolean") inv[k] = false;
+      });
+    });
+  };
+
+  const applyBulkColor = (colorId) => {
+    if (!activeLane) return;
+    updateState((st) => {
+      const lane = st.floors[activeLane.fIdx].lanes[activeLane.lIdx];
+      lane.leads.forEach((ld) => (st.colors[ld.id] = colorId));
+      lane.agents.forEach((ag) => (st.colors[ag.id] = colorId));
+    });
+  };
+
+  // Drag Drop
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
     setDraggedItem({ fIdx, lIdx, type, sIdx });
     e.dataTransfer.effectAllowed = "move";
   };
-
-  const onDragOver = (e) => {
-    e.preventDefault();
-  };
-
   const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
     e.preventDefault();
     if (!draggedItem) return;
     const { fIdx, lIdx, type, sIdx } = draggedItem;
-
     updateState((st) => {
       const sourceArr =
         type === "lead"
@@ -468,16 +510,15 @@ export default function App() {
         targetType === "lead"
           ? st.floors[targetFIdx].lanes[targetLIdx].leads
           : st.floors[targetFIdx].lanes[targetLIdx].agents;
-
       const [item] = sourceArr.splice(sIdx, 1);
       if (type !== targetType)
-        st.inventory[item.id] = initChecklist(targetType === "lead"); // Đổi loại -> reset checklist
+        st.inventory[item.id] = initChecklist(targetType === "lead");
       targetArr.push(item);
     });
     setDraggedItem(null);
   };
 
-  // Tính Thống Kê
+  // Thống Kê
   const stats = {
     thung: 0,
     man20: 0,
@@ -499,59 +540,23 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
-  // -------------------------------------------------------------
-  // RENDER UI
-  // -------------------------------------------------------------
-  const renderChecklist = (id, isLead) => {
-    const inv = appState.inventory[id] || {};
-    const check = (key, lbl, hasQty = false) => (
-      <div className="flex align-items-center mb-1 gap-2">
-        <Checkbox
-          inputId={`${id}_${key}`}
-          checked={!!inv[key]}
-          onChange={(e) => updateInventory(id, key, e.checked)}
-        />
-        <label
-          htmlFor={`${id}_${key}`}
-          className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+  const ColorMenu = ({ onClick }) => (
+    <div className="flex flex-column gap-1 w-13rem p-1">
+      <div className="text-sm font-bold text-600 mb-2 border-bottom-1 surface-border pb-1">
+        Chọn Team
+      </div>
+      {teamColors.map((c) => (
+        <div
+          key={c.id}
+          className="flex align-items-center gap-3 p-2 border-round cursor-pointer hover:surface-200 transition-colors"
+          onClick={() => onClick(c.id)}
         >
-          {lbl}
-        </label>
-        {hasQty && (
-          <InputText
-            type="number"
-            value={inv[`${key}_qty`] || 1}
-            onChange={(e) => updateInventory(id, `${key}_qty`, e.target.value)}
-            className="w-3rem p-1 text-xs text-center"
-          />
-        )}
-      </div>
-    );
-
-    return (
-      <div className="surface-0 p-2 border-round shadow-1 mt-2">
-        {isLead ? (
-          <>
-            {check("thung", "Thùng CPU", true)}
-            {check("man20", 'Màn 20"')}
-            {check("man24", 'Màn 24"')}
-            {check("chuot", "Chuột", true)}
-            {check("phim", "Phím", true)}
-            {check("tai", "Tai USB", true)}
-            {check("laptop", "Laptop")}
-          </>
-        ) : (
-          <>
-            {check("man20", 'Màn 20"')}
-            {check("thung", "Thùng CPU", true)}
-            {check("chuot", "Chuột", true)}
-            {check("phim", "Phím", true)}
-            {check("tai", "Tai nghe", true)}
-          </>
-        )}
-      </div>
-    );
-  };
+          <div className={`w-2rem h-2rem border-round shadow-1 ${c.id}`}></div>
+          <span className="font-semibold text-sm text-700">{c.name}</span>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div
@@ -560,14 +565,31 @@ export default function App() {
     >
       <Toast ref={toast} />
 
-      {/* Header Panel */}
+      {/* Popovers */}
+      <OverlayPanel ref={colorPanel}>
+        <ColorMenu
+          onClick={(cId) => {
+            updateState((st) => (st.colors[activeSeat] = cId));
+            colorPanel.current.hide();
+          }}
+        />
+      </OverlayPanel>
+      <OverlayPanel ref={bulkColorPanel}>
+        <ColorMenu
+          onClick={(cId) => {
+            applyBulkColor(cId);
+            bulkColorPanel.current.hide();
+          }}
+        />
+      </OverlayPanel>
+
       <div className="surface-900 text-white p-4 border-round-xl shadow-4 mb-4 flex justify-content-between align-items-center">
         <div>
           <h1 className="m-0 text-3xl font-bold">
             📋 Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
           </h1>
           <p className="mt-2 text-400">
-            Phiên bản PrimeReact & Supabase: 4 Dãy (A/B/C/D), Kéo Thả, Đổi Màu.
+            Inline Edit, Chọn màu theo List, Tính năng Đủ bộ/Reset.
           </p>
         </div>
         <Badge
@@ -577,7 +599,6 @@ export default function App() {
         />
       </div>
 
-      {/* Stats Panel */}
       <div className="grid mb-4">
         {[
           { label: "Thùng máy", val: stats.thung, icon: "📦" },
@@ -600,289 +621,378 @@ export default function App() {
         ))}
       </div>
 
-      {/* Toolbar */}
+      {/* Toolbar & Sàn Lọc */}
       <Toolbar
         className="mb-4 shadow-2 border-1 surface-border"
         left={
-          <span className="p-input-icon-left w-full">
-            <i className="pi pi-search" />
-            <InputText
-              placeholder="Tìm kiếm Agent hoặc STT..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-20rem"
-            />
-          </span>
-        }
-        right={
-          <div className="flex gap-2">
-            <Button
-              label="Khôi phục"
-              icon="pi pi-refresh"
-              severity="danger"
-              outlined
-              onClick={resetDefault}
-            />
-            <Button
-              label={isSyncing ? "Đang đồng bộ..." : "Lưu Cloud"}
-              icon="pi pi-cloud-upload"
-              severity="success"
-              onClick={syncOnline}
-              disabled={isSyncing}
+          <div className="flex gap-4 align-items-center flex-wrap">
+            <span className="p-input-icon-left">
+              <i className="pi pi-search" />
+              <InputText
+                placeholder="Tìm kiếm Agent/STT..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-18rem"
+              />
+            </span>
+            <SelectButton
+              value={selectedFloor}
+              onChange={(e) => setSelectedFloor(e.value || "Tất cả")}
+              options={["Tất cả", "Sàn Lầu 2", "Sàn Lầu 3"]}
             />
           </div>
+        }
+        right={
+          <Button
+            label={isSyncing ? "Đang đồng bộ..." : "Lưu Cloud"}
+            icon="pi pi-cloud-upload"
+            severity="success"
+            onClick={syncOnline}
+            disabled={isSyncing}
+          />
         }
       />
 
-      {/* Legend & Color Picker Overlay */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {teamColors.map((c) => (
-          <div
-            key={c.id}
-            className="flex align-items-center gap-2 surface-card px-3 py-2 border-round-2xl border-1 surface-border shadow-1 text-sm font-semibold text-600"
-          >
-            <div className={`w-1rem h-1rem border-round-sm ${c.id}`}></div>{" "}
-            {c.name}
-          </div>
-        ))}
-      </div>
+      {/* Render Sàn & Dãy */}
+      {appState.floors.map((floor, fIdx) => {
+        if (selectedFloor !== "Tất cả" && floor.floorName !== selectedFloor)
+          return null;
+        return (
+          <div key={fIdx} className="mb-6">
+            <h2 className="text-2xl font-extrabold text-800 mb-3 border-bottom-1 surface-border pb-2">
+              {floor.floorName}
+            </h2>
 
-      <OverlayPanel ref={colorPanel} className="w-12rem">
-        <div className="grid">
-          {teamColors.map((c) => (
-            <div key={c.id} className="col-4 p-1">
+            {floor.lanes.map((lane, lIdx) => (
               <div
-                className={`w-full h-2rem border-round cursor-pointer shadow-1 hover:shadow-3 ${c.id}`}
-                title={c.name}
-                onClick={() => {
-                  updateState((st) => (st.colors[activeSeat] = c.id));
-                  colorPanel.current.hide();
-                }}
-              ></div>
-            </div>
-          ))}
-        </div>
-      </OverlayPanel>
-
-      {/* Floors Mapping */}
-      {appState.floors.map((floor, fIdx) => (
-        <div key={fIdx} className="mb-6">
-          <h2 className="text-2xl font-extrabold text-800 mb-3 border-bottom-1 surface-border pb-2">
-            {floor.floorName}
-          </h2>
-
-          {floor.lanes.map((lane, lIdx) => (
-            <div
-              key={lIdx}
-              className="surface-card border-1 surface-border shadow-2 border-round-xl p-3 mb-3 flex overflow-x-auto min-h-15rem lane-container"
-            >
-              {/* Cột LEAD */}
-              <div
-                className="flex flex-column mr-3"
-                style={{ minWidth: "220px" }}
+                key={lIdx}
+                className="surface-card border-1 surface-border shadow-2 border-round-xl p-3 mb-3 flex overflow-x-auto min-h-15rem lane-container"
               >
-                <div className="flex justify-content-between align-items-center mb-2">
-                  <span className="text-xs font-bold text-500 uppercase">
-                    LEAD DÃY {lane.laneLetter}
-                  </span>
-                  <Button
-                    icon="pi pi-plus"
-                    size="small"
-                    rounded
-                    text
-                    severity="success"
-                    onClick={() => addSeat(fIdx, lIdx, "lead")}
-                  />
-                </div>
+                {/* --- LEAD ZONE --- */}
                 <div
-                  className="flex flex-wrap gap-2 flex-1 drop-zone p-2 border-round"
-                  onDragOver={onDragOver}
-                  onDrop={(e) => onDrop(e, fIdx, lIdx, "lead")}
+                  className="flex flex-column mr-3"
+                  style={{ minWidth: "220px" }}
                 >
-                  {lane.leads
-                    .filter((s) =>
-                      (s.name + s.stt)
-                        .toLowerCase()
-                        .includes(search.toLowerCase()),
-                    )
-                    .map((seat, sIdx) => (
-                      <div
-                        key={seat.id}
-                        draggable
-                        onDragStart={(e) =>
-                          onDragStart(e, fIdx, lIdx, "lead", sIdx)
-                        }
-                        className={`p-2 border-round shadow-2 w-full cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || "fill-lead"}`}
-                      >
-                        <div className="flex justify-content-between mb-2">
-                          <Button
-                            icon="pi pi-palette"
-                            size="small"
-                            rounded
-                            text
-                            className="p-0 w-2rem h-2rem"
-                            onClick={(e) => {
-                              setActiveSeat(seat.id);
-                              colorPanel.current.toggle(e);
-                            }}
-                          />
-                          <Button
-                            icon="pi pi-times"
-                            size="small"
-                            rounded
-                            text
-                            severity="danger"
-                            className="p-0 w-2rem h-2rem"
-                            onClick={() => removeSeat(fIdx, lIdx, "lead", sIdx)}
-                          />
-                        </div>
-                        <InputText
-                          value={seat.name}
-                          onChange={(e) =>
-                            updateProp(
-                              fIdx,
-                              lIdx,
-                              "lead",
-                              sIdx,
-                              "name",
-                              e.target.value,
-                            )
+                  <div className="flex justify-content-between align-items-center mb-2">
+                    <span className="text-xs font-bold text-500 uppercase">
+                      LEAD DÃY {lane.laneLetter}
+                    </span>
+                    <Button
+                      icon="pi pi-plus"
+                      size="small"
+                      rounded
+                      text
+                      severity="success"
+                      onClick={() => addSeat(fIdx, lIdx, "lead")}
+                    />
+                  </div>
+                  <div
+                    className="flex flex-wrap gap-2 flex-1 drop-zone p-2 border-round"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => onDrop(e, fIdx, lIdx, "lead")}
+                  >
+                    {lane.leads
+                      .filter((s) =>
+                        s.name.toLowerCase().includes(search.toLowerCase()),
+                      )
+                      .map((seat, sIdx) => (
+                        <div
+                          key={seat.id}
+                          draggable
+                          onDragStart={(e) =>
+                            onDragStart(e, fIdx, lIdx, "lead", sIdx)
                           }
-                          className="w-full text-sm font-bold p-1"
-                        />
-                        {renderChecklist(seat.id, true)}
-                      </div>
-                    ))}
-                </div>
-              </div>
+                          className={`p-2 border-round shadow-2 w-full cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || "fill-lead"}`}
+                        >
+                          <div className="flex justify-content-between mb-2">
+                            <div className="flex gap-1">
+                              <Button
+                                icon="pi pi-check-circle"
+                                size="small"
+                                rounded
+                                text
+                                severity="success"
+                                className="p-0 w-1.5rem h-1.5rem"
+                                title="Đủ bộ"
+                                onClick={() => markFull(seat.id, true)}
+                              />
+                              <Button
+                                icon="pi pi-refresh"
+                                size="small"
+                                rounded
+                                text
+                                severity="secondary"
+                                className="p-0 w-1.5rem h-1.5rem"
+                                title="Reset"
+                                onClick={() => markReset(seat.id)}
+                              />
+                              <Button
+                                icon="pi pi-palette"
+                                size="small"
+                                rounded
+                                text
+                                className="p-0 w-1.5rem h-1.5rem"
+                                title="Đổi màu"
+                                onClick={(e) => {
+                                  setActiveSeat(seat.id);
+                                  colorPanel.current.toggle(e);
+                                }}
+                              />
+                            </div>
+                            <Button
+                              icon="pi pi-times"
+                              size="small"
+                              rounded
+                              text
+                              severity="danger"
+                              className="p-0 w-1.5rem h-1.5rem"
+                              title="Xoá"
+                              onClick={() =>
+                                removeSeat(fIdx, lIdx, "lead", sIdx)
+                              }
+                            />
+                          </div>
 
-              {/* Vách ngăn */}
-              <div className="flex align-items-center mx-2 relative">
-                <div className="bg-300 w-1rem h-full border-round-xl"></div>
-                <div
-                  className="absolute top-50 left-50"
-                  style={{ transform: "translate(-50%, -50%)" }}
-                >
+                          <InlineEdit
+                            value={seat.name}
+                            onChange={(val) =>
+                              updateProp(fIdx, lIdx, "lead", sIdx, "name", val)
+                            }
+                            placeholder="Tên Lead"
+                            className="text-sm font-bold w-full"
+                          />
+
+                          <div className="surface-0 p-2 border-round shadow-1 mt-2">
+                            {[
+                              "thung",
+                              "man20",
+                              "man24",
+                              "chuot",
+                              "phim",
+                              "tai",
+                              "laptop",
+                            ].map((k) => (
+                              <div
+                                key={k}
+                                className="flex align-items-center mb-1 gap-2"
+                              >
+                                <Checkbox
+                                  inputId={`${seat.id}_${k}`}
+                                  checked={
+                                    !!(appState.inventory[seat.id] || {})[k]
+                                  }
+                                  onChange={(e) =>
+                                    updateInventory(seat.id, k, e.checked)
+                                  }
+                                />
+                                <label
+                                  htmlFor={`${seat.id}_${k}`}
+                                  className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                                >
+                                  {k === "thung"
+                                    ? "Thùng"
+                                    : k === "man20"
+                                      ? 'Màn 20"'
+                                      : k === "man24"
+                                        ? 'Màn 24"'
+                                        : k === "chuot"
+                                          ? "Chuột"
+                                          : k === "phim"
+                                            ? "Phím"
+                                            : k === "tai"
+                                              ? "Tai USB"
+                                              : "Laptop"}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="flex align-items-center mx-2 relative">
+                  <div className="bg-300 w-1rem h-full border-round-xl"></div>
                   <Badge
                     value={lane.laneLetter}
                     size="large"
                     severity="warning"
-                  ></Badge>
-                </div>
-              </div>
-
-              {/* Cột AGENT */}
-              <div className="flex flex-column ml-3 flex-1">
-                <div className="flex align-items-center gap-3 mb-2">
-                  <span className="text-xs font-bold text-500 uppercase">
-                    AGENTS DÃY {lane.laneLetter}
-                  </span>
-                  <div className="flex align-items-center gap-2 surface-100 p-1 border-round">
-                    <span className="text-xs font-semibold text-600">
-                      STT Bắt đầu:
-                    </span>
-                    <InputText
-                      type="number"
-                      value={lane.startStt}
-                      onChange={(e) =>
-                        updateSttGlobal(fIdx, lIdx, e.target.value)
-                      }
-                      className="w-4rem p-1 text-center"
-                    />
-                  </div>
-                  <Button
-                    icon="pi pi-plus"
-                    label="Thêm Agent"
-                    size="small"
-                    outlined
-                    severity="success"
-                    onClick={() => addSeat(fIdx, lIdx, "agent")}
+                    className="absolute top-50"
+                    style={{ left: "-8px" }}
                   />
                 </div>
 
-                <div
-                  className="flex flex-wrap gap-2 drop-zone p-2 border-round min-w-full"
-                  onDragOver={onDragOver}
-                  onDrop={(e) => onDrop(e, fIdx, lIdx, "agent")}
-                >
-                  {lane.agents
-                    .filter((s) =>
-                      (s.name + s.stt)
-                        .toLowerCase()
-                        .includes(search.toLowerCase()),
-                    )
-                    .map((seat, sIdx) => (
-                      <div
-                        key={seat.id}
-                        draggable
-                        onDragStart={(e) =>
-                          onDragStart(e, fIdx, lIdx, "agent", sIdx)
+                {/* --- AGENT ZONE --- */}
+                <div className="flex flex-column ml-3 flex-1">
+                  <div className="flex align-items-center gap-3 mb-2 flex-wrap">
+                    <span className="text-xs font-bold text-500 uppercase">
+                      AGENTS DÃY {lane.laneLetter}
+                    </span>
+                    <Button
+                      icon="pi pi-palette"
+                      label="Đổi màu dãy"
+                      size="small"
+                      outlined
+                      severity="info"
+                      className="py-1 px-2 text-xs font-bold"
+                      onClick={(e) => {
+                        setActiveLane({ fIdx, lIdx });
+                        bulkColorPanel.current.toggle(e);
+                      }}
+                    />
+                    <div className="flex align-items-center gap-2 surface-100 p-1 border-round ml-auto">
+                      <span className="text-xs font-semibold text-600">
+                        STT Bắt đầu:
+                      </span>
+                      <InputText
+                        type="number"
+                        value={lane.startStt}
+                        onChange={(e) =>
+                          updateSttGlobal(fIdx, lIdx, e.target.value)
                         }
-                        className={`p-2 border-round shadow-1 border-1 surface-border cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || autoColor(seat.name)}`}
-                        style={{ width: "150px" }}
-                      >
-                        <div className="flex justify-content-between mb-1">
-                          <Button
-                            icon="pi pi-palette"
-                            size="small"
-                            rounded
-                            text
-                            className="p-0 w-1rem h-1rem text-xs"
-                            onClick={(e) => {
-                              setActiveSeat(seat.id);
-                              colorPanel.current.toggle(e);
-                            }}
-                          />
-                          <Button
-                            icon="pi pi-times"
-                            size="small"
-                            rounded
-                            text
-                            severity="danger"
-                            className="p-0 w-1rem h-1rem text-xs"
-                            onClick={() =>
-                              removeSeat(fIdx, lIdx, "agent", sIdx)
+                        className="w-4rem p-1 text-center font-bold"
+                      />
+                    </div>
+                    <Button
+                      icon="pi pi-plus"
+                      label="Thêm Agent"
+                      size="small"
+                      outlined
+                      severity="success"
+                      onClick={() => addSeat(fIdx, lIdx, "agent")}
+                    />
+                  </div>
+
+                  <div
+                    className="flex flex-wrap gap-2 drop-zone p-2 border-round min-w-full"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => onDrop(e, fIdx, lIdx, "agent")}
+                  >
+                    {lane.agents
+                      .filter((s) =>
+                        (s.name + s.stt)
+                          .toLowerCase()
+                          .includes(search.toLowerCase()),
+                      )
+                      .map((seat, sIdx) => (
+                        <div
+                          key={seat.id}
+                          draggable
+                          onDragStart={(e) =>
+                            onDragStart(e, fIdx, lIdx, "agent", sIdx)
+                          }
+                          className={`p-2 border-round shadow-1 border-1 surface-border cursor-move transition-transform hover:shadow-4 ${appState.colors[seat.id] || autoColor(seat.name)}`}
+                          style={{ width: "150px" }}
+                        >
+                          <div className="flex justify-content-between mb-1">
+                            <div className="flex gap-1">
+                              <Button
+                                icon="pi pi-check-circle"
+                                size="small"
+                                rounded
+                                text
+                                severity="success"
+                                className="p-0 w-1.2rem h-1.2rem text-xs"
+                                title="Đủ bộ"
+                                onClick={() => markFull(seat.id, false)}
+                              />
+                              <Button
+                                icon="pi pi-refresh"
+                                size="small"
+                                rounded
+                                text
+                                severity="secondary"
+                                className="p-0 w-1.2rem h-1.2rem text-xs"
+                                title="Reset"
+                                onClick={() => markReset(seat.id)}
+                              />
+                              <Button
+                                icon="pi pi-palette"
+                                size="small"
+                                rounded
+                                text
+                                className="p-0 w-1.2rem h-1.2rem text-xs"
+                                title="Đổi màu"
+                                onClick={(e) => {
+                                  setActiveSeat(seat.id);
+                                  colorPanel.current.toggle(e);
+                                }}
+                              />
+                            </div>
+                            <Button
+                              icon="pi pi-times"
+                              size="small"
+                              rounded
+                              text
+                              severity="danger"
+                              className="p-0 w-1.2rem h-1.2rem text-xs"
+                              title="Xoá"
+                              onClick={() =>
+                                removeSeat(fIdx, lIdx, "agent", sIdx)
+                              }
+                            />
+                          </div>
+
+                          <InlineEdit
+                            value={seat.stt || ""}
+                            onChange={(val) =>
+                              updateProp(fIdx, lIdx, "agent", sIdx, "stt", val)
                             }
+                            placeholder="STT"
+                            className="text-xs font-bold text-primary mb-1 inline-block min-w-min"
                           />
+                          <InlineEdit
+                            value={seat.name}
+                            onChange={(val) =>
+                              updateProp(fIdx, lIdx, "agent", sIdx, "name", val)
+                            }
+                            placeholder="Tên..."
+                            className="text-sm font-bold w-full"
+                          />
+
+                          <div className="surface-0 p-2 border-round shadow-1 mt-2">
+                            {["man20", "thung", "chuot", "phim", "tai"].map(
+                              (k) => (
+                                <div
+                                  key={k}
+                                  className="flex align-items-center mb-1 gap-2"
+                                >
+                                  <Checkbox
+                                    inputId={`${seat.id}_${k}`}
+                                    checked={
+                                      !!(appState.inventory[seat.id] || {})[k]
+                                    }
+                                    onChange={(e) =>
+                                      updateInventory(seat.id, k, e.checked)
+                                    }
+                                  />
+                                  <label
+                                    htmlFor={`${seat.id}_${k}`}
+                                    className="text-xs flex-1 cursor-pointer font-medium text-color-secondary"
+                                  >
+                                    {k === "thung"
+                                      ? "Thùng"
+                                      : k === "man20"
+                                        ? 'Màn 20"'
+                                        : k === "chuot"
+                                          ? "Chuột"
+                                          : k === "phim"
+                                            ? "Phím"
+                                            : "Tai nghe"}
+                                  </label>
+                                </div>
+                              ),
+                            )}
+                          </div>
                         </div>
-                        <InputText
-                          value={seat.stt || ""}
-                          onChange={(e) =>
-                            updateProp(
-                              fIdx,
-                              lIdx,
-                              "agent",
-                              sIdx,
-                              "stt",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full text-xs font-bold p-1 mb-1 text-primary border-primary"
-                          placeholder="STT"
-                        />
-                        <InputText
-                          value={seat.name}
-                          onChange={(e) =>
-                            updateProp(
-                              fIdx,
-                              lIdx,
-                              "agent",
-                              sIdx,
-                              "name",
-                              e.target.value,
-                            )
-                          }
-                          className="w-full text-xs font-bold p-1"
-                        />
-                        {renderChecklist(seat.id, false)}
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ))}
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
