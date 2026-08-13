@@ -1,4 +1,3 @@
 {
-  "buildCommand": "echo 'Static HTML with Supabase integration'",
-  "public": true
+  "buildCommand": "echo 'Static HTML with Supabase integration'"
 }
