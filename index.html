@@ -826,263 +826,275 @@
         <button class="btn btn-warning" onclick="document.getElementById('file-json').click()">📂 Nhập JSON</button>
         <input type="file" id="file-json" accept=".json" style="display:none" onchange="importJSON(event)">
         <button class="btn btn-primary" id="btn-sync-online" onclick="syncOnline()">☁️ Đồng bộ Online</button>
-        <h3>Chọn màu theo team</h3>
-        <div class="color-grid" id="color-grid"></div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" onclick="closeColorModal()">Đóng</button>
-        </div>
+        <button class="btn btn-warning" onclick="restoreOriginalData()" title="Khôi phục dữ liệu gốc">🔄 Khôi
+          Phục</button>
+        <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset toàn bộ</button>
       </div>
     </div>
 
-    <div id="toast"></div>
-    <script>
-      document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      const STORAGE_KEY = 'inventoryData2Floors_v2';
+    <div id="floors-root"></div>
+  </div>
 
-      /* ───────── LEGEND ───────── */
-      const legendDef = [
-        { label: 'Lead', cls: 'fill-lead' },
-        { label: 'User', cls: 'fill-pink' },
-        { label: 'Social', cls: 'fill-orange' },
-        { label: 'Merchant', cls: 'fill-cyan' },
-        { label: 'NightShift / Senior', cls: 'fill-yellow' },
-        { label: 'SPT / PT', cls: 'fill-purple' },
-        { label: 'Trống', cls: 'fill-grey' }
-      ];
-      document.getElementById('legend').innerHTML = legendDef.map(l =>
-        `<div class="legend-item"><span class="legend-swatch ${l.cls}"></span>${l.label}</div>`).join('');
+  <!-- Color Picker Modal -->
+  <div id="color-modal" class="color-picker-modal">
+    <div class="color-picker-content">
+      <h3>Chọn màu theo team</h3>
+      <div class="color-grid" id="color-grid"></div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeColorModal()">Đóng</button>
+      </div>
+    </div>
+  </div>
 
-      function colorFor(name) {
-        const n = (name || '').toUpperCase();
-        if (n.includes('TRỐNG') || n === '') return 'fill-grey';
-        if (n.includes('SENIOR') || n.includes('TRAINER')) return 'fill-yellow';
-        if (n.startsWith('PT') || n.includes('PT -') || n.includes('PT-')) return 'fill-purple';
-        if (n.includes('NB ')) return 'fill-orange';
-        if (n === 'FULL') return 'fill-cyan';
-        return 'fill-pink';
-      }
+  <div id="toast"></div>
+  <script>
+    document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const STORAGE_KEY = 'inventoryData2Floors_v2';
 
-      function getColorClass(id, name) {
-        return customColors[id] || colorFor(name);
-      }
+    /* ───────── LEGEND ───────── */
+    const legendDef = [
+      { label: 'Lead', cls: 'fill-lead' },
+      { label: 'User', cls: 'fill-pink' },
+      { label: 'Social', cls: 'fill-orange' },
+      { label: 'Merchant', cls: 'fill-cyan' },
+      { label: 'NightShift / Senior', cls: 'fill-yellow' },
+      { label: 'SPT / PT', cls: 'fill-purple' },
+      { label: 'Trống', cls: 'fill-grey' }
+    ];
+    document.getElementById('legend').innerHTML = legendDef.map(l =>
+      `<div class="legend-item"><span class="legend-swatch ${l.cls}"></span>${l.label}</div>`).join('');
 
-      /* ───────── DỮ LIỆU: mỗi lầu gồm các DÃY (A,B,C...), mỗi dãy có 1 Lead (trái) + nhiều Agent (phải) ─────────
-         Ghi chú: tên/STT được đọc best-effort từ ảnh sơ đồ gốc — có thể bấm vào tên bất kỳ để sửa trực tiếp trong app. */
-      const floorsData = {
-        "Sàn Lầu 3": [
-          {
-            lane: "A", leadName: "Thu Hiền - TL", startStt: 18, agents: [
-              "Trần Chi", "Nguyễn Trâm", "Trần Trinh", "Nguyễn Thiên", "Đoàn Giao", "NB Content", "NB Content",
-              "Lê Trinh", "Nguyễn Tỷ", "Cao Nhung", "Huỳnh Ngà", "Huỳnh Châu", "Lê Châu",
-              "Trống", "Trống", "Trống", "Trống", "Trống", "Trống", "Trống"
-            ]
-          },
-          {
-            lane: "B", leadName: "Vy - DA", startStt: 38, agents: [
-              "Nguyễn Khanh", "Lý - Senior", "Nguyễn Hậu", "Võ Hiền", "Phan Loan", "Võ Lan", "NB Content", "NB Content",
-              "Tuyến - Senior", "Nguyễn Thúy", "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi", "NB Tele",
-              "Trống", "Trống", "Trống", "Trống"
-            ]
-          },
-          {
-            lane: "C", leadName: "Anh Thư - SUP", startStt: 58, agents: [
-              "Full", "Full", "PT - Phúc Hậu", "Trung Hiếu", "Quốc Khánh", "Trống",
-              "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh", "PT - Phương Thy",
-              "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng", "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
-            ]
-          }
-        ],
-        "Sàn Lầu 2": [
-          {
-            lane: "A", leadName: "Oanh - Senior TL", startStt: 1, agents: [
-              "Trống", "Thiên Kim Senior", "Kim Ái Senior", "Huy Hoàng", "Diệu Trinh", "PT Thảo Phương",
-              "PT Sỹ Danh", "PT Trúc Linh", "PT Thu Hiền", "Full", "PT Thành Đạt",
-              "Full", "PT - Gia Hân", "PT - Sang", "PT - Trang", "PT - Huy", "PT - Gia Bội", "PT - Hào"
-            ]
-          },
-          {
-            lane: "B", leadName: "Chinh - TL", startStt: 19, agents: [
-              "Thiên Ngân", "Tú Trinh", "Trung Nghị", "Minh Tâm", "Minh Thư", "Duy Khánh", "Hồng Ân", "Nhật Lam",
-              "Khánh Ly", "Hoàng Gấm NB", "Hoàng Khải", "Phi Phụng", "Bảo Anh Senior", "Ngọc Tú", "Uyên", "Thanh",
-              "PT Bảo My", "Full", "Cảnh", "Trúc",
-              "Thiếu 1 màn hình + tai nghe", "Thiếu 1 màn hình + tai nghe", "Full", "Trực", "Kim Ngân", "Đan Vy",
-              "Nguyễn Senior", "Thắng", "Full", "Nguyễn Kim Ngân", "Thị Thủy", "Ý Lan", "Hải Yến", "Ái Linh",
-              "Hân Senior", "Minh Thái", "Quang Hậu", "Công Hiệp", "Full", "Minh Hoàng"
-            ]
-          },
-          {
-            lane: "C", leadName: "Phương - TL QA", startStt: 59, agents: [
-              "Thiếu 1 màn hình + tai nghe", "Hoàng Khôi Do", "Full", "Minh Đạo", "Văn Anh",
-              "Kim Chi", "Thảo Vi", "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi",
-              "Thị Hồng", "Chấn Điền Do", "Nhật Khánh", "Tú Quyền Do", "Tân Tài", "Tuấn Anh", "Toàn"
-            ]
-          }
-        ]
-      };
+    function colorFor(name) {
+      const n = (name || '').toUpperCase();
+      if (n.includes('TRỐNG') || n === '') return 'fill-grey';
+      if (n.includes('SENIOR') || n.includes('TRAINER')) return 'fill-yellow';
+      if (n.startsWith('PT') || n.includes('PT -') || n.includes('PT-')) return 'fill-purple';
+      if (n.includes('NB ')) return 'fill-orange';
+      if (n === 'FULL') return 'fill-cyan';
+      return 'fill-pink';
+    }
 
-      /* ───────── STATE ───────── */
-      let customNames = {};
-      let customColors = {};  // Lưu màu tùy chỉnh cho mỗi cabin
-      let inventoryState = {};
-      // Cấu hình STT tùy chỉnh theo từng dãy và từng ô
-      let laneSttRanges = {};   // lane key -> {start, end}
-      let customStts = {};      // seat id -> STT riêng của ô
-      let seatIndex = {}; // id -> {floor, laneIdx, kind:'lead'|'agent', name, stt}
+    function getColorClass(id, name) {
+      return customColors[id] || colorFor(name);
+    }
 
-      function laneId(floor, laneIdx) { return `${floor.replace(/\s/g, '')}_${laneIdx}`; }
-      function leadId(floor, laneIdx) { return `${laneId(floor, laneIdx)}_LEAD`; }
-      function agentId(floor, laneIdx, stt) { return `${laneId(floor, laneIdx)}_A${stt}`; }
+    /* ───────── DỮ LIỆU: mỗi lầu gồm các DÃY (A,B,C...), mỗi dãy có 1 Lead (trái) + nhiều Agent (phải) ─────────
+       Ghi chú: tên/STT được đọc best-effort từ ảnh sơ đồ gốc — có thể bấm vào tên bất kỳ để sửa trực tiếp trong app. */
+    const floorsData = {
+      "Sàn Lầu 3": [
+        {
+          lane: "A", leadName: "Thu Hiền - TL", startStt: 18, agents: [
+            "Trần Chi", "Nguyễn Trâm", "Trần Trinh", "Nguyễn Thiên", "Đoàn Giao", "NB Content", "NB Content",
+            "Lê Trinh", "Nguyễn Tỷ", "Cao Nhung", "Huỳnh Ngà", "Huỳnh Châu", "Lê Châu",
+            "Trống", "Trống", "Trống", "Trống", "Trống", "Trống", "Trống"
+          ]
+        },
+        {
+          lane: "B", leadName: "Vy - DA", startStt: 38, agents: [
+            "Nguyễn Khanh", "Lý - Senior", "Nguyễn Hậu", "Võ Hiền", "Phan Loan", "Võ Lan", "NB Content", "NB Content",
+            "Tuyến - Senior", "Nguyễn Thúy", "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi", "NB Tele",
+            "Trống", "Trống", "Trống", "Trống"
+          ]
+        },
+        {
+          lane: "C", leadName: "Anh Thư - SUP", startStt: 58, agents: [
+            "Full", "Full", "PT - Phúc Hậu", "Trung Hiếu", "Quốc Khánh", "Trống",
+            "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh", "PT - Phương Thy",
+            "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng", "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
+          ]
+        }
+      ],
+      "Sàn Lầu 2": [
+        {
+          lane: "A", leadName: "Oanh - Senior TL", startStt: 1, agents: [
+            "Trống", "Thiên Kim Senior", "Kim Ái Senior", "Huy Hoàng", "Diệu Trinh", "PT Thảo Phương",
+            "PT Sỹ Danh", "PT Trúc Linh", "PT Thu Hiền", "Full", "PT Thành Đạt",
+            "Full", "PT - Gia Hân", "PT - Sang", "PT - Trang", "PT - Huy", "PT - Gia Bội", "PT - Hào"
+          ]
+        },
+        {
+          lane: "B", leadName: "Chinh - TL", startStt: 19, agents: [
+            "Thiên Ngân", "Tú Trinh", "Trung Nghị", "Minh Tâm", "Minh Thư", "Duy Khánh", "Hồng Ân", "Nhật Lam",
+            "Khánh Ly", "Hoàng Gấm NB", "Hoàng Khải", "Phi Phụng", "Bảo Anh Senior", "Ngọc Tú", "Uyên", "Thanh",
+            "PT Bảo My", "Full", "Cảnh", "Trúc",
+            "Thiếu 1 màn hình + tai nghe", "Thiếu 1 màn hình + tai nghe", "Full", "Trực", "Kim Ngân", "Đan Vy",
+            "Nguyễn Senior", "Thắng", "Full", "Nguyễn Kim Ngân", "Thị Thủy", "Ý Lan", "Hải Yến", "Ái Linh",
+            "Hân Senior", "Minh Thái", "Quang Hậu", "Công Hiệp", "Full", "Minh Hoàng"
+          ]
+        },
+        {
+          lane: "C", leadName: "Phương - TL QA", startStt: 59, agents: [
+            "Thiếu 1 màn hình + tai nghe", "Hoàng Khôi Do", "Full", "Minh Đạo", "Văn Anh",
+            "Kim Chi", "Thảo Vi", "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi",
+            "Thị Hồng", "Chấn Điền Do", "Nhật Khánh", "Tú Quyền Do", "Tân Tài", "Tuấn Anh", "Toàn"
+          ]
+        }
+      ]
+    };
 
-      function buildSeatModel() {
-        seatIndex = {};
-        Object.keys(floorsData).forEach(floor => {
-          floorsData[floor].forEach((lane, lIdx) => {
-            const lid = leadId(floor, lIdx);
-            seatIndex[lid] = { floor, laneIdx: lIdx, kind: 'lead', name: lane.leadName, laneLetter: lane.lane };
-            lane.agents.forEach((name, i) => {
-              const stt = lane.startStt + i;
-              const id = agentId(floor, lIdx, stt);
-              seatIndex[id] = { floor, laneIdx: lIdx, kind: 'agent', name, stt, laneLetter: lane.lane };
-            });
+    /* ───────── STATE ───────── */
+    let customNames = {};
+    let customColors = {};  // Lưu màu tùy chỉnh cho mỗi cabin
+    let inventoryState = {};
+    // Cấu hình STT tùy chỉnh theo từng dãy và từng ô
+    let laneSttRanges = {};   // lane key -> {start, end}
+    let customStts = {};      // seat id -> STT riêng của ô
+    let seatIndex = {}; // id -> {floor, laneIdx, kind:'lead'|'agent', name, stt}
+
+    function laneId(floor, laneIdx) { return `${floor.replace(/\s/g, '')}_${laneIdx}`; }
+    function leadId(floor, laneIdx) { return `${laneId(floor, laneIdx)}_LEAD`; }
+    function agentId(floor, laneIdx, stt) { return `${laneId(floor, laneIdx)}_A${stt}`; }
+
+    function buildSeatModel() {
+      seatIndex = {};
+      Object.keys(floorsData).forEach(floor => {
+        floorsData[floor].forEach((lane, lIdx) => {
+          const lid = leadId(floor, lIdx);
+          seatIndex[lid] = { floor, laneIdx: lIdx, kind: 'lead', name: lane.leadName, laneLetter: lane.lane };
+          lane.agents.forEach((name, i) => {
+            const stt = lane.startStt + i;
+            const id = agentId(floor, lIdx, stt);
+            seatIndex[id] = { floor, laneIdx: lIdx, kind: 'agent', name, stt, laneLetter: lane.lane };
           });
         });
+      });
+    }
+    function initSeatState(id) {
+      inventoryState[id] = {
+        thung: false, thung_qty: 1, man20: false, man24: false, chuot: false, chuot_qty: 1,
+        phim: false, phim_qty: 1, tai: false, tai_qty: 1, laptop: false
+      };
+    }
+    function ensureSeatState(id) { if (!inventoryState[id]) initSeatState(id); return inventoryState[id]; }
+    function normalizeState() { Object.keys(seatIndex).forEach(id => ensureSeatState(id)); }
+
+    /* ───────── LOAD / SAVE ───────── */
+    function loadData() {
+      buildSeatModel();
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          inventoryState = data.inventoryState || {};
+          customNames = data.customNames || {};
+          customColors = data.customColors || {};
+          laneSttRanges = data.laneSttRanges || {};
+          customStts = data.customStts || {};
+        } catch (e) { console.warn('LocalStorage parse failed', e); }
       }
-      function initSeatState(id) {
-        inventoryState[id] = {
-          thung: false, thung_qty: 1, man20: false, man24: false, chuot: false, chuot_qty: 1,
-          phim: false, phim_qty: 1, tai: false, tai_qty: 1, laptop: false
+      normalizeState();
+      saveLocal(false);
+      initColorPicker();
+      renderAll();
+    }
+    function saveLocal(refresh = true) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventoryState, customNames, customColors, laneSttRanges, customStts }));
+      if (refresh) updateCounts();
+    }
+
+    /* ───────── ONLINE SYNC - SUPABASE ───────── */
+    const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
+    const SUPABASE_TABLE = "inventory_sync";
+    let isSyncing = false;
+
+    async function syncOnline() {
+      if (isSyncing) return;
+      isSyncing = true;
+      const btn = document.getElementById('btn-sync-online');
+      const originalText = btn.innerText;
+      btn.innerText = '⏳ Đang đồng bộ...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          data: {
+            inventoryState,
+            customNames,
+            customColors,
+            laneSttRanges,
+            customStts,
+            lastUpdate: new Date().toISOString()
+          }
         };
+
+        // Upsert data (insert or update) - replace id=1
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
+          {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        showToast('✅ Đã đồng bộ dữ liệu online thành công!', 'success');
+        console.log('Sync success at:', new Date().toISOString());
+      } catch (err) {
+        showToast(`❌ Lỗi kết nối: ${err.message}`, 'error');
+        console.error('Sync error:', err);
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        isSyncing = false;
       }
-      function ensureSeatState(id) { if (!inventoryState[id]) initSeatState(id); return inventoryState[id]; }
-      function normalizeState() { Object.keys(seatIndex).forEach(id => ensureSeatState(id)); }
+    }
 
-      /* ───────── LOAD / SAVE ───────── */
-      function loadData() {
-        buildSeatModel();
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          try {
-            const data = JSON.parse(stored);
-            inventoryState = data.inventoryState || {};
-            customNames = data.customNames || {};
-            customColors = data.customColors || {};
-            laneSttRanges = data.laneSttRanges || {};
-            customStts = data.customStts || {};
-          } catch (e) { console.warn('LocalStorage parse failed', e); }
-        }
-        normalizeState();
-        saveLocal(false);
-        initColorPicker();
-        renderAll();
-      }
-      function saveLocal(refresh = true) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventoryState, customNames, customColors, laneSttRanges, customStts }));
-        if (refresh) updateCounts();
-      }
-
-      /* ───────── ONLINE SYNC - SUPABASE ───────── */
-      const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
-      const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
-      const SUPABASE_TABLE = "inventory_sync";
-      let isSyncing = false;
-
-      async function syncOnline() {
-        if (isSyncing) return;
-        isSyncing = true;
-        const btn = document.getElementById('btn-sync-online');
-        const originalText = btn.innerText;
-        btn.innerText = '⏳ Đang đồng bộ...';
-        btn.disabled = true;
-
-        try {
-          const payload = {
-            data: {
-              inventoryState,
-              customNames,
-              customColors,
-              laneSttRanges,
-              customStts,
-              lastUpdate: new Date().toISOString()
-            }
-          };
-
-          // Upsert data (insert or update) - replace id=1
-          const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
-            {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-              },
-              body: JSON.stringify(payload)
-            }
-          );
-
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-          showToast('✅ Đã đồng bộ dữ liệu online thành công!', 'success');
-          console.log('Sync success at:', new Date().toISOString());
-        } catch (err) {
-          showToast(`❌ Lỗi kết nối: ${err.message}`, 'error');
-          console.error('Sync error:', err);
-        } finally {
-          btn.innerText = originalText;
-          btn.disabled = false;
-          isSyncing = false;
-        }
-      }
-
-      async function loadOnline() {
-        try {
-          const response = await fetch(
-            `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-              }
-            }
-          );
-
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const results = await response.json();
-
-          if (results && results.length > 0) {
-            const serverData = results[0].data;
-            if (serverData && Object.keys(serverData.inventoryState || {}).length > 0) {
-              // Only load if server has actual data (not empty)
-              inventoryState = serverData.inventoryState || {};
-              customNames = serverData.customNames || {};
-              customColors = serverData.customColors || {};
-              laneSttRanges = serverData.laneSttRanges || {};
-              customStts = serverData.customStts || {};
-              normalizeState();
-              saveLocal(false);
-              renderAll();
-              showToast('✅ Đã tải dữ liệu từ server!', 'success');
-              console.log('Load success at:', serverData.lastUpdate);
-            } else {
-              console.log('Server data is empty, keeping local data');
-              showToast('ℹ️ Server chưa có dữ liệu, sử dụng dữ liệu local', 'info');
+    async function loadOnline() {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
             }
           }
-        } catch (err) {
-          console.error('Load online error:', err);
-          showToast('⚠️ Không thể tải dữ liệu từ server, sử dụng dữ liệu local', 'error');
-        }
-      }
+        );
 
-      /* ───────── ITEM CHECKLIST ─────────
-         Agent: Màn 20", Thùng CPU, Chuột, Phím, Tai nghe (KHÔNG có Màn 24" / Laptop)
-         Lead : Thùng CPU, Màn 20", Màn 24", Chuột, Phím, Tai USB, Laptop + Sạc + chuột */
-      function getItemsHtml(id, state, isLead) {
-        let html = `<div class="items-list">`;
-        if (isLead) {
-          html += `
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const results = await response.json();
+
+        if (results && results.length > 0) {
+          const serverData = results[0].data;
+          if (serverData && Object.keys(serverData.inventoryState || {}).length > 0) {
+            // Only load if server has actual data (not empty)
+            inventoryState = serverData.inventoryState || {};
+            customNames = serverData.customNames || {};
+            customColors = serverData.customColors || {};
+            laneSttRanges = serverData.laneSttRanges || {};
+            customStts = serverData.customStts || {};
+            normalizeState();
+            saveLocal(false);
+            renderAll();
+            showToast('✅ Đã tải dữ liệu từ server!', 'success');
+            console.log('Load success at:', serverData.lastUpdate);
+          } else {
+            console.log('Server data is empty, keeping local data');
+            showToast('ℹ️ Server chưa có dữ liệu, sử dụng dữ liệu local', 'info');
+          }
+        }
+      } catch (err) {
+        console.error('Load online error:', err);
+        showToast('⚠️ Không thể tải dữ liệu từ server, sử dụng dữ liệu local', 'error');
+      }
+    }
+
+    /* ───────── ITEM CHECKLIST ─────────
+       Agent: Màn 20", Thùng CPU, Chuột, Phím, Tai nghe (KHÔNG có Màn 24" / Laptop)
+       Lead : Thùng CPU, Màn 20", Màn 24", Chuột, Phím, Tai USB, Laptop + Sạc + chuột */
+    function getItemsHtml(id, state, isLead) {
+      let html = `<div class="items-list">`;
+      if (isLead) {
+        html += `
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','thung',this.checked)" ${state.thung ? 'checked' : ''}><span class="item-lbl">Thùng CPU</span>
     <input type="number" class="qty-input" value="${state.thung_qty || 1}" onchange="updateQty('${id}','thung_qty',this.value)"></label>
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','man20',this.checked)" ${state.man20 ? 'checked' : ''}><span class="item-lbl">Màn 20"</span></label>
@@ -1095,8 +1107,8 @@
     <input type="number" class="qty-input" value="${state.tai_qty || 1}" onchange="updateQty('${id}','tai_qty',this.value)"></label>
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','laptop',this.checked)" ${state.laptop ? 'checked' : ''}><span class="item-lbl">Laptop+Sạc+chuột</span></label>
   `;
-        } else {
-          html += `
+      } else {
+        html += `
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','man20',this.checked)" ${state.man20 ? 'checked' : ''}><span class="item-lbl">Màn 20"</span></label>
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','thung',this.checked)" ${state.thung ? 'checked' : ''}><span class="item-lbl">Thùng CPU</span>
     <input type="number" class="qty-input" value="${state.thung_qty || 1}" onchange="updateQty('${id}','thung_qty',this.value)"></label>
@@ -1107,208 +1119,208 @@
    <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','tai',this.checked)" ${state.tai ? 'checked' : ''}><span class="item-lbl">Tai nghe</span>
     <input type="number" class="qty-input" value="${state.tai_qty || 1}" onchange="updateQty('${id}','tai_qty',this.value)"></label>
   `;
-        }
-        html += `</div>`;
-        return html;
       }
-      function updateItem(id, f, v) { ensureSeatState(id)[f] = v; saveLocal(); }
-      function updateQty(id, f, v) { let val = parseInt(v); if (isNaN(val) || val < 1) val = 1; ensureSeatState(id)[f] = val; saveLocal(); }
+      html += `</div>`;
+      return html;
+    }
+    function updateItem(id, f, v) { ensureSeatState(id)[f] = v; saveLocal(); }
+    function updateQty(id, f, v) { let val = parseInt(v); if (isNaN(val) || val < 1) val = 1; ensureSeatState(id)[f] = val; saveLocal(); }
 
-      function startRename(id) {
-        const wrap = document.getElementById(`name-wrap-${id}`);
-        if (!wrap) return;
-        const current = customNames[id] || seatIndex[id].name;
-        wrap.outerHTML = `<input type="text" id="rename-input-${id}" class="rename-input" value="${current}"
+    function startRename(id) {
+      const wrap = document.getElementById(`name-wrap-${id}`);
+      if (!wrap) return;
+      const current = customNames[id] || seatIndex[id].name;
+      wrap.outerHTML = `<input type="text" id="rename-input-${id}" class="rename-input" value="${current}"
    onblur="confirmRename('${id}')" onkeydown="if(event.key==='Enter') this.blur();">`;
-        const inp = document.getElementById(`rename-input-${id}`);
-        if (inp) { inp.focus(); inp.select(); }
-      }
-      function confirmRename(id) {
-        const inp = document.getElementById(`rename-input-${id}`);
-        if (!inp) return;
-        const val = inp.value.trim();
-        if (val) customNames[id] = val;
-        saveLocal(false);
-        renderAll();
-      }
-      function markFull(id) {
-        const info = seatIndex[id];
-        const s = ensureSeatState(id);
-        s.thung = true; s.thung_qty = 1; s.man20 = true; s.chuot = true; s.chuot_qty = 1;
-        s.phim = true; s.phim_qty = 1; s.tai = true; s.tai_qty = 1;
-        if (info && info.kind === 'lead') { s.man24 = true; s.laptop = true; }
-        saveLocal(); renderAll();
-      }
-      function resetSeat(id) { initSeatState(id); saveLocal(); renderAll(); }
+      const inp = document.getElementById(`rename-input-${id}`);
+      if (inp) { inp.focus(); inp.select(); }
+    }
+    function confirmRename(id) {
+      const inp = document.getElementById(`rename-input-${id}`);
+      if (!inp) return;
+      const val = inp.value.trim();
+      if (val) customNames[id] = val;
+      saveLocal(false);
+      renderAll();
+    }
+    function markFull(id) {
+      const info = seatIndex[id];
+      const s = ensureSeatState(id);
+      s.thung = true; s.thung_qty = 1; s.man20 = true; s.chuot = true; s.chuot_qty = 1;
+      s.phim = true; s.phim_qty = 1; s.tai = true; s.tai_qty = 1;
+      if (info && info.kind === 'lead') { s.man24 = true; s.laptop = true; }
+      saveLocal(); renderAll();
+    }
+    function resetSeat(id) { initSeatState(id); saveLocal(); renderAll(); }
 
-      /* ───────── STT / TIÊU ĐỀ DÃY ───────── */
-      function getLaneKey(floor, lIdx) { return `${floor}__${lIdx}`; }
+    /* ───────── STT / TIÊU ĐỀ DÃY ───────── */
+    function getLaneKey(floor, lIdx) { return `${floor}__${lIdx}`; }
 
-      function getLaneStart(floor, lIdx, lane) {
-        const key = getLaneKey(floor, lIdx);
-        return Number.isInteger(laneSttRanges[key]?.start) ? laneSttRanges[key].start : lane.startStt;
-      }
+    function getLaneStart(floor, lIdx, lane) {
+      const key = getLaneKey(floor, lIdx);
+      return Number.isInteger(laneSttRanges[key]?.start) ? laneSttRanges[key].start : lane.startStt;
+    }
 
-      function getLaneEnd(floor, lIdx, lane) {
-        const key = getLaneKey(floor, lIdx);
-        return Number.isInteger(laneSttRanges[key]?.end)
-          ? laneSttRanges[key].end
-          : getLaneStart(floor, lIdx, lane) + lane.agents.length - 1;
-      }
+    function getLaneEnd(floor, lIdx, lane) {
+      const key = getLaneKey(floor, lIdx);
+      return Number.isInteger(laneSttRanges[key]?.end)
+        ? laneSttRanges[key].end
+        : getLaneStart(floor, lIdx, lane) + lane.agents.length - 1;
+    }
 
-      function getSeatStt(floor, lIdx, lane, i) {
-        const id = agentId(floor, lIdx, lane.startStt + i);
-        return customStts[id] != null ? customStts[id] : getLaneStart(floor, lIdx, lane) + i;
-      }
+    function getSeatStt(floor, lIdx, lane, i) {
+      const id = agentId(floor, lIdx, lane.startStt + i);
+      return customStts[id] != null ? customStts[id] : getLaneStart(floor, lIdx, lane) + i;
+    }
 
-      function startEditLaneStt(floor, lIdx) {
-        const key = getLaneKey(floor, lIdx);
-        const lane = floorsData[floor][lIdx];
-        const start = getLaneStart(floor, lIdx, lane);
-        const end = getLaneEnd(floor, lIdx, lane);
-        const el = document.getElementById(`lane-stt-${lIdx}-${btoa(unescape(encodeURIComponent(floor))).replace(/[^a-zA-Z0-9]/g, '')}`);
-        if (!el) return;
-        el.innerHTML = `<input class="lane-stt-input" type="number" value="${start}" min="0"
+    function startEditLaneStt(floor, lIdx) {
+      const key = getLaneKey(floor, lIdx);
+      const lane = floorsData[floor][lIdx];
+      const start = getLaneStart(floor, lIdx, lane);
+      const end = getLaneEnd(floor, lIdx, lane);
+      const el = document.getElementById(`lane-stt-${lIdx}-${btoa(unescape(encodeURIComponent(floor))).replace(/[^a-zA-Z0-9]/g, '')}`);
+      if (!el) return;
+      el.innerHTML = `<input class="lane-stt-input" type="number" value="${start}" min="0"
       onchange="confirmLaneStt('${encodeURIComponent(floor)}',${lIdx},this.value)"
       onkeydown="if(event.key==='Enter') this.blur()"> <span>–</span>
       <input class="lane-stt-input" type="number" value="${end}" min="0"
       onchange="confirmLaneSttEnd('${encodeURIComponent(floor)}',${lIdx},this.value)"
       onkeydown="if(event.key==='Enter') this.blur()">`;
-        el.querySelector('input')?.focus();
-      }
+      el.querySelector('input')?.focus();
+    }
 
-      function confirmLaneStt(floorEncoded, lIdx, value) {
-        const floor = decodeURIComponent(floorEncoded);
-        const lane = floorsData[floor][lIdx];
-        let start = parseInt(value);
-        if (isNaN(start) || start < 0) start = 1;
-        const end = start + lane.agents.length - 1;
-        laneSttRanges[getLaneKey(floor, lIdx)] = { start, end };
-        // Khi đổi đầu dãy, các ô chưa được chỉnh riêng sẽ chạy theo dãy mới
-        lane.agents.forEach((_, i) => {
-          const id = agentId(floor, lIdx, lane.startStt + i);
-          if (customStts[id] == null) customStts[id] = start + i;
-        });
-        saveLocal(false); renderAll();
-      }
+    function confirmLaneStt(floorEncoded, lIdx, value) {
+      const floor = decodeURIComponent(floorEncoded);
+      const lane = floorsData[floor][lIdx];
+      let start = parseInt(value);
+      if (isNaN(start) || start < 0) start = 1;
+      const end = start + lane.agents.length - 1;
+      laneSttRanges[getLaneKey(floor, lIdx)] = { start, end };
+      // Khi đổi đầu dãy, các ô chưa được chỉnh riêng sẽ chạy theo dãy mới
+      lane.agents.forEach((_, i) => {
+        const id = agentId(floor, lIdx, lane.startStt + i);
+        if (customStts[id] == null) customStts[id] = start + i;
+      });
+      saveLocal(false); renderAll();
+    }
 
-      function confirmLaneSttEnd(floorEncoded, lIdx, value) {
-        const floor = decodeURIComponent(floorEncoded);
-        const lane = floorsData[floor][lIdx];
-        let end = parseInt(value);
-        if (isNaN(end) || end < 0) end = getLaneStart(floor, lIdx, lane) + lane.agents.length - 1;
-        const start = end - lane.agents.length + 1;
-        laneSttRanges[getLaneKey(floor, lIdx)] = { start, end };
-        lane.agents.forEach((_, i) => {
-          const id = agentId(floor, lIdx, lane.startStt + i);
-          if (customStts[id] == null) customStts[id] = start + i;
-        });
-        saveLocal(false); renderAll();
-      }
+    function confirmLaneSttEnd(floorEncoded, lIdx, value) {
+      const floor = decodeURIComponent(floorEncoded);
+      const lane = floorsData[floor][lIdx];
+      let end = parseInt(value);
+      if (isNaN(end) || end < 0) end = getLaneStart(floor, lIdx, lane) + lane.agents.length - 1;
+      const start = end - lane.agents.length + 1;
+      laneSttRanges[getLaneKey(floor, lIdx)] = { start, end };
+      lane.agents.forEach((_, i) => {
+        const id = agentId(floor, lIdx, lane.startStt + i);
+        if (customStts[id] == null) customStts[id] = start + i;
+      });
+      saveLocal(false); renderAll();
+    }
 
-      function startEditSeatStt(id) {
-        const el = document.getElementById(`stt-wrap-${id}`);
-        if (!el) return;
-        const current = customStts[id] ?? seatIndex[id].stt;
-        el.innerHTML = `<input class="seat-stt-input" type="number" min="0" value="${current}"
+    function startEditSeatStt(id) {
+      const el = document.getElementById(`stt-wrap-${id}`);
+      if (!el) return;
+      const current = customStts[id] ?? seatIndex[id].stt;
+      el.innerHTML = `<input class="seat-stt-input" type="number" min="0" value="${current}"
     onblur="confirmSeatStt('${id}',this.value)"
     onkeydown="if(event.key==='Enter') this.blur(); if(event.key==='Escape') renderAll();">`;
-        const input = el.querySelector('input');
-        if (input) { input.focus(); input.select(); }
-      }
+      const input = el.querySelector('input');
+      if (input) { input.focus(); input.select(); }
+    }
 
-      function confirmSeatStt(id, value) {
-        const n = parseInt(value);
-        if (!isNaN(n) && n >= 0) customStts[id] = n;
-        saveLocal(false); renderAll();
-      }
+    function confirmSeatStt(id, value) {
+      const n = parseInt(value);
+      if (!isNaN(n) && n >= 0) customStts[id] = n;
+      saveLocal(false); renderAll();
+    }
 
-      /* ───────── COLOR PICKER ───────── */
-      const teamColors = [
-        { name: 'User', cls: 'fill-pink' },
-        { name: 'Social', cls: 'fill-orange' },
-        { name: 'Merchant', cls: 'fill-cyan' },
-        { name: 'NightShift', cls: 'fill-yellow' },
-        { name: 'SPT / PT', cls: 'fill-purple' },
-        { name: 'Trống', cls: 'fill-grey' },
-        { name: 'Lead', cls: 'fill-lead' },
-        { name: 'Green', cls: 'fill-green' },
-        { name: 'Red', cls: 'fill-red' }
-      ];
+    /* ───────── COLOR PICKER ───────── */
+    const teamColors = [
+      { name: 'User', cls: 'fill-pink' },
+      { name: 'Social', cls: 'fill-orange' },
+      { name: 'Merchant', cls: 'fill-cyan' },
+      { name: 'NightShift', cls: 'fill-yellow' },
+      { name: 'SPT / PT', cls: 'fill-purple' },
+      { name: 'Trống', cls: 'fill-grey' },
+      { name: 'Lead', cls: 'fill-lead' },
+      { name: 'Green', cls: 'fill-green' },
+      { name: 'Red', cls: 'fill-red' }
+    ];
 
-      let currentEditingId = null;
-      function initColorPicker() {
-        const grid = document.getElementById('color-grid');
-        if (!grid) return;
-        grid.innerHTML = teamColors.map(tc =>
-          `<div class="color-option ${tc.cls}" data-color="${tc.cls}" onclick="selectColor('${tc.cls}')" title="${tc.name}">${tc.name}</div>`
-        ).join('');
-      }
-      function openColorModal(id) {
-        currentEditingId = id;
-        const modal = document.getElementById('color-modal');
-        if (!modal) return;
-        const current = customColors[id] || colorFor(customNames[id] || seatIndex[id].name);
-        document.querySelectorAll('.color-option').forEach(opt => {
-          opt.classList.toggle('active', opt.getAttribute('data-color') === current);
-        });
-        modal.classList.add('show');
-      }
-      function closeColorModal() {
-        document.getElementById('color-modal').classList.remove('show');
-        currentEditingId = null;
-      }
-      function selectColor(colorClass) {
-        if (!currentEditingId) return;
-        customColors[currentEditingId] = colorClass;
-        saveLocal(false); renderAll();
-        closeColorModal();
-      }
+    let currentEditingId = null;
+    function initColorPicker() {
+      const grid = document.getElementById('color-grid');
+      if (!grid) return;
+      grid.innerHTML = teamColors.map(tc =>
+        `<div class="color-option ${tc.cls}" data-color="${tc.cls}" onclick="selectColor('${tc.cls}')" title="${tc.name}">${tc.name}</div>`
+      ).join('');
+    }
+    function openColorModal(id) {
+      currentEditingId = id;
+      const modal = document.getElementById('color-modal');
+      if (!modal) return;
+      const current = customColors[id] || colorFor(customNames[id] || seatIndex[id].name);
+      document.querySelectorAll('.color-option').forEach(opt => {
+        opt.classList.toggle('active', opt.getAttribute('data-color') === current);
+      });
+      modal.classList.add('show');
+    }
+    function closeColorModal() {
+      document.getElementById('color-modal').classList.remove('show');
+      currentEditingId = null;
+    }
+    function selectColor(colorClass) {
+      if (!currentEditingId) return;
+      customColors[currentEditingId] = colorClass;
+      saveLocal(false); renderAll();
+      closeColorModal();
+    }
 
-      /* ───────── ADD / REMOVE CABIN ───────── */
-      function addAgent(floor, lIdx) {
-        if (!floorsData[floor] || !floorsData[floor][lIdx]) return;
-        const lane = floorsData[floor][lIdx];
-        lane.agents.push('Trống');
-        buildSeatModel(); normalizeState(); saveLocal(false); renderAll();
-        showToast('➕ Đã thêm 1 cabin mới!', 'success');
-      }
-      function removeAgent(floor, lIdx, agentIdx) {
-        if (!floorsData[floor] || !floorsData[floor][lIdx]) return;
-        const lane = floorsData[floor][lIdx];
-        if (agentIdx < 0 || agentIdx >= lane.agents.length) return;
-        lane.agents.splice(agentIdx, 1);
-        buildSeatModel(); normalizeState(); saveLocal(false); renderAll();
-        showToast('➖ Đã xoá 1 cabin!', 'success');
-      }
-      function moveAgentUp(floor, lIdx, agentIdx) {
-        if (!floorsData[floor] || !floorsData[floor][lIdx] || agentIdx <= 0) return;
-        const lane = floorsData[floor][lIdx];
-        [lane.agents[agentIdx - 1], lane.agents[agentIdx]] = [lane.agents[agentIdx], lane.agents[agentIdx - 1]];
-        buildSeatModel(); saveLocal(false); renderAll();
-        showToast('⬆️ Đã di chuyển cabin lên!', 'success');
-      }
-      function moveAgentDown(floor, lIdx, agentIdx) {
-        if (!floorsData[floor] || !floorsData[floor][lIdx] || agentIdx >= floorsData[floor][lIdx].agents.length - 1) return;
-        const lane = floorsData[floor][lIdx];
-        [lane.agents[agentIdx + 1], lane.agents[agentIdx]] = [lane.agents[agentIdx], lane.agents[agentIdx + 1]];
-        buildSeatModel(); saveLocal(false); renderAll();
-        showToast('⬇️ Đã di chuyển cabin xuống!', 'success');
-      }
+    /* ───────── ADD / REMOVE CABIN ───────── */
+    function addAgent(floor, lIdx) {
+      if (!floorsData[floor] || !floorsData[floor][lIdx]) return;
+      const lane = floorsData[floor][lIdx];
+      lane.agents.push('Trống');
+      buildSeatModel(); normalizeState(); saveLocal(false); renderAll();
+      showToast('➕ Đã thêm 1 cabin mới!', 'success');
+    }
+    function removeAgent(floor, lIdx, agentIdx) {
+      if (!floorsData[floor] || !floorsData[floor][lIdx]) return;
+      const lane = floorsData[floor][lIdx];
+      if (agentIdx < 0 || agentIdx >= lane.agents.length) return;
+      lane.agents.splice(agentIdx, 1);
+      buildSeatModel(); normalizeState(); saveLocal(false); renderAll();
+      showToast('➖ Đã xoá 1 cabin!', 'success');
+    }
+    function moveAgentUp(floor, lIdx, agentIdx) {
+      if (!floorsData[floor] || !floorsData[floor][lIdx] || agentIdx <= 0) return;
+      const lane = floorsData[floor][lIdx];
+      [lane.agents[agentIdx - 1], lane.agents[agentIdx]] = [lane.agents[agentIdx], lane.agents[agentIdx - 1]];
+      buildSeatModel(); saveLocal(false); renderAll();
+      showToast('⬆️ Đã di chuyển cabin lên!', 'success');
+    }
+    function moveAgentDown(floor, lIdx, agentIdx) {
+      if (!floorsData[floor] || !floorsData[floor][lIdx] || agentIdx >= floorsData[floor][lIdx].agents.length - 1) return;
+      const lane = floorsData[floor][lIdx];
+      [lane.agents[agentIdx + 1], lane.agents[agentIdx]] = [lane.agents[agentIdx], lane.agents[agentIdx + 1]];
+      buildSeatModel(); saveLocal(false); renderAll();
+      showToast('⬇️ Đã di chuyển cabin xuống!', 'success');
+    }
 
-      function renderAll() {
-        const root = document.getElementById('floors-root');
-        let html = '';
-        Object.keys(floorsData).forEach(floor => {
-          const totalSeats = floorsData[floor].reduce((a, t) => a + t.agents.length + 1, 0);
-          html += `<div class="floor-block">
+    function renderAll() {
+      const root = document.getElementById('floors-root');
+      let html = '';
+      Object.keys(floorsData).forEach(floor => {
+        const totalSeats = floorsData[floor].reduce((a, t) => a + t.agents.length + 1, 0);
+        html += `<div class="floor-block">
    <div class="floor-title"><h2>🏢 ${floor}</h2><span class="count-badge">${totalSeats} chỗ</span></div>`;
-          floorsData[floor].forEach((lane, lIdx) => {
-            const lid = leadId(floor, lIdx);
-            const leadDisplay = customNames[lid] || lane.leadName;
-            const leadState = ensureSeatState(lid);
+        floorsData[floor].forEach((lane, lIdx) => {
+          const lid = leadId(floor, lIdx);
+          const leadDisplay = customNames[lid] || lane.leadName;
+          const leadState = ensureSeatState(lid);
 
-            html += `<div class="lane-row">
+          html += `<div class="lane-row">
     <div class="lane-lead-wrap">
      <div class="lane-lead-label">Lead</div>
      <div class="seat-box ${getColorClass(lid, leadDisplay)} lead-box" data-id="${lid}" data-name="${leadDisplay.toLowerCase()}" data-stt="lead">
@@ -1333,14 +1345,14 @@
      <div class="lane-agents-label"><span id="lane-stt-${lIdx}-${btoa(unescape(encodeURIComponent(floor))).replace(/[^a-zA-Z0-9]/g, '')}" class="lane-stt-title" onclick="startEditLaneStt('${floor}',${lIdx})" title="Nhấn để sửa khoảng STT">Agent (STT ${getLaneStart(floor, lIdx, lane)}–${getLaneEnd(floor, lIdx, lane)}) <button class="btn-mini" style="background:var(--green);color:#fff;padding:2px 6px;font-size:10px;margin-left:6px" onclick="addAgent('${floor}',${lIdx})">+</button></span></div>
      <div class="seat-strip">`;
 
-            lane.agents.forEach((name, i) => {
-              const stt = lane.startStt + i;
-              const id = agentId(floor, lIdx, stt);
-              const displayName = customNames[id] || name;
-              const isEmpty = displayName.toUpperCase().includes('TRỐNG');
-              const cls = getColorClass(id, displayName);
-              const state = ensureSeatState(id);
-              html += `<div class="seat-box ${cls} ${isEmpty ? 'empty-seat' : ''}" data-id="${id}" data-name="${displayName.toLowerCase()}" data-stt="${getSeatStt(floor, lIdx, lane, i)}">
+          lane.agents.forEach((name, i) => {
+            const stt = lane.startStt + i;
+            const id = agentId(floor, lIdx, stt);
+            const displayName = customNames[id] || name;
+            const isEmpty = displayName.toUpperCase().includes('TRỐNG');
+            const cls = getColorClass(id, displayName);
+            const state = ensureSeatState(id);
+            html += `<div class="seat-box ${cls} ${isEmpty ? 'empty-seat' : ''}" data-id="${id}" data-name="${displayName.toLowerCase()}" data-stt="${getSeatStt(floor, lIdx, lane, i)}">
       <div id="stt-wrap-${id}" class="seat-stt" onclick="startEditSeatStt('${id}')" title="Nhấn để sửa STT">STT ${getSeatStt(floor, lIdx, lane, i)}</div>
       <div class="seat-header">
        <div id="name-wrap-${id}" class="seat-name" onclick="startRename('${id}')" title="Nhấn để sửa tên">${displayName}</div>
@@ -1353,124 +1365,147 @@
       </div>
       ${getItemsHtml(id, state, false)}
      </div>`;
-            });
-            html += `</div></div></div>`;
           });
-          html += `</div>`;
+          html += `</div></div></div>`;
         });
-        root.innerHTML = html;
-        updateCounts();
-      }
+        html += `</div>`;
+      });
+      root.innerHTML = html;
+      updateCounts();
+    }
 
-      function updateCounts() {
-        let thung = 0, man20 = 0, man24 = 0, chuot = 0, phim = 0, tai = 0, laptop = 0, seats = 0;
-        Object.keys(seatIndex).forEach(id => {
-          seats++;
-          const s = inventoryState[id]; if (!s) return;
-          if (s.thung) thung += (s.thung_qty || 1);
-          if (s.man20) man20 += 1;
-          if (s.man24) man24 += 1;
-          if (s.chuot) chuot += (s.chuot_qty || 1);
-          if (s.phim) phim += (s.phim_qty || 1);
-          if (s.tai) tai += (s.tai_qty || 1);
-          if (s.laptop) laptop += 1;
-        });
-        document.getElementById('count-thung').innerText = thung;
-        document.getElementById('count-man20').innerText = man20;
-        document.getElementById('count-man24').innerText = man24;
-        document.getElementById('count-chuot').innerText = chuot;
-        document.getElementById('count-phim').innerText = phim;
-        document.getElementById('count-tai').innerText = tai;
-        document.getElementById('count-laptop').innerText = laptop;
-        document.getElementById('count-seats').innerText = seats;
-      }
+    function updateCounts() {
+      let thung = 0, man20 = 0, man24 = 0, chuot = 0, phim = 0, tai = 0, laptop = 0, seats = 0;
+      Object.keys(seatIndex).forEach(id => {
+        seats++;
+        const s = inventoryState[id]; if (!s) return;
+        if (s.thung) thung += (s.thung_qty || 1);
+        if (s.man20) man20 += 1;
+        if (s.man24) man24 += 1;
+        if (s.chuot) chuot += (s.chuot_qty || 1);
+        if (s.phim) phim += (s.phim_qty || 1);
+        if (s.tai) tai += (s.tai_qty || 1);
+        if (s.laptop) laptop += 1;
+      });
+      document.getElementById('count-thung').innerText = thung;
+      document.getElementById('count-man20').innerText = man20;
+      document.getElementById('count-man24').innerText = man24;
+      document.getElementById('count-chuot').innerText = chuot;
+      document.getElementById('count-phim').innerText = phim;
+      document.getElementById('count-tai').innerText = tai;
+      document.getElementById('count-laptop').innerText = laptop;
+      document.getElementById('count-seats').innerText = seats;
+    }
 
-      /* ───────── SEARCH ───────── */
-      function searchEmployee() {
-        const val = document.getElementById('search-input').value.toLowerCase().trim();
-        document.querySelectorAll('.seat-box').forEach(box => {
-          const name = box.getAttribute('data-name') || '';
-          const stt = String(box.getAttribute('data-stt') || '');
-          const match = !val || name.includes(val) || stt.includes(val);
-          box.style.display = match ? '' : 'none';
-        });
-      }
+    /* ───────── SEARCH ───────── */
+    function searchEmployee() {
+      const val = document.getElementById('search-input').value.toLowerCase().trim();
+      document.querySelectorAll('.seat-box').forEach(box => {
+        const name = box.getAttribute('data-name') || '';
+        const stt = String(box.getAttribute('data-stt') || '');
+        const match = !val || name.includes(val) || stt.includes(val);
+        box.style.display = match ? '' : 'none';
+      });
+    }
 
-      /* ───────── RESET / EXPORT / IMPORT ───────── */
-      function resetAllInventory() {
-        if (confirm('BẠN CÓ CHẮC MUỐN RESET TOÀN BỘ DỮ LIỆU KIỂM KÊ?')) {
-          Object.keys(seatIndex).forEach(id => initSeatState(id));
-          saveLocal(); renderAll();
-          showToast('🗑️ Đã làm sạch toàn bộ dữ liệu kiểm kê.', 'success');
-        }
+    /* ───────── RESET / EXPORT / IMPORT ───────── */
+    function restoreOriginalData() {
+      if (confirm('🔄 Khôi phục dữ liệu gốc? Tất cả chỉnh sửa sẽ bị mất!')) {
+        // Clear all state
+        inventoryState = {};
+        customNames = {};
+        customColors = {};
+        laneSttRanges = {};
+        customStts = {};
+
+        // Rebuild model from floorsData
+        buildSeatModel();
+        normalizeState();
+
+        // Clear localStorage
+        localStorage.removeItem(STORAGE_KEY);
+
+        // Re-render
+        saveLocal(false);
+        renderAll();
+        showToast('✅ Đã khôi phục dữ liệu gốc! Các dãy A, B, C, D đã được hiển thị lại.', 'success');
       }
-      function exportJSON() {
-        const data = { inventoryState, customNames, customColors, laneSttRanges, customStts };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'inventory_2sang_' + new Date().toISOString().slice(0, 10) + '.json';
-        a.click();
-        showToast('💾 Đã xuất JSON thành công!', 'success');
+    }
+
+    function resetAllInventory() {
+      if (confirm('BẠN CÓ CHẮC MUỐN RESET TOÀN BỘ DỮ LIỆU KIỂM KÊ?')) {
+        Object.keys(seatIndex).forEach(id => initSeatState(id));
+        saveLocal(); renderAll();
+        showToast('🗑️ Đã làm sạch toàn bộ dữ liệu kiểm kê.', 'success');
       }
-      function exportExcel() {
-        let html = '<table border="1"><tr><th>Sàn</th><th>Dãy</th><th>Vai trò</th><th>STT</th><th>Tên</th><th>Thùng</th><th>Màn 20"</th><th>Màn 24"</th><th>Chuột</th><th>Phím</th><th>Tai nghe</th><th>Laptop bộ</th></tr>';
-        Object.keys(floorsData).forEach(floor => {
-          floorsData[floor].forEach((lane, lIdx) => {
-            const lid = leadId(floor, lIdx);
-            const leadName = customNames[lid] || lane.leadName;
-            const ls = inventoryState[lid] || {};
-            html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Lead</td><td>-</td><td>${leadName}</td>
+    }
+    function exportJSON() {
+      const data = { inventoryState, customNames, customColors, laneSttRanges, customStts };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory_2sang_' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      showToast('💾 Đã xuất JSON thành công!', 'success');
+    }
+    function exportExcel() {
+      let html = '<table border="1"><tr><th>Sàn</th><th>Dãy</th><th>Vai trò</th><th>STT</th><th>Tên</th><th>Thùng</th><th>Màn 20"</th><th>Màn 24"</th><th>Chuột</th><th>Phím</th><th>Tai nghe</th><th>Laptop bộ</th></tr>';
+      Object.keys(floorsData).forEach(floor => {
+        floorsData[floor].forEach((lane, lIdx) => {
+          const lid = leadId(floor, lIdx);
+          const leadName = customNames[lid] || lane.leadName;
+          const ls = inventoryState[lid] || {};
+          html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Lead</td><td>-</td><td>${leadName}</td>
     <td>${ls.thung ? (ls.thung_qty || 1) : ''}</td><td>${ls.man20 ? 1 : ''}</td><td>${ls.man24 ? 1 : ''}</td>
     <td>${ls.chuot ? (ls.chuot_qty || 1) : ''}</td><td>${ls.phim ? (ls.phim_qty || 1) : ''}</td>
     <td>${ls.tai ? (ls.tai_qty || 1) : ''}</td><td>${ls.laptop ? 1 : ''}</td></tr>`;
-            lane.agents.forEach((name, i) => {
-              const stt = lane.startStt + i;
-              const id = agentId(floor, lIdx, stt);
-              const displayName = customNames[id] || name;
-              const s = inventoryState[id] || {};
-              html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Agent</td><td>${stt}</td><td>${displayName}</td>
+          lane.agents.forEach((name, i) => {
+            const stt = lane.startStt + i;
+            const id = agentId(floor, lIdx, stt);
+            const displayName = customNames[id] || name;
+            const s = inventoryState[id] || {};
+            html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Agent</td><td>${stt}</td><td>${displayName}</td>
      <td>${s.thung ? (s.thung_qty || 1) : ''}</td><td>${s.man20 ? 1 : ''}</td><td></td>
      <td>${s.chuot ? (s.chuot_qty || 1) : ''}</td><td>${s.phim ? (s.phim_qty || 1) : ''}</td>
      <td>${s.tai ? (s.tai_qty || 1) : ''}</td><td></td></tr>`;
-            });
           });
         });
-        html += '</table>';
-        const blob = new Blob([html], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'inventory_2sang_' + new Date().toISOString().slice(0, 10) + '.xls';
-        a.click();
-        showToast('📊 Đã xuất Excel thành công!', 'success');
-      }
-      function importJSON(event) {
-        const file = event.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-          try {
-            const j = JSON.parse(e.target.result);
-            if (j.inventoryState) inventoryState = j.inventoryState;
-            if (j.customNames) customNames = j.customNames;
-            if (j.customColors) customColors = j.customColors;
-            normalizeState(); saveLocal(); renderAll();
-            showToast('📂 Đã nhập JSON thành công!', 'success');
-          } catch (err) { showToast('❌ File JSON không hợp lệ!', 'error'); console.error(err); }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-      }
+      });
+      html += '</table>';
+      const blob = new Blob([html], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory_2sang_' + new Date().toISOString().slice(0, 10) + '.xls';
+      a.click();
+      showToast('📊 Đã xuất Excel thành công!', 'success');
+    }
+    function importJSON(event) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const j = JSON.parse(e.target.result);
+          if (j.inventoryState) inventoryState = j.inventoryState;
+          if (j.customNames) customNames = j.customNames;
+          if (j.customColors) customColors = j.customColors;
+          normalizeState(); saveLocal(); renderAll();
+          showToast('📂 Đã nhập JSON thành công!', 'success');
+        } catch (err) { showToast('❌ File JSON không hợp lệ!', 'error'); console.error(err); }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
 
-      let toastTimeout;
-      function showToast(msg, type) {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.className = 'show type-' + type;
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => { t.className = 'hide type-' + type; }, 3000);
-      }
+    let toastTimeout;
+    function showToast(msg, type) {
+      const t = document.getElementById('toast');
+      t.innerText = msg; t.className = 'show type-' + type;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { t.className = 'hide type-' + type; }, 3000);
+    }
 
-      loadData();
-    </script>
+    loadData();
+  </script>
 </body>
 
 </html>
