@@ -979,7 +979,9 @@
       }
 
       /* ───────── ONLINE SYNC ───────── */
-      const SYNC_ENDPOINT = '/api/sync';
+      const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co"; // Thay xxxx
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impvc3ZlZ2N0dXdueGZwanlubHhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTkxMjYsImV4cCI6MjEwMjE5NTEyNn0._ffVNK_xnZmE9XWP9t2yI1uAEbYDkPDm0SV9zCVpCAg"; // Paste key của bạn
+      const SYNC_ENDPOINT = "supabase"; // Đánh dấu dùng 
       let isSyncing = false;
 
       async function syncOnline() {

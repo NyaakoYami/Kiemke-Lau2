@@ -52,18 +52,11 @@
 **6. Tạo Table:**
 Vào `SQL Editor` → Paste đoạn này → Run:
 
-```sql
+````sql
 CREATE TABLE inventory_sync (
   id BIGSERIAL PRIMARY KEY,
   data JSONB NOT NULL,
-  updated_at TIMESTAMP DEFAULT NOW() ON UPDATE CURRENT_TIMESTAMP
-);
-
-INSERT INTO inventory_sync (data) VALUES ('{}');
-CREATE INDEX idx_updated ON inventory_sync(updated_at DESC);
-```
-
-**7. Lấy API Key:**
+  updated_at TIMESTAMP DEFAULT NOW()
 
 - Vào `Settings` → `API`
 - Copy: `Project URL` (ví dụ: https://xxxx.supabase.co)
@@ -75,7 +68,7 @@ Tìm dòng này (gần cuối file):
 
 ```javascript
 const SYNC_ENDPOINT = "/api/sync";
-```
+````
 
 Thay bằng:
 
