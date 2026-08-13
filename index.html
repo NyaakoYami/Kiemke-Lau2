@@ -88,7 +88,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primar
 .fill-grey{background-color:#f1f3f5;border-color:#dee2e6}
 .fill-lead{background-color:#e7f5ff;border-color:#74c0fc}
 
-.seat-stt{font-size:9px;font-weight:800;color:var(--text-muted);margin-bottom:2px}
+.seat-stt{font-size:9px;font-weight:800;color:var(--text-muted);margin-bottom:2px;cursor:pointer;border-radius:3px;padding:2px 3px;display:inline-block}
+.seat-stt:hover{background:rgba(59,91,219,.10);color:var(--blue)}
+.seat-stt-input{width:55px;padding:2px 4px;font-size:9px;font-weight:800;border:1.5px solid var(--blue);border-radius:4px;outline:none}
+.lane-stt-title{cursor:pointer;border-radius:5px;padding:3px 6px;display:inline-block}
+.lane-stt-title:hover{background:var(--blue-light);color:var(--blue)}
+.lane-stt-input{width:46px;padding:3px 4px;border:1.5px solid var(--blue);border-radius:4px;font-size:11px;font-weight:800;outline:none}
 .seat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;gap:4px}
 .seat-name{font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;padding:1px 3px;line-height:1.25;flex:1}
 .seat-name:hover{background:rgba(0,0,0,.05)}
@@ -226,6 +231,9 @@ const floorsData = {
 /* ───────── STATE ───────── */
 let customNames = {};
 let inventoryState = {};
+// Cấu hình STT tùy chỉnh theo từng dãy và từng ô
+let laneSttRanges = {};   // lane key -> {start, end}
+let customStts = {};      // seat id -> STT riêng của ô
 let seatIndex = {}; // id -> {floor, laneIdx, kind:'lead'|'agent', name, stt}
 
 function laneId(floor, laneIdx){ return `${floor.replace(/\s/g,'')}_${laneIdx}`; }
@@ -269,7 +277,7 @@ function loadData(){
  renderAll();
 }
 function saveLocal(refresh=true){
- localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventoryState, customNames }));
+ localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventoryState, customNames, laneSttRanges, customStts }));
  if(refresh) updateCounts();
 }
 
@@ -338,6 +346,88 @@ function markFull(id){
 }
 function resetSeat(id){ initSeatState(id); saveLocal(); renderAll(); }
 
+/* ───────── STT / TIÊU ĐỀ DÃY ───────── */
+function getLaneKey(floor, lIdx){ return `${floor}__${lIdx}`; }
+
+function getLaneStart(floor, lIdx, lane){
+  const key = getLaneKey(floor,lIdx);
+  return Number.isInteger(laneSttRanges[key]?.start) ? laneSttRanges[key].start : lane.startStt;
+}
+
+function getLaneEnd(floor, lIdx, lane){
+  const key = getLaneKey(floor,lIdx);
+  return Number.isInteger(laneSttRanges[key]?.end)
+    ? laneSttRanges[key].end
+    : getLaneStart(floor,lIdx,lane) + lane.agents.length - 1;
+}
+
+function getSeatStt(floor, lIdx, lane, i){
+  const id = agentId(floor,lIdx,lane.startStt+i);
+  return customStts[id] != null ? customStts[id] : getLaneStart(floor,lIdx,lane) + i;
+}
+
+function startEditLaneStt(floor,lIdx){
+  const key = getLaneKey(floor,lIdx);
+  const lane = floorsData[floor][lIdx];
+  const start = getLaneStart(floor,lIdx,lane);
+  const end = getLaneEnd(floor,lIdx,lane);
+  const el = document.getElementById(`lane-stt-${lIdx}-${btoa(unescape(encodeURIComponent(floor))).replace(/[^a-zA-Z0-9]/g,'')}`);
+  if(!el) return;
+  el.innerHTML = `<input class="lane-stt-input" type="number" value="${start}" min="0"
+      onchange="confirmLaneStt('${encodeURIComponent(floor)}',${lIdx},this.value)"
+      onkeydown="if(event.key==='Enter') this.blur()"> <span>–</span>
+      <input class="lane-stt-input" type="number" value="${end}" min="0"
+      onchange="confirmLaneSttEnd('${encodeURIComponent(floor)}',${lIdx},this.value)"
+      onkeydown="if(event.key==='Enter') this.blur()">`;
+  el.querySelector('input')?.focus();
+}
+
+function confirmLaneStt(floorEncoded,lIdx,value){
+  const floor = decodeURIComponent(floorEncoded);
+  const lane = floorsData[floor][lIdx];
+  let start = parseInt(value);
+  if(isNaN(start) || start < 0) start = 1;
+  const end = start + lane.agents.length - 1;
+  laneSttRanges[getLaneKey(floor,lIdx)] = {start,end};
+  // Khi đổi đầu dãy, các ô chưa được chỉnh riêng sẽ chạy theo dãy mới
+  lane.agents.forEach((_,i)=>{
+    const id = agentId(floor,lIdx,lane.startStt+i);
+    if(customStts[id] == null) customStts[id] = start+i;
+  });
+  saveLocal(false); renderAll();
+}
+
+function confirmLaneSttEnd(floorEncoded,lIdx,value){
+  const floor = decodeURIComponent(floorEncoded);
+  const lane = floorsData[floor][lIdx];
+  let end = parseInt(value);
+  if(isNaN(end) || end < 0) end = getLaneStart(floor,lIdx,lane)+lane.agents.length-1;
+  const start = end - lane.agents.length + 1;
+  laneSttRanges[getLaneKey(floor,lIdx)] = {start,end};
+  lane.agents.forEach((_,i)=>{
+    const id = agentId(floor,lIdx,lane.startStt+i);
+    if(customStts[id] == null) customStts[id] = start+i;
+  });
+  saveLocal(false); renderAll();
+}
+
+function startEditSeatStt(id){
+  const el = document.getElementById(`stt-wrap-${id}`);
+  if(!el) return;
+  const current = customStts[id] ?? seatIndex[id].stt;
+  el.innerHTML = `<input class="seat-stt-input" type="number" min="0" value="${current}"
+    onblur="confirmSeatStt('${id}',this.value)"
+    onkeydown="if(event.key==='Enter') this.blur(); if(event.key==='Escape') renderAll();">`;
+  const input = el.querySelector('input');
+  if(input){ input.focus(); input.select(); }
+}
+
+function confirmSeatStt(id,value){
+  const n = parseInt(value);
+  if(!isNaN(n) && n >= 0) customStts[id] = n;
+  saveLocal(false); renderAll();
+}
+
 /* ───────── RENDER ───────── */
 function renderAll(){
  const root = document.getElementById('floors-root');
@@ -372,7 +462,7 @@ function renderAll(){
     </div>
 
     <div class="lane-agents-wrap">
-     <div class="lane-agents-label">Agent (STT ${lane.startStt}–${lane.startStt+lane.agents.length-1})</div>
+     <div class="lane-agents-label"><span id="lane-stt-${lIdx}-${btoa(unescape(encodeURIComponent(floor))).replace(/[^a-zA-Z0-9]/g,'')}" class="lane-stt-title" onclick="startEditLaneStt('${floor}',${lIdx})" title="Nhấn để sửa khoảng STT">Agent (STT ${getLaneStart(floor,lIdx,lane)}–${getLaneEnd(floor,lIdx,lane)})</span></div>
      <div class="seat-strip">`;
 
    lane.agents.forEach((name, i)=>{
@@ -382,8 +472,8 @@ function renderAll(){
     const isEmpty = displayName.toUpperCase().includes('TRỐNG');
     const cls = colorFor(displayName);
     const state = ensureSeatState(id);
-    html += `<div class="seat-box ${cls} ${isEmpty?'empty-seat':''}" data-id="${id}" data-name="${displayName.toLowerCase()}" data-stt="${stt}">
-      <div class="seat-stt">STT ${stt}</div>
+    html += `<div class="seat-box ${cls} ${isEmpty?'empty-seat':''}" data-id="${id}" data-name="${displayName.toLowerCase()}" data-stt="${getSeatStt(floor,lIdx,lane,i)}">
+      <div id="stt-wrap-${id}" class="seat-stt" onclick="startEditSeatStt('${id}')" title="Nhấn để sửa STT">STT ${getSeatStt(floor,lIdx,lane,i)}</div>
       <div class="seat-header">
        <div id="name-wrap-${id}" class="seat-name" onclick="startRename('${id}')" title="Nhấn để sửa tên">${displayName}</div>
       </div>
@@ -445,7 +535,7 @@ function resetAllInventory(){
  }
 }
 function exportJSON(){
- const data = { inventoryState, customNames };
+ const data = { inventoryState, customNames, laneSttRanges, customStts };
  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
  const a = document.createElement('a');
  a.href = URL.createObjectURL(blob);
