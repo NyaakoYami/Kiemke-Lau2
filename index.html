@@ -978,10 +978,10 @@
         if (refresh) updateCounts();
       }
 
-      /* ───────── ONLINE SYNC ───────── */
-      const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co"; // Thay xxxx
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impvc3ZlZ2N0dXdueGZwanlubHhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTkxMjYsImV4cCI6MjEwMjE5NTEyNn0._ffVNK_xnZmE9XWP9t2yI1uAEbYDkPDm0SV9zCVpCAg"; // Paste key của bạn
-      const SYNC_ENDPOINT = "supabase"; // Đánh dấu dùng 
+      /* ───────── ONLINE SYNC - SUPABASE ───────── */
+      const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
+      const SUPABASE_TABLE = "inventory_sync";
       let isSyncing = false;
 
       async function syncOnline() {
@@ -993,21 +993,35 @@
         btn.disabled = true;
 
         try {
-          const response = await fetch(SYNC_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inventoryState, customNames, customColors, laneSttRanges, customStts })
-          });
+          const payload = {
+            data: {
+              inventoryState,
+              customNames,
+              customColors,
+              laneSttRanges,
+              customStts,
+              lastUpdate: new Date().toISOString()
+            }
+          };
+
+          // Upsert data (insert or update) - replace id=1
+          const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
+            {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+              },
+              body: JSON.stringify(payload)
+            }
+          );
 
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const result = await response.json();
 
-          if (result.success) {
-            showToast('✅ Đã đồng bộ dữ liệu online thành công!', 'success');
-            console.log('Sync success at:', result.timestamp);
-          } else {
-            showToast('⚠️ Đồng bộ thất bại!', 'error');
-          }
+          showToast('✅ Đã đồng bộ dữ liệu online thành công!', 'success');
+          console.log('Sync success at:', new Date().toISOString());
         } catch (err) {
           showToast(`❌ Lỗi kết nối: ${err.message}`, 'error');
           console.error('Sync error:', err);
@@ -1020,24 +1034,39 @@
 
       async function loadOnline() {
         try {
-          const response = await fetch(SYNC_ENDPOINT, { method: 'GET' });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const result = await response.json();
+          const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+              }
+            }
+          );
 
-          if (result.success && result.data) {
-            const data = result.data;
-            inventoryState = data.inventoryState || {};
-            customNames = data.customNames || {};
-            customColors = data.customColors || {};
-            laneSttRanges = data.laneSttRanges || {};
-            customStts = data.customStts || {};
-            normalizeState();
-            saveLocal(false);
-            renderAll();
-            showToast('✅ Đã tải dữ liệu từ server!', 'success');
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const results = await response.json();
+
+          if (results && results.length > 0) {
+            const serverData = results[0].data;
+            if (serverData) {
+              inventoryState = serverData.inventoryState || {};
+              customNames = serverData.customNames || {};
+              customColors = serverData.customColors || {};
+              laneSttRanges = serverData.laneSttRanges || {};
+              customStts = serverData.customStts || {};
+              normalizeState();
+              saveLocal(false);
+              renderAll();
+              showToast('✅ Đã tải dữ liệu từ server!', 'success');
+              console.log('Load success at:', serverData.lastUpdate);
+            }
           }
         } catch (err) {
           console.error('Load online error:', err);
+          showToast('⚠️ Không thể tải dữ liệu từ server', 'error');
         }
       }
 
