@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.05);opacity:1}100%{transform:scale(1)}}
+@keyframes toastSlide{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastFade{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(60px)}}
+@keyframes pageReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes headerGlow{0%,100%{box-shadow:0 8px 40px rgba(59,91,219,.25)}50%{box-shadow:0 8px 40px rgba(112,72,232,.35)}}
+:root{
+ --bg:#f0f2f7;--surface:#fff;--surface-alt:#f8f9fc;--border:#e2e6ef;
+ --text-primary:#1a1d2e;--text-secondary:#6b7280;--text-muted:#9ca3af;
+ --blue:#3b5bdb;--blue-light:#eef2ff;--blue-dark:#2f4ac0;--green:#2f9e44;--green-light:#ebfbee;
+ --red:#e03131;--red-light:#fff5f5;--yellow:#f59f00;--yellow-light:#fff9db;
+ --purple:#7048e8;--shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+ --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+ --shadow-xl:0 20px 60px rgba(0,0,0,.14);--radius:10px;--radius-sm:6px;
+ --transition:.18s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;padding:20px;padding-bottom:80px;animation:pageReveal .45s cubic-bezier(.25,.46,.45,.94) both}
+.container{max-width:2000px;margin:0 auto}
+.page-header{background:linear-gradient(135deg,#1a1d2e 0%,#2d3561 55%,#3b5bdb 100%);border-radius:16px;padding:26px 34px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-xl);animation:fadeInDown .55s ease both,headerGlow 4s ease-in-out infinite}
+.page-header-left h1{color:#fff;font-size:23px;font-weight:800;letter-spacing:-.5px}
+.page-header-left p{color:rgba(255,255,255,.65);font-size:13px;margin-top:4px}
+.header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.header-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;color:var(--text-secondary)}
+.legend-swatch{width:12px;height:12px;border-radius:3px}
+
+.detail-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:10px 13px;box-shadow:var(--shadow-sm);border:1px solid var(--border);display:flex;flex-direction:column;gap:6px;animation:fadeInUp .45s ease both}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted)}
+.stat-value{font-size:20px;font-weight:800;color:var(--text-primary);line-height:1}
+
+.controls-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;box-shadow:var(--shadow-sm)}
+.search-wrap{position:relative}
+.search-wrap input{padding:9px 12px 9px 36px;width:280px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none;background:var(--surface-alt)}
+.search-wrap input:focus{border-color:var(--blue)}
+.search-wrap .icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:13px;font-family:'Inter',sans-serif;transition:transform var(--transition),box-shadow var(--transition)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-warning{background:var(--yellow);color:#fff}
+.btn-danger{background:#fff;color:var(--red);border:1px solid #fca5a5}
+
+.floor-block{margin-bottom:26px}
+.floor-title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.floor-title h2{font-size:18px;font-weight:800;color:var(--text-primary)}
+.floor-title span.count-badge{background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px}
+
+/* ─── DÃY (LANE) ─── */
+.lane-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:var(--shadow-sm);display:flex;align-items:stretch;gap:0;overflow-x:auto}
+.lane-lead-wrap{display:flex;flex-direction:column;flex-shrink:0;margin-right:10px}
+.lane-lead-label{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px}
+
+/* Vách ngăn giữa Lead và Agent, mang nhãn A/B/C/D */
+.lane-divider{flex-shrink:0;width:34px;display:flex;align-items:center;justify-content:center;margin:0 10px;position:relative}
+.lane-divider-bar{width:3px;height:100%;background:repeating-linear-gradient(180deg,#c8d0db 0 6px,transparent 6px 12px);border-radius:2px}
+.lane-divider-label{position:absolute;top:50%;transform:translateY(-50%);background:#1a1d2e;color:#fff;font-weight:800;font-size:14px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md)}
+
+.lane-agents-wrap{display:flex;flex-direction:column;flex:1;min-width:0}
+.lane-agents-label{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px}
+.seat-strip{display:flex;flex-wrap:wrap;gap:8px}
+
+.seat-box{width:120px;border-radius:var(--radius-sm);padding:8px 9px;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:transform var(--transition),box-shadow var(--transition);flex-shrink:0}
+.seat-box:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);z-index:2}
+.seat-box.empty-seat{opacity:.55}
+.seat-box.lead-box{width:150px}
+
+.fill-purple{background-color:#f0ebff;border-color:#c5b4f5}
+.fill-pink{background-color:#fff0f6;border-color:#fbb6ce}
+.fill-yellow{background-color:var(--yellow-light);border-color:#ffe066}
+.fill-green{background-color:var(--green-light);border-color:#b2f2bb}
+.fill-red{background-color:var(--red-light);border-color:#fca5a5}
+.fill-orange{background-color:#fff4e6;border-color:#ffd8a8}
+.fill-cyan{background-color:#e3fafc;border-color:#99e9f2}
+.fill-grey{background-color:#f1f3f5;border-color:#dee2e6}
+.fill-lead{background-color:#e7f5ff;border-color:#74c0fc}
+
+.seat-stt{font-size:9px;font-weight:800;color:var(--text-muted);margin-bottom:2px}
+.seat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;gap:4px}
+.seat-name{font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;padding:1px 3px;line-height:1.25;flex:1}
+.seat-name:hover{background:rgba(0,0,0,.05)}
+.rename-input{font-weight:700;font-size:11px;border:1.5px solid var(--blue);border-radius:4px;padding:2px 4px;outline:none;width:100%;animation:popIn .2s ease}
+
+.btn-action-group{display:flex;gap:3px;margin-bottom:5px}
+.btn-mini{padding:2px 5px;font-size:8.5px;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-family:'Inter',sans-serif}
+.btn-mini-success{background:var(--green);color:#fff}
+.btn-mini-danger{background:#e5e7eb;color:#6b7280}
+.btn-mini-danger:hover{background:#fca5a5;color:var(--red)}
+
+/* Chữ nhỏ checklist xếp thành 1 cột gọn bên dưới tên */
+.items-list{display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.7);padding:5px 6px;border-radius:5px}
+.item-check{display:flex;align-items:center;gap:4px;font-size:9px;font-weight:600;color:var(--text-secondary);padding:1px 2px;border-radius:3px}
+.item-check input[type=checkbox]{cursor:pointer;width:10px;height:10px;accent-color:var(--green);flex-shrink:0}
+.item-check .item-lbl{flex:1}
+.qty-input{width:24px;padding:0 2px;font-size:9px;border:1px solid var(--border);border-radius:3px;text-align:center;outline:none;font-family:'Inter',sans-serif}
+
+#toast{position:fixed;bottom:28px;right:28px;background:#1a1d2e;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:var(--shadow-xl);z-index:9999;display:none;border-left:4px solid var(--blue)}
+#toast.show{display:block;animation:toastSlide .3s ease}
+#toast.hide{animation:toastFade .3s ease forwards}
+</style>
+</head>
+<body>
+<div class="container">
+ <div class="page-header">
+  <div class="page-header-left">
+   <h1>📋 Kiểm Kê Tài Sản - Sàn Lầu 2 &amp; Lầu 3</h1>
+   <p>Mỗi dãy A / B / C — Lead bên trái, vách ngăn ở giữa, Agent bên phải</p>
+  </div>
+  <div class="header-right">
+   <span class="header-badge" id="date-badge"></span>
+  </div>
+ </div>
+
+ <div class="legend" id="legend"></div>
+
+ <div class="detail-grid">
+  <div class="stat-card"><div class="stat-label">📦 Thùng máy tính</div><div class="stat-value" id="count-thung">0</div></div>
+  <div class="stat-card"><div class="stat-label">🖥️ Màn hình 20"</div><div class="stat-value" id="count-man20">0</div></div>
+  <div class="stat-card"><div class="stat-label">🖥️✨ Màn hình 24"</div><div class="stat-value" id="count-man24">0</div></div>
+  <div class="stat-card"><div class="stat-label">🖱️ Tổng chuột</div><div class="stat-value" id="count-chuot">0</div></div>
+  <div class="stat-card"><div class="stat-label">⌨️ Tổng phím</div><div class="stat-value" id="count-phim">0</div></div>
+  <div class="stat-card"><div class="stat-label">🎧 Tai nghe USB</div><div class="stat-value" id="count-tai">0</div></div>
+  <div class="stat-card"><div class="stat-label">💻 Laptop bộ (Lead)</div><div class="stat-value" id="count-laptop">0</div></div>
+  <div class="stat-card"><div class="stat-label">👥 Tổng số chỗ</div><div class="stat-value" id="count-seats">0</div></div>
+ </div>
+
+ <div class="controls-panel">
+  <div class="search-wrap">
+   <span class="icon">🔍</span>
+   <input type="text" id="search-input" placeholder="Tìm kiếm tên Agent hoặc STT..." oninput="searchEmployee()">
+  </div>
+  <div class="btn-group">
+   <button class="btn btn-primary" onclick="exportJSON()">💾 Xuất JSON</button>
+   <button class="btn btn-success" onclick="exportExcel()">📊 Xuất Excel</button>
+   <button class="btn btn-warning" onclick="document.getElementById('file-json').click()">📂 Nhập JSON</button>
+   <input type="file" id="file-json" accept=".json" style="display:none" onchange="importJSON(event)">
+   <button class="btn btn-danger" onclick="resetAllInventory()">🗑️ Reset toàn bộ</button>
+  </div>
+ </div>
+
+ <div id="floors-root"></div>
+</div>
+<div id="toast"></div>
+<script>
+document.getElementById('date-badge').innerText = new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const STORAGE_KEY = 'inventoryData2Floors_v2';
+
+/* ───────── LEGEND ───────── */
+const legendDef = [
+ {label:'Lead', cls:'fill-lead'},
+ {label:'User', cls:'fill-pink'},
+ {label:'Social', cls:'fill-orange'},
+ {label:'Merchant', cls:'fill-cyan'},
+ {label:'NightShift / Senior', cls:'fill-yellow'},
+ {label:'SPT / PT', cls:'fill-purple'},
+ {label:'Trống', cls:'fill-grey'}
+];
+document.getElementById('legend').innerHTML = legendDef.map(l =>
+ `<div class="legend-item"><span class="legend-swatch ${l.cls}"></span>${l.label}</div>`).join('');
+
+function colorFor(name){
+ const n = (name||'').toUpperCase();
+ if (n.includes('TRỐNG') || n === '') return 'fill-grey';
+ if (n.includes('SENIOR') || n.includes('TRAINER')) return 'fill-yellow';
+ if (n.startsWith('PT') || n.includes('PT -') || n.includes('PT-')) return 'fill-purple';
+ if (n.includes('NB ')) return 'fill-orange';
+ if (n === 'FULL') return 'fill-cyan';
+ return 'fill-pink';
+}
+
+/* ───────── DỮ LIỆU: mỗi lầu gồm các DÃY (A,B,C...), mỗi dãy có 1 Lead (trái) + nhiều Agent (phải) ─────────
+   Ghi chú: tên/STT được đọc best-effort từ ảnh sơ đồ gốc — có thể bấm vào tên bất kỳ để sửa trực tiếp trong app. */
+const floorsData = {
+ "Sàn Lầu 3": [
+  { lane:"A", leadName:"Thu Hiền - TL", startStt:18, agents:[
+    "Trần Chi","Nguyễn Trâm","Trần Trinh","Nguyễn Thiên","Đoàn Giao","NB Content","NB Content",
+    "Lê Trinh","Nguyễn Tỷ","Cao Nhung","Huỳnh Ngà","Huỳnh Châu","Lê Châu",
+    "Trống","Trống","Trống","Trống","Trống","Trống","Trống"
+  ]},
+  { lane:"B", leadName:"Vy - DA", startStt:38, agents:[
+    "Nguyễn Khanh","Lý - Senior","Nguyễn Hậu","Võ Hiền","Phan Loan","Võ Lan","NB Content","NB Content",
+    "Tuyến - Senior","Nguyễn Thúy","Huỳnh Giang","Trần Tâm","Nguyễn Phương","Ngô Hằng","Lai Nghi","NB Tele",
+    "Trống","Trống","Trống","Trống"
+  ]},
+  { lane:"C", leadName:"Anh Thư - SUP", startStt:58, agents:[
+    "Full","Full","PT - Phúc Hậu","Trung Hiếu","Quốc Khánh","Trống",
+    "Nhung Huỳnh","Yến Ly","Gia Hưng","Bích Quỳnh","PT - Phương Thy",
+    "PT - Khánh Vy","PT - Liên Anh","PT - Thu Hồng","PT - Loan","PT - Cắt Tường","PT - Khoa"
+  ]}
+ ],
+ "Sàn Lầu 2": [
+  { lane:"A", leadName:"Oanh - Senior TL", startStt:1, agents:[
+    "Trống","Thiên Kim Senior","Kim Ái Senior","Huy Hoàng","Diệu Trinh","PT Thảo Phương",
+    "PT Sỹ Danh","PT Trúc Linh","PT Thu Hiền","Full","PT Thành Đạt",
+    "Full","PT - Gia Hân","PT - Sang","PT - Trang","PT - Huy","PT - Gia Bội","PT - Hào"
+  ]},
+  { lane:"B", leadName:"Chinh - TL", startStt:19, agents:[
+    "Thiên Ngân","Tú Trinh","Trung Nghị","Minh Tâm","Minh Thư","Duy Khánh","Hồng Ân","Nhật Lam",
+    "Khánh Ly","Hoàng Gấm NB","Hoàng Khải","Phi Phụng","Bảo Anh Senior","Ngọc Tú","Uyên","Thanh",
+    "PT Bảo My","Full","Cảnh","Trúc",
+    "Thiếu 1 màn hình + tai nghe","Thiếu 1 màn hình + tai nghe","Full","Trực","Kim Ngân","Đan Vy",
+    "Nguyễn Senior","Thắng","Full","Nguyễn Kim Ngân","Thị Thủy","Ý Lan","Hải Yến","Ái Linh",
+    "Hân Senior","Minh Thái","Quang Hậu","Công Hiệp","Full","Minh Hoàng"
+  ]},
+  { lane:"C", leadName:"Phương - TL QA", startStt:59, agents:[
+    "Thiếu 1 màn hình + tai nghe","Hoàng Khôi Do","Full","Minh Đạo","Văn Anh",
+    "Kim Chi","Thảo Vi","Thừa Nghiên","Mai Xuân","Thị Quỳnh","Nguyễn Nhi",
+    "Thị Hồng","Chấn Điền Do","Nhật Khánh","Tú Quyền Do","Tân Tài","Tuấn Anh","Toàn"
+  ]}
+ ]
+};
+
+/* ───────── STATE ───────── */
+let customNames = {};
+let inventoryState = {};
+let seatIndex = {}; // id -> {floor, laneIdx, kind:'lead'|'agent', name, stt}
+
+function laneId(floor, laneIdx){ return `${floor.replace(/\s/g,'')}_${laneIdx}`; }
+function leadId(floor, laneIdx){ return `${laneId(floor,laneIdx)}_LEAD`; }
+function agentId(floor, laneIdx, stt){ return `${laneId(floor,laneIdx)}_A${stt}`; }
+
+function buildSeatModel(){
+ seatIndex = {};
+ Object.keys(floorsData).forEach(floor=>{
+  floorsData[floor].forEach((lane, lIdx)=>{
+   const lid = leadId(floor, lIdx);
+   seatIndex[lid] = { floor, laneIdx:lIdx, kind:'lead', name: lane.leadName, laneLetter: lane.lane };
+   lane.agents.forEach((name, i)=>{
+    const stt = lane.startStt + i;
+    const id = agentId(floor, lIdx, stt);
+    seatIndex[id] = { floor, laneIdx:lIdx, kind:'agent', name, stt, laneLetter: lane.lane };
+   });
+  });
+ });
+}
+function initSeatState(id){
+ inventoryState[id] = { thung:false, thung_qty:1, man20:false, man24:false, chuot:false, chuot_qty:1,
+   phim:false, phim_qty:1, tai:false, tai_qty:1, laptop:false };
+}
+function ensureSeatState(id){ if(!inventoryState[id]) initSeatState(id); return inventoryState[id]; }
+function normalizeState(){ Object.keys(seatIndex).forEach(id=>ensureSeatState(id)); }
+
+/* ───────── LOAD / SAVE ───────── */
+function loadData(){
+ buildSeatModel();
+ const stored = localStorage.getItem(STORAGE_KEY);
+ if(stored){
+  try{
+   const data = JSON.parse(stored);
+   inventoryState = data.inventoryState || {};
+   customNames = data.customNames || {};
+  }catch(e){ console.warn('LocalStorage parse failed', e); }
+ }
+ normalizeState();
+ saveLocal(false);
+ renderAll();
+}
+function saveLocal(refresh=true){
+ localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventoryState, customNames }));
+ if(refresh) updateCounts();
+}
+
+/* ───────── ITEM CHECKLIST ─────────
+   Agent: Màn 20", Thùng CPU, Chuột, Phím, Tai nghe (KHÔNG có Màn 24" / Laptop)
+   Lead : Thùng CPU, Màn 20", Màn 24", Chuột, Phím, Tai USB, Laptop + Sạc + chuột */
+function getItemsHtml(id, state, isLead){
+ let html = `<div class="items-list">`;
+ if(isLead){
+  html += `
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','thung',this.checked)" ${state.thung?'checked':''}><span class="item-lbl">Thùng CPU</span>
+    <input type="number" class="qty-input" value="${state.thung_qty||1}" onchange="updateQty('${id}','thung_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','man20',this.checked)" ${state.man20?'checked':''}><span class="item-lbl">Màn 20"</span></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','man24',this.checked)" ${state.man24?'checked':''}><span class="item-lbl">Màn 24"</span></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','chuot',this.checked)" ${state.chuot?'checked':''}><span class="item-lbl">Chuột</span>
+    <input type="number" class="qty-input" value="${state.chuot_qty||1}" onchange="updateQty('${id}','chuot_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','phim',this.checked)" ${state.phim?'checked':''}><span class="item-lbl">Phím</span>
+    <input type="number" class="qty-input" value="${state.phim_qty||1}" onchange="updateQty('${id}','phim_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','tai',this.checked)" ${state.tai?'checked':''}><span class="item-lbl">Tai USB</span>
+    <input type="number" class="qty-input" value="${state.tai_qty||1}" onchange="updateQty('${id}','tai_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','laptop',this.checked)" ${state.laptop?'checked':''}><span class="item-lbl">Laptop+Sạc+chuột</span></label>
+  `;
+ } else {
+  html += `
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','man20',this.checked)" ${state.man20?'checked':''}><span class="item-lbl">Màn 20"</span></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','thung',this.checked)" ${state.thung?'checked':''}><span class="item-lbl">Thùng CPU</span>
+    <input type="number" class="qty-input" value="${state.thung_qty||1}" onchange="updateQty('${id}','thung_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','chuot',this.checked)" ${state.chuot?'checked':''}><span class="item-lbl">Chuột</span>
+    <input type="number" class="qty-input" value="${state.chuot_qty||1}" onchange="updateQty('${id}','chuot_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','phim',this.checked)" ${state.phim?'checked':''}><span class="item-lbl">Phím</span>
+    <input type="number" class="qty-input" value="${state.phim_qty||1}" onchange="updateQty('${id}','phim_qty',this.value)"></label>
+   <label class="item-check"><input type="checkbox" onchange="updateItem('${id}','tai',this.checked)" ${state.tai?'checked':''}><span class="item-lbl">Tai nghe</span>
+    <input type="number" class="qty-input" value="${state.tai_qty||1}" onchange="updateQty('${id}','tai_qty',this.value)"></label>
+  `;
+ }
+ html += `</div>`;
+ return html;
+}
+function updateItem(id,f,v){ ensureSeatState(id)[f]=v; saveLocal(); }
+function updateQty(id,f,v){ let val=parseInt(v); if(isNaN(val)||val<1) val=1; ensureSeatState(id)[f]=val; saveLocal(); }
+
+function startRename(id){
+ const wrap = document.getElementById(`name-wrap-${id}`);
+ if(!wrap) return;
+ const current = customNames[id] || seatIndex[id].name;
+ wrap.outerHTML = `<input type="text" id="rename-input-${id}" class="rename-input" value="${current}"
+   onblur="confirmRename('${id}')" onkeydown="if(event.key==='Enter') this.blur();">`;
+ const inp = document.getElementById(`rename-input-${id}`);
+ if(inp){ inp.focus(); inp.select(); }
+}
+function confirmRename(id){
+ const inp = document.getElementById(`rename-input-${id}`);
+ if(!inp) return;
+ const val = inp.value.trim();
+ if(val) customNames[id] = val;
+ saveLocal(false);
+ renderAll();
+}
+function markFull(id){
+ const info = seatIndex[id];
+ const s = ensureSeatState(id);
+ s.thung=true; s.thung_qty=1; s.man20=true; s.chuot=true; s.chuot_qty=1;
+ s.phim=true; s.phim_qty=1; s.tai=true; s.tai_qty=1;
+ if(info && info.kind==='lead'){ s.man24=true; s.laptop=true; }
+ saveLocal(); renderAll();
+}
+function resetSeat(id){ initSeatState(id); saveLocal(); renderAll(); }
+
+/* ───────── RENDER ───────── */
+function renderAll(){
+ const root = document.getElementById('floors-root');
+ let html = '';
+ Object.keys(floorsData).forEach(floor=>{
+  const totalSeats = floorsData[floor].reduce((a,t)=>a+t.agents.length+1,0);
+  html += `<div class="floor-block">
+   <div class="floor-title"><h2>🏢 ${floor}</h2><span class="count-badge">${totalSeats} chỗ</span></div>`;
+  floorsData[floor].forEach((lane, lIdx)=>{
+   const lid = leadId(floor, lIdx);
+   const leadDisplay = customNames[lid] || lane.leadName;
+   const leadState = ensureSeatState(lid);
+
+   html += `<div class="lane-row">
+    <div class="lane-lead-wrap">
+     <div class="lane-lead-label">Lead</div>
+     <div class="seat-box fill-lead lead-box" data-id="${lid}" data-name="${leadDisplay.toLowerCase()}" data-stt="lead">
+      <div class="seat-header">
+       <div id="name-wrap-${lid}" class="seat-name" onclick="startRename('${lid}')" title="Nhấn để sửa tên">${leadDisplay}</div>
+      </div>
+      <div class="btn-action-group">
+       <button class="btn-mini btn-mini-success" onclick="markFull('${lid}')">Đủ bộ</button>
+       <button class="btn-mini btn-mini-danger" onclick="resetSeat('${lid}')">Reset</button>
+      </div>
+      ${getItemsHtml(lid, leadState, true)}
+     </div>
+    </div>
+
+    <div class="lane-divider">
+     <div class="lane-divider-bar"></div>
+     <div class="lane-divider-label">${lane.lane}</div>
+    </div>
+
+    <div class="lane-agents-wrap">
+     <div class="lane-agents-label">Agent (STT ${lane.startStt}–${lane.startStt+lane.agents.length-1})</div>
+     <div class="seat-strip">`;
+
+   lane.agents.forEach((name, i)=>{
+    const stt = lane.startStt + i;
+    const id = agentId(floor, lIdx, stt);
+    const displayName = customNames[id] || name;
+    const isEmpty = displayName.toUpperCase().includes('TRỐNG');
+    const cls = colorFor(displayName);
+    const state = ensureSeatState(id);
+    html += `<div class="seat-box ${cls} ${isEmpty?'empty-seat':''}" data-id="${id}" data-name="${displayName.toLowerCase()}" data-stt="${stt}">
+      <div class="seat-stt">STT ${stt}</div>
+      <div class="seat-header">
+       <div id="name-wrap-${id}" class="seat-name" onclick="startRename('${id}')" title="Nhấn để sửa tên">${displayName}</div>
+      </div>
+      <div class="btn-action-group">
+       <button class="btn-mini btn-mini-success" onclick="markFull('${id}')">Đủ bộ</button>
+       <button class="btn-mini btn-mini-danger" onclick="resetSeat('${id}')">Reset</button>
+      </div>
+      ${getItemsHtml(id, state, false)}
+     </div>`;
+   });
+   html += `</div></div></div>`;
+  });
+  html += `</div>`;
+ });
+ root.innerHTML = html;
+ updateCounts();
+}
+
+function updateCounts(){
+ let thung=0,man20=0,man24=0,chuot=0,phim=0,tai=0,laptop=0,seats=0;
+ Object.keys(seatIndex).forEach(id=>{
+  seats++;
+  const s = inventoryState[id]; if(!s) return;
+  if(s.thung) thung += (s.thung_qty||1);
+  if(s.man20) man20 += 1;
+  if(s.man24) man24 += 1;
+  if(s.chuot) chuot += (s.chuot_qty||1);
+  if(s.phim) phim += (s.phim_qty||1);
+  if(s.tai) tai += (s.tai_qty||1);
+  if(s.laptop) laptop += 1;
+ });
+ document.getElementById('count-thung').innerText = thung;
+ document.getElementById('count-man20').innerText = man20;
+ document.getElementById('count-man24').innerText = man24;
+ document.getElementById('count-chuot').innerText = chuot;
+ document.getElementById('count-phim').innerText = phim;
+ document.getElementById('count-tai').innerText = tai;
+ document.getElementById('count-laptop').innerText = laptop;
+ document.getElementById('count-seats').innerText = seats;
+}
+
+/* ───────── SEARCH ───────── */
+function searchEmployee(){
+ const val = document.getElementById('search-input').value.toLowerCase().trim();
+ document.querySelectorAll('.seat-box').forEach(box=>{
+  const name = box.getAttribute('data-name')||'';
+  const stt = String(box.getAttribute('data-stt')||'');
+  const match = !val || name.includes(val) || stt.includes(val);
+  box.style.display = match ? '' : 'none';
+ });
+}
+
+/* ───────── RESET / EXPORT / IMPORT ───────── */
+function resetAllInventory(){
+ if(confirm('BẠN CÓ CHẮC MUỐN RESET TOÀN BỘ DỮ LIỆU KIỂM KÊ?')){
+  Object.keys(seatIndex).forEach(id=>initSeatState(id));
+  saveLocal(); renderAll();
+  showToast('🗑️ Đã làm sạch toàn bộ dữ liệu kiểm kê.','success');
+ }
+}
+function exportJSON(){
+ const data = { inventoryState, customNames };
+ const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a = document.createElement('a');
+ a.href = URL.createObjectURL(blob);
+ a.download = 'inventory_2sang_' + new Date().toISOString().slice(0,10) + '.json';
+ a.click();
+ showToast('💾 Đã xuất JSON thành công!','success');
+}
+function exportExcel(){
+ let html = '<table border="1"><tr><th>Sàn</th><th>Dãy</th><th>Vai trò</th><th>STT</th><th>Tên</th><th>Thùng</th><th>Màn 20"</th><th>Màn 24"</th><th>Chuột</th><th>Phím</th><th>Tai nghe</th><th>Laptop bộ</th></tr>';
+ Object.keys(floorsData).forEach(floor=>{
+  floorsData[floor].forEach((lane,lIdx)=>{
+   const lid = leadId(floor,lIdx);
+   const leadName = customNames[lid] || lane.leadName;
+   const ls = inventoryState[lid] || {};
+   html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Lead</td><td>-</td><td>${leadName}</td>
+    <td>${ls.thung?(ls.thung_qty||1):''}</td><td>${ls.man20?1:''}</td><td>${ls.man24?1:''}</td>
+    <td>${ls.chuot?(ls.chuot_qty||1):''}</td><td>${ls.phim?(ls.phim_qty||1):''}</td>
+    <td>${ls.tai?(ls.tai_qty||1):''}</td><td>${ls.laptop?1:''}</td></tr>`;
+   lane.agents.forEach((name,i)=>{
+    const stt = lane.startStt + i;
+    const id = agentId(floor, lIdx, stt);
+    const displayName = customNames[id] || name;
+    const s = inventoryState[id] || {};
+    html += `<tr><td>${floor}</td><td>${lane.lane}</td><td>Agent</td><td>${stt}</td><td>${displayName}</td>
+     <td>${s.thung?(s.thung_qty||1):''}</td><td>${s.man20?1:''}</td><td></td>
+     <td>${s.chuot?(s.chuot_qty||1):''}</td><td>${s.phim?(s.phim_qty||1):''}</td>
+     <td>${s.tai?(s.tai_qty||1):''}</td><td></td></tr>`;
+   });
+  });
+ });
+ html += '</table>';
+ const blob = new Blob([html],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+ const a = document.createElement('a');
+ a.href = URL.createObjectURL(blob);
+ a.download = 'inventory_2sang_' + new Date().toISOString().slice(0,10) + '.xls';
+ a.click();
+ showToast('📊 Đã xuất Excel thành công!','success');
+}
+function importJSON(event){
+ const file = event.target.files[0]; if(!file) return;
+ const reader = new FileReader();
+ reader.onload = e=>{
+  try{
+   const j = JSON.parse(e.target.result);
+   if(j.inventoryState) inventoryState = j.inventoryState;
+   if(j.customNames) customNames = j.customNames;
+   normalizeState(); saveLocal(); renderAll();
+   showToast('📂 Đã nhập JSON thành công!','success');
+  }catch(err){ showToast('❌ File JSON không hợp lệ!','error'); console.error(err); }
+ };
+ reader.readAsText(file);
+ event.target.value = '';
+}
+
+let toastTimeout;
+function showToast(msg,type){
+ const t = document.getElementById('toast');
+ t.innerText = msg; t.className = 'show type-'+type;
+ clearTimeout(toastTimeout);
+ toastTimeout = setTimeout(()=>{ t.className='hide type-'+type; },3000);
+}
+
+loadData();
+</script>
+</body>
+</html>
