@@ -966,6 +966,8 @@
             inventoryState = data.inventoryState || {};
             customNames = data.customNames || {};
             customColors = data.customColors || {};
+            laneSttRanges = data.laneSttRanges || {};
+            customStts = data.customStts || {};
           } catch (e) { console.warn('LocalStorage parse failed', e); }
         }
         normalizeState();
@@ -1051,7 +1053,8 @@
 
           if (results && results.length > 0) {
             const serverData = results[0].data;
-            if (serverData) {
+            if (serverData && Object.keys(serverData.inventoryState || {}).length > 0) {
+              // Only load if server has actual data (not empty)
               inventoryState = serverData.inventoryState || {};
               customNames = serverData.customNames || {};
               customColors = serverData.customColors || {};
@@ -1062,11 +1065,14 @@
               renderAll();
               showToast('✅ Đã tải dữ liệu từ server!', 'success');
               console.log('Load success at:', serverData.lastUpdate);
+            } else {
+              console.log('Server data is empty, keeping local data');
+              showToast('ℹ️ Server chưa có dữ liệu, sử dụng dữ liệu local', 'info');
             }
           }
         } catch (err) {
           console.error('Load online error:', err);
-          showToast('⚠️ Không thể tải dữ liệu từ server', 'error');
+          showToast('⚠️ Không thể tải dữ liệu từ server, sử dụng dữ liệu local', 'error');
         }
       }
 
