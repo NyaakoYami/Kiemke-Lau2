@@ -1,21 +1,22 @@
--- Kiemke-Lau2 / Supabase schema
--- Run this once in Supabase SQL Editor.
+-- Kiemke-Lau2 / Supabase Cloud Sync
+-- Run this script once in Supabase SQL Editor.
+-- The browser never receives the secret key. /api/sync uses the server-side key.
 
 create table if not exists public.inventory_sync (
   id bigint primary key,
   data jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now(),
-  updated_by text
+  updated_at timestamptz not null default now()
 );
 
--- Keep RLS enabled. The application writes through /api/sync using the
--- server-only Supabase secret key, so no public INSERT/UPDATE policy is needed.
 alter table public.inventory_sync enable row level security;
 
--- Seed the single application row if it does not exist yet.
-insert into public.inventory_sync (id, data)
-values (1, '{}'::jsonb)
+-- The Vercel Serverless Function uses the server-side Supabase secret key,
+-- so no public INSERT/UPDATE/SELECT policy is required.
+-- Do NOT create permissive anon policies for this table.
+
+insert into public.inventory_sync (id, data, updated_at)
+values (1, '{}'::jsonb, now())
 on conflict (id) do nothing;
 
-comment on table public.inventory_sync is
-  'Single JSON document used by Kiemke-Lau2 cloud synchronization.';
+create index if not exists inventory_sync_updated_at_idx
+  on public.inventory_sync (updated_at desc);

@@ -1,20 +1,10 @@
-import http from "node:http";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { loadEnv } from "vite";
-import syncHandler from "./api/sync.js";
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const PORT = Number(process.env.PORT || 3000);
 const DIST_DIR = path.resolve(__dirname, "dist");
 const API_PATH = "/api/sync";
-
-const env = loadEnv("production", process.cwd(), "");
-for (const key of ["SUPABASE_URL", "SUPABASE_SECRET_KEY"]) {
-  if (!process.env[key] && env[key]) process.env[key] = env[key];
-}
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -31,6 +21,15 @@ const MIME_TYPES = {
   ".ttf": "font/ttf",
   ".eot": "application/vnd.ms-fontobject",
 };
+
+function sendJson(res, statusCode, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+  });
+  res.end(body);
+}
 
 function safeFilePath(urlPath) {
   let decoded;
@@ -56,14 +55,55 @@ function serveFile(req, res, filePath) {
     }
 
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, {
+    const headers = {
       "Content-Type": MIME_TYPES[ext] || "application/octet-stream",
-      "Cache-Control":
-        ext === ".html" ? "no-cache" : "public, max-age=31536000, immutable",
-    });
+      "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=31536000, immutable",
+    };
 
+    res.writeHead(200, headers);
     if (req.method === "HEAD") return res.end();
     fs.createReadStream(filePath).pipe(res);
+  });
+}
+
+function handleSync(req, res) {
+  if (req.method === "GET") {
+    return sendJson(res, 200, {
+      success: true,
+      data: {
+        inventoryState: {},
+        customNames: {},
+        customColors: {},
+        laneSttRanges: {},
+        customStts: {},
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "GET, POST, OPTIONS");
+    return sendJson(res, 405, { success: false, error: "Method not allowed" });
+  }
+
+  let body = "";
+  req.setEncoding("utf8");
+  req.on("data", (chunk) => {
+    body += chunk;
+    if (body.length > 5 * 1024 * 1024) req.destroy();
+  });
+  req.on("end", () => {
+    try {
+      const data = JSON.parse(body || "{}");
+      console.log("Sync received:", Object.keys(data));
+      sendJson(res, 200, {
+        success: true,
+        message: "Data saved (local test only)",
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      sendJson(res, 400, { success: false, error: "Invalid JSON" });
+    }
   });
 }
 
@@ -77,18 +117,15 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
 
-  const requestPath = new URL(
-    req.url,
-    `http://${req.headers.host || "localhost"}`,
-  ).pathname;
+  const requestUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+  const requestPath = requestUrl.pathname;
 
-  if (requestPath === API_PATH) {
-    return syncHandler(req, res);
-  }
+  // API must be handled before the static-file fallback.
+  if (requestPath === API_PATH) return handleSync(req, res);
 
   if (req.method !== "GET" && req.method !== "HEAD") {
-    res.writeHead(405, { "Content-Type": "text/plain; charset=utf-8" });
-    return res.end("Method not allowed");
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    return res.end("Not found");
   }
 
   if (!fs.existsSync(DIST_DIR)) {
@@ -96,15 +133,16 @@ const server = http.createServer((req, res) => {
     return res.end("Build directory not found. Run npm run build first.");
   }
 
-  const filePath = safeFilePath(requestPath);
+  let filePath = safeFilePath(requestPath);
   if (!filePath) {
     res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
     return res.end("Bad request");
   }
 
+  // SPA fallback: unknown browser routes receive index.html.
   fs.stat(filePath, (err, stat) => {
     if (!err && stat.isFile()) return serveFile(req, res, filePath);
-    return serveFile(req, res, path.join(DIST_DIR, "index.html"));
+    serveFile(req, res, path.join(DIST_DIR, "index.html"));
   });
 });
 
