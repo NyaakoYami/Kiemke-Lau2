@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Checkbox } from "primereact/checkbox";
@@ -109,9 +108,30 @@ function StatusDot({ connectionStatus, syncStatus }) {
 // -------------------------------------------------------------
 // CẤU HÌNH SUPABASE & DỮ LIỆU GỐC
 // -------------------------------------------------------------
-const SUPABASE_URL = "https://josvegctuwnxfpjynlxn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_76ErkOKmFh5t1ykxRKBfIA_DDn9srEc";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SYNC_ENDPOINT = "/api/sync";
+
+async function syncRequest(options = {}) {
+  const response = await fetch(SYNC_ENDPOINT, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok || payload?.success === false) {
+    throw new Error(payload?.error || `Sync API returned HTTP ${response.status}`);
+  }
+
+  return payload;
+}
 
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
 
@@ -340,17 +360,12 @@ export default function App() {
   const loadOnline = async () => {
     setConnectionStatus("checking");
     try {
-      const { data, error } = await supabase
-        .from("inventory_sync")
-        .select("*")
-        .eq("id", 1)
-        .single();
-
-      if (error && error.code !== "PGRST116") throw error;
+      const payload = await syncRequest({ method: "GET" });
+      const data = payload?.data;
 
       setConnectionStatus("connected");
-      if (data && data.data && data.data.floors) {
-        setAppState(data.data);
+      if (data && data.floors) {
+        setAppState(data);
         setSyncStatus("synced");
         toast.current?.show({
           severity: "success",
@@ -373,12 +388,10 @@ export default function App() {
     setIsSyncing(true);
     setSyncStatus("syncing");
     try {
-      const { error } = await supabase.from("inventory_sync").upsert({
-        id: 1,
-        data: appState,
-        updated_at: new Date().toISOString(),
+      await syncRequest({
+        method: "POST",
+        body: JSON.stringify({ data: appState }),
       });
-      if (error) throw error;
 
       setConnectionStatus("connected");
       setSyncStatus("synced");
