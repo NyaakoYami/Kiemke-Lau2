@@ -1,37 +1,77 @@
-# Supabase Sync Fix
+# Supabase Integration & RLS Fix
 
-## Why the error happened
+## Architecture
 
-The browser was writing directly to `inventory_sync` with the publishable key. Because Row Level Security (RLS) is enabled and there is no matching INSERT/UPDATE policy, Supabase rejects the request with:
+The browser does **not** write directly to `inventory_sync`.
 
-`new row violates row-level security policy for table "inventory_sync"`
-
-The application now sends GET/POST requests to `/api/sync`. The serverless function uses the Supabase secret key server-side, so the secret key is never bundled into the browser.
-
-## Required Vercel Environment Variables
-
-Add these variables in Vercel Project Settings → Environment Variables:
-
-- `SUPABASE_URL` = your project URL
-- `SUPABASE_SECRET_KEY` = your Supabase secret key
-
-Do NOT put `SUPABASE_SECRET_KEY` in React/Vite source code or any `VITE_*` variable.
-
-## Table
-
-The table must exist:
-
-```sql
-create table if not exists public.inventory_sync (
-  id bigint primary key,
-  data jsonb not null,
-  updated_at timestamptz default now(),
-  updated_by text
-);
+```text
+React UI
+   ↓
+/api/sync
+   ↓
+Supabase server client (secret key)
+   ↓
+public.inventory_sync
 ```
 
-RLS can remain enabled because the server function uses the secret key.
+This keeps the Supabase secret key out of the browser bundle and avoids the
+`new row violates row-level security policy` error.
 
-## Important security action
+## 1. Create the table
 
-If a real Supabase secret key was exposed publicly, rotate it in Supabase and use the newly generated secret key in Vercel. The old secret must not be kept in source code, screenshots, chat messages, or client-side bundles.
+Run `supabase/inventory_sync.sql` in the Supabase SQL Editor.
+
+RLS remains enabled. Do **not** add an anonymous INSERT/UPDATE policy just to
+make the error disappear; that would expose the inventory write endpoint to
+public clients.
+
+## 2. Configure environment variables
+
+### Vercel / production
+
+Add:
+
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+
+Use a newly rotated secret key if the old key was exposed.
+
+### Local development
+
+Copy `.env.example` to `.env` and fill in the same two server-only values.
+
+The frontend does not require `VITE_SUPABASE_SECRET_KEY` and must never receive
+that value.
+
+## 3. Run
+
+```bash
+npm install
+npm run dev
+```
+
+The Vite development server now exposes `/api/sync` through the same handler
+used in production.
+
+For a production-style local test:
+
+```bash
+npm start
+```
+
+## 4. Verify
+
+Open the application and check the status indicator.
+
+- Green: connected/synced.
+- Blue: connected but local changes have not been saved.
+- Yellow: saving.
+- Red: API/Supabase error.
+
+Click **Lưu Cloud**, refresh the page, and confirm the saved state is loaded.
+
+## Important security note
+
+If a real `sb_secret_...` key has previously been shared, rotate/revoke it in
+Supabase and update the new value in Vercel/local `.env`. Never commit `.env`
+or place a secret key in a `VITE_*` variable.

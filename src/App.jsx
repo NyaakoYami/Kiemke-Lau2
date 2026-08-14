@@ -429,7 +429,10 @@ export default function App() {
     try {
       await syncRequest({
         method: "POST",
-        body: JSON.stringify({ data: appState }),
+        body: JSON.stringify({
+          data: appState,
+          updatedBy: "Kiemke-Lau2",
+        }),
       });
 
       setConnectionStatus("connected");

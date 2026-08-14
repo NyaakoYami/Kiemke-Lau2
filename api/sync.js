@@ -1,93 +1,162 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SECRET_KEY =
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getSupabaseClient() {
+  const url = process.env.SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase =
-  SUPABASE_URL && SUPABASE_SECRET_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      })
-    : null;
+  if (!url || !key) return null;
 
-export default async function handler(req, res) {
+  return createClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+const TABLE = "inventory_sync";
+const ROW_ID = 1;
+const MAX_BODY_BYTES = 5 * 1024 * 1024;
+
+function sendJson(res, status, payload) {
+  // Supports both Vercel's res.status().json() and Node/Vite's native ServerResponse.
+  if (typeof res.status === "function" && typeof res.json === "function") {
+    return res.status(status).json(payload);
+  }
+
+  const body = JSON.stringify(payload);
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(body);
+}
+
+function readBody(req) {
+  if (req.body !== undefined) {
+    return Promise.resolve(
+      typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body,
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.setEncoding?.("utf8");
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (Buffer.byteLength(body, "utf8") > MAX_BODY_BYTES) {
+        reject(new Error("Payload too large (maximum 5 MB)."));
+        req.destroy?.();
+      }
+    });
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(body || "{}"));
+      } catch {
+        reject(new Error("Invalid JSON body."));
+      }
+    });
+    req.on("error", reject);
+  });
+}
+
+function setCommonHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Cache-Control", "no-store");
+}
+
+export default async function handler(req, res) {
+  setCommonHeaders(res);
 
   if (req.method === "OPTIONS") {
-    return res.status(204).end();
+    if (typeof res.status === "function") return res.status(204).end();
+    res.statusCode = 204;
+    return res.end();
   }
 
+  const supabase = getSupabaseClient();
+
   if (!supabase) {
-    return res.status(500).json({
+    return sendJson(res, 500, {
       success: false,
       error:
-        "Supabase server environment variables are missing. Configure SUPABASE_URL and SUPABASE_SECRET_KEY in Vercel.",
+        "Supabase server environment variables are missing. Configure SUPABASE_URL and SUPABASE_SECRET_KEY.",
     });
   }
 
   try {
     if (req.method === "GET") {
       const { data, error } = await supabase
-        .from("inventory_sync")
-        .select("data, updated_at")
-        .eq("id", 1)
+        .from(TABLE)
+        .select("data, updated_at, updated_by")
+        .eq("id", ROW_ID)
         .maybeSingle();
 
       if (error) throw error;
 
-      return res.status(200).json({
+      return sendJson(res, 200, {
         success: true,
         data: data?.data ?? null,
         updatedAt: data?.updated_at ?? null,
+        updatedBy: data?.updated_by ?? null,
       });
     }
 
     if (req.method === "POST") {
-      const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      const body = await readBody(req);
       const inventoryData = body?.data;
 
-      if (!inventoryData || typeof inventoryData !== "object") {
-        return res.status(400).json({
+      if (
+        !inventoryData ||
+        typeof inventoryData !== "object" ||
+        Array.isArray(inventoryData)
+      ) {
+        return sendJson(res, 400, {
           success: false,
           error: "Missing or invalid data payload.",
         });
       }
 
+      const updatedBy =
+        typeof body?.updatedBy === "string" && body.updatedBy.trim()
+          ? body.updatedBy.trim().slice(0, 120)
+          : null;
+
       const { data, error } = await supabase
-        .from("inventory_sync")
+        .from(TABLE)
         .upsert(
           {
-            id: 1,
+            id: ROW_ID,
             data: inventoryData,
             updated_at: new Date().toISOString(),
+            updated_by: updatedBy,
           },
           { onConflict: "id" },
         )
-        .select("updated_at")
+        .select("updated_at, updated_by")
         .single();
 
       if (error) throw error;
 
-      return res.status(200).json({
+      return sendJson(res, 200, {
         success: true,
         message: "Data saved successfully",
         updatedAt: data.updated_at,
+        updatedBy: data.updated_by,
       });
     }
 
-    return res.status(405).json({
+    res.setHeader("Allow", "GET, POST, OPTIONS");
+    return sendJson(res, 405, {
       success: false,
       error: "Method not allowed",
     });
   } catch (error) {
     console.error("Supabase sync error:", error);
-    return res.status(500).json({
+    return sendJson(res, 500, {
       success: false,
       error: error?.message || "Supabase request failed",
+      code: error?.code || null,
+      hint: error?.hint || null,
     });
   }
 }
