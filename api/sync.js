@@ -1,22 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey =
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!supabaseUrl) {
   throw new Error("Missing SUPABASE_URL");
 }
 
-if (!supabaseKey) {
-  throw new Error("Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY");
+if (!supabaseSecretKey) {
+  throw new Error("Missing SUPABASE_SECRET_KEY");
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
+const supabase = createClient(supabaseUrl, supabaseSecretKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
-    detectSessionInUrl: false,
   },
 });
 
@@ -26,7 +24,9 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from("inventory_sync")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        });
 
       if (error) {
         console.error("Supabase GET error:", error);
@@ -39,14 +39,25 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        data,
+        data: data ?? [],
       });
     }
 
     if (req.method === "POST") {
-      const payload = req.body;
+      let payload = req.body;
 
-      if (!payload || typeof payload !== "object") {
+      if (typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid JSON body",
+          });
+        }
+      }
+
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return res.status(400).json({
           success: false,
           error: "Invalid request body",
