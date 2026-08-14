@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@supabase/supabase-js";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -294,6 +295,16 @@ export default function App() {
   const [openMenu, setOpenMenu] = useState(null);
   const closeMenu = useCallback(() => setOpenMenu(null), []);
 
+  // Portal menus live under document.body, so close them with a document-level outside-click listener.
+  useEffect(() => {
+    if (!openMenu) return undefined;
+    const handlePointerDown = (event) => {
+      if (!event.target.closest(".dropdown-portal")) closeMenu();
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [openMenu, closeMenu]);
+
   const [appState, setAppState] = useState({
     floors: JSON.parse(JSON.stringify(defaultData)),
     inventory: {},
@@ -316,6 +327,7 @@ export default function App() {
   const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
   const [editingTeamId, setEditingTeamId] = useState(null); // Team đang đổi màu
   const [showAddTeam, setShowAddTeam] = useState(false); // Hiện form thêm Team mới
+  const [showTeamSheet, setShowTeamSheet] = useState(false); // Mobile: mở Team Management dạng bottom sheet
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamColor, setNewTeamColor] = useState(COLOR_PALETTE[0]);
 
@@ -562,6 +574,35 @@ export default function App() {
     setEditingTeamId(null);
   };
 
+  // Xoá Team: các cabin đang dùng Team bị xoá sẽ chuyển về Team Trống.
+  const deleteTeam = (teamId) => {
+    const team = getTeam(appState.teams, teamId);
+    if (!team || teamId === "fill-grey") {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Không thể xoá",
+        detail: "Team Trống được giữ lại làm trạng thái mặc định cho cabin chưa phân công.",
+        life: 3000,
+      });
+      return;
+    }
+
+    updateState((st) => {
+      st.teams = st.teams.filter((t) => t.id !== teamId);
+      Object.keys(st.colors).forEach((seatId) => {
+        if (st.colors[seatId] === teamId) st.colors[seatId] = "fill-grey";
+      });
+    });
+    if (selectedTeamId === teamId) setSelectedTeamId(null);
+    if (editingTeamId === teamId) setEditingTeamId(null);
+    toast.current?.show({
+      severity: "success",
+      summary: "Đã xoá Team",
+      detail: `Team "${team.name}" đã được xoá. Các cabin liên quan đã chuyển về Trống.`,
+      life: 3000,
+    });
+  };
+
   // Đổi tên Team
   const renameTeam = (teamId, name) => {
     if (!name || !name.trim()) return;
@@ -744,12 +785,12 @@ export default function App() {
       <Toast ref={toast} />
 
       {/* CUSTOM DROPDOWN MENU - chọn Team cho 1 cabin hoặc cả dãy */}
-      {openMenu && (
+      {openMenu && createPortal(
         <div
-          className="fixed z-50 dropdown-pop-in"
+          className="fixed z-[9999] dropdown-pop-in dropdown-portal"
           style={{
-            top: Math.min(openMenu.y, window.innerHeight - 340),
-            left: Math.min(openMenu.x, window.innerWidth - 300),
+            top: Math.max(12, Math.min(openMenu.y, window.innerHeight - 360)),
+            left: Math.max(12, Math.min(openMenu.x, window.innerWidth - 312)),
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -768,7 +809,8 @@ export default function App() {
               />
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       {/* HEADER */}
@@ -824,8 +866,10 @@ export default function App() {
         ))}
       </div>
 
-      {/* BẢNG QUẢN LÝ TEAM: chọn lọc, thêm Team mới, đổi màu Team - hiển thị nổi bật */}
-      <div className="team-manager-panel mb-4">
+      <div className="workspace-layout">
+        {/* BẢNG QUẢN LÝ TEAM: sidebar desktop / bottom sheet mobile */}
+        <aside className={`team-manager-panel mb-4 ${showTeamSheet ? "team-sheet-open" : ""}`}>
+          <div className="team-sheet-mobile-handle" aria-hidden="true" />
         <div className="flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
           <div className="text-sm font-extrabold text-800 uppercase tracking-wider flex align-items-center gap-2">
             <span>👥</span> Quản lý Team
@@ -842,7 +886,7 @@ export default function App() {
                 text
                 severity="secondary"
                 className="py-1 px-2 text-xs font-bold"
-                onClick={() => setSelectedTeamId(null)}
+                onClick={() => { setSelectedTeamId(null); setShowTeamSheet(false); }}
               />
             )}
             <Button
@@ -860,7 +904,7 @@ export default function App() {
           {/* Nút Tất cả */}
           <div
             className={`team-bar-item ${selectedTeamId === null ? "active" : ""}`}
-            onClick={() => setSelectedTeamId(null)}
+            onClick={() => { setSelectedTeamId(null); setShowTeamSheet(false); }}
           >
             <span>Tất cả</span>
             <span className="team-count">{teamCounts.total}</span>
@@ -874,7 +918,7 @@ export default function App() {
               <div
                 key={team.id}
                 className={`team-bar-item ${isSelected ? "active" : ""}`}
-                onClick={() => setSelectedTeamId(team.id)}
+                onClick={() => { setSelectedTeamId(team.id); setShowTeamSheet(false); }}
                 title={`Click để lọc Team ${team.name}`}
               >
                 <span className="team-tag-dot" style={{ backgroundColor: team.dotColor }} />
@@ -887,6 +931,14 @@ export default function App() {
                     e.stopPropagation();
                     setEditingTeamId((prev) => (prev === team.id ? null : team.id));
                     setShowAddTeam(false);
+                  }}
+                />
+                <i
+                  className="pi pi-trash text-xs opacity-60 team-edit-icon team-delete-icon"
+                  title={team.id === "fill-grey" ? "Team Trống không thể xoá" : "Xoá Team"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteTeam(team.id);
                   }}
                 />
               </div>
@@ -982,10 +1034,20 @@ export default function App() {
             </div>
           </div>
         )}
-      </div>
 
-      {/* TOOLBAR: BỘ LỌC SÀN LẦU, TÌM KIẾM & XUẤT/NHẬP JSON */}
-      <Toolbar
+          <button
+            type="button"
+            className="team-sheet-close p-button p-component p-button-text p-button-rounded"
+            onClick={() => setShowTeamSheet(false)}
+            aria-label="Đóng quản lý Team"
+          >
+            <i className="pi pi-times" />
+          </button>
+        </aside>
+
+        <main className="workspace-main">
+          {/* TOOLBAR: BỘ LỌC SÀN LẦU, TÌM KIẾM & XUẤT/NHẬP JSON */}
+          <Toolbar
         className="mb-4 shadow-2 border-1 surface-border border-round-xl p-3"
         left={
           <div className="flex gap-3 align-items-center flex-wrap">
@@ -1473,7 +1535,19 @@ export default function App() {
             ))}
           </div>
         );
-      })}
+          })}
+        </main>
+      </div>
+
+      <button
+        type="button"
+        className="team-fab"
+        onClick={() => setShowTeamSheet(true)}
+        aria-label="Quản lý Team"
+      >
+        <i className="pi pi-users" />
+        <span>Quản lý Team</span>
+      </button>
     </div>
   );
 }

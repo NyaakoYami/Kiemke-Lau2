@@ -506,3 +506,447 @@ html, body, #root {
   .stat-value { font-size: 20px; }
   .team-tag-label { max-width: 60px; }
 }
+
+/* ============================================================
+   REDESIGN v2 — Team Control Center + responsive cabin workspace
+   ============================================================ */
+
+:root {
+  --design-bg: #f4f6f8;
+  --design-surface: #ffffff;
+  --design-surface-soft: #f8fafc;
+  --design-border: #e5e7eb;
+  --design-border-strong: #d1d5db;
+  --design-text: #111827;
+  --design-muted: #6b7280;
+  --design-shadow: 0 10px 30px rgba(15, 23, 42, .07);
+  --design-shadow-soft: 0 4px 16px rgba(15, 23, 42, .055);
+}
+
+html, body, #root {
+  background: var(--design-bg) !important;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.app-shell {
+  max-width: 1800px;
+  padding: 20px !important;
+}
+
+/* Header: cleaner, less visually dominant */
+.app-header {
+  min-height: 118px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px !important;
+  box-shadow: 0 16px 38px rgba(15,23,42,.16) !important;
+}
+
+/* Statistics become a calm overview strip */
+.stat-card {
+  border-radius: 16px;
+  box-shadow: var(--design-shadow-soft);
+  min-height: 104px;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(15,23,42,.09);
+}
+
+/* Main desktop split */
+.workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 25%) minmax(0, 75%);
+  gap: 18px;
+  align-items: start;
+}
+
+.workspace-main {
+  min-width: 0;
+}
+
+.workspace-layout > .team-manager-panel {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  margin-bottom: 0 !important;
+  border-radius: 20px;
+}
+
+.workspace-main {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Team Control Center */
+.team-manager-panel {
+  background: rgba(255,255,255,.96);
+  border: 1px solid var(--design-border);
+  padding: 18px !important;
+  box-shadow: var(--design-shadow);
+}
+
+.team-manager-panel > .flex:first-of-type {
+  align-items: flex-start !important;
+}
+
+.team-manager-panel .team-bar-item {
+  width: 100%;
+  min-height: 42px;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--design-surface-soft);
+  border-color: var(--design-border);
+}
+
+.team-manager-panel .team-bar-item.active {
+  background: #111827;
+  border-color: #111827;
+}
+
+.team-manager-panel .flex.align-items-center.gap-2.flex-wrap {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 8px !important;
+}
+
+.team-manager-panel .team-count {
+  margin-left: auto;
+}
+
+.team-manager-panel .team-inline-form {
+  position: relative;
+  border-radius: 14px;
+}
+
+.team-sheet-mobile-handle,
+.team-sheet-close,
+.team-fab {
+  display: none;
+}
+
+/* Right-side toolbar */
+.workspace-main > .p-toolbar {
+  border-radius: 18px !important;
+  border: 1px solid var(--design-border) !important;
+  box-shadow: var(--design-shadow-soft) !important;
+  background: rgba(255,255,255,.95);
+}
+
+.workspace-main .floor-filter {
+  background: #f1f5f9;
+}
+
+/* Floors / lanes */
+.workspace-main h2 {
+  font-size: 1.1rem !important;
+  letter-spacing: -.01em;
+}
+
+.lane-container {
+  border-radius: 18px !important;
+  box-shadow: var(--design-shadow-soft) !important;
+  border-color: var(--design-border) !important;
+  background: rgba(255,255,255,.96);
+}
+
+.seat-card {
+  min-height: 142px;
+  border-radius: 14px !important;
+  border-color: color-mix(in srgb, var(--design-border-strong) 75%, transparent) !important;
+  box-shadow: 0 3px 12px rgba(15,23,42,.055) !important;
+}
+
+.seat-card:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 12px 24px rgba(15,23,42,.12) !important;
+  z-index: 4;
+}
+
+.drop-zone {
+  min-height: 48px;
+}
+
+/* Portal dropdown: independent of grid/overflow/stacking contexts */
+.dropdown-portal {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  isolation: isolate;
+  transform-origin: top left;
+}
+
+.dropdown-portal > .surface-0 {
+  width: min(304px, calc(100vw - 24px));
+  max-height: min(70vh, 420px) !important;
+  border-radius: 16px !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 24px 60px rgba(15,23,42,.20) !important;
+  backdrop-filter: blur(12px);
+}
+
+.team-grid-container {
+  width: 100%;
+  grid-template-columns: 1fr;
+  padding: 6px;
+  gap: 6px;
+}
+
+.team-grid-card {
+  min-height: 44px;
+  border-radius: 11px;
+}
+
+.team-grid-card:hover {
+  transform: translateX(2px);
+}
+
+/* Subtle scrollbar */
+.team-manager-panel::-webkit-scrollbar,
+.dropdown-portal .surface-0::-webkit-scrollbar {
+  width: 7px;
+}
+.team-manager-panel::-webkit-scrollbar-thumb,
+.dropdown-portal .surface-0::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+}
+
+/* Keep controls compact on medium desktop */
+@media (min-width: 769px) {
+  .workspace-main .lane-container {
+    scrollbar-width: thin;
+  }
+}
+
+/* Mobile: management becomes a bottom sheet + FAB */
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 10px !important;
+  }
+
+  .app-header {
+    min-height: 0;
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.3;
+  }
+
+  .workspace-layout {
+    display: block;
+  }
+
+  .workspace-main {
+    width: 100%;
+  }
+
+  .workspace-layout > .team-manager-panel {
+    display: none;
+  }
+
+  .workspace-layout > .team-manager-panel.team-sheet-open {
+    display: block;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    max-height: min(78vh, 720px);
+    margin: 0 !important;
+    padding: 18px 16px 24px !important;
+    border-radius: 24px 24px 0 0 !important;
+    overflow-y: auto;
+    box-shadow: 0 -24px 60px rgba(15,23,42,.20);
+    animation: teamSheetUp .2s ease-out;
+  }
+
+  .workspace-layout > .team-manager-panel.team-sheet-open::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    background: rgba(15,23,42,.32);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+  }
+
+  .team-sheet-mobile-handle {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: -7px auto 14px;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  .team-sheet-close {
+    display: inline-flex !important;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .team-fab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1200;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 16px;
+    background: #111827;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 0 12px 30px rgba(15,23,42,.25);
+    cursor: pointer;
+  }
+
+  .team-fab:active {
+    transform: scale(.97);
+  }
+
+  .workspace-main > .p-toolbar {
+    align-items: stretch;
+    border-radius: 16px !important;
+  }
+
+  .workspace-main .p-toolbar-group-start,
+  .workspace-main .p-toolbar-group-end {
+    width: 100%;
+  }
+
+  .workspace-main .p-toolbar-group-start > div,
+  .workspace-main .p-toolbar-group-end > div {
+    width: 100%;
+  }
+
+  .workspace-main .p-toolbar-group-start .p-inputtext {
+    width: 100% !important;
+  }
+
+  .floor-filter {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .floor-filter-btn {
+    flex: 1 0 auto;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .workspace-main .p-toolbar-group-end {
+    margin-top: 6px;
+  }
+
+  .workspace-main .p-toolbar-group-end > div {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workspace-main .p-toolbar-group-end .p-button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Cabin area: native-feeling horizontal pan on small screens */
+  .lane-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    padding: 10px !important;
+  }
+
+  .lane-container > .flex {
+    flex-shrink: 0;
+  }
+
+  .seat-card {
+    width: 144px !important;
+    min-width: 144px !important;
+  }
+
+  .stat-card {
+    min-height: 88px;
+    padding: 10px 6px;
+  }
+
+  .stat-value {
+    font-size: 19px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .team-manager-panel .team-bar-item {
+    min-height: 46px;
+  }
+}
+
+@keyframes teamSheetUp {
+  from {
+    opacity: .6;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-card,
+  .team-grid-card,
+  .team-bar-item {
+    transition: none !important;
+  }
+}
+
+/* Overview strip uses the full available width */
+.app-shell > .grid.mb-4 {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+  margin-left: 0;
+  margin-right: 0;
+}
+.app-shell > .grid.mb-4 > [class*="col-"] {
+  width: auto !important;
+  padding: 0 !important;
+}
+.team-delete-icon:hover {
+  color: #dc2626 !important;
+  background: rgba(239,68,68,.10);
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+  .workspace-layout {
+    grid-template-columns: minmax(220px, 30%) minmax(0, 70%);
+  }
+  .app-shell > .grid.mb-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell > .grid.mb-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
