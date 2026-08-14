@@ -356,6 +356,151 @@ html, body, #root {
   background-color: rgba(219, 234, 254, 0.25);
 }
 
+/* ---------------- Bảng quản lý Team (nổi bật phía trên) ---------------- */
+.team-manager-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+}
+
+.team-edit-icon {
+  border-radius: 999px;
+  padding: 3px;
+  transition: all 0.15s ease;
+}
+
+.team-edit-icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.15);
+}
+
+.team-inline-form {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 14px;
+  animation: formSlideIn 0.15s ease;
+}
+
+@keyframes formSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.color-palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px #e2e8f0;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.selected {
+  box-shadow: 0 0 0 2.5px #0f172a;
+  transform: scale(1.12);
+}
+
+.new-team-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Dropdown Team cabin: hiệu ứng xuất hiện gọn gàng */
+.dropdown-pop-in {
+  animation: dropdownPop 0.12s ease;
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ---------------- Nút nhanh trên cabin: check đủ bộ / reset / xoá ---------------- */
+.qa-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.qa-btn.p-button {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  min-width: 0;
+}
+
+.qa-btn.p-button .p-button-icon {
+  font-size: 9px;
+}
+
+.qa-btn-lead.p-button {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.qa-btn-lead.p-button .p-button-icon {
+  font-size: 10px;
+}
+
+/* ---------------- Bộ lọc Sàn Lầu ---------------- */
+.floor-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #eef2f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.floor-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.floor-filter-btn:hover {
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.floor-filter-btn.active {
+  background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
 /* ---------------- Responsive ---------------- */
 @media (max-width: 768px) {
   .stat-value { font-size: 20px; }
