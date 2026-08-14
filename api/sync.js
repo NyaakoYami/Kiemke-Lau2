@@ -1,96 +1,91 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = process.env.SUPABASE_URL?.trim();
-const SUPABASE_SECRET_KEY = (
-  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-)?.trim();
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey =
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase =
-  SUPABASE_URL && SUPABASE_SECRET_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
-        auth: { autoRefreshToken: false, persistSession: false },
-      })
-    : null;
-
-function json(res, status, payload) {
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
-  return res.status(status).json(payload);
+if (!supabaseUrl) {
+  throw new Error("Missing SUPABASE_URL");
 }
 
+if (!supabaseKey) {
+  throw new Error("Missing SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false,
+  },
+});
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(204).end();
-
-  if (!supabase) {
-    return json(res, 500, {
-      success: false,
-      error: 'Missing SUPABASE_URL or SUPABASE_SECRET_KEY in Vercel Environment Variables.',
-    });
-  }
-
   try {
-    if (req.method === 'GET') {
+    if (req.method === "GET") {
       const { data, error } = await supabase
-        .from('inventory_sync')
-        .select('data, updated_at')
-        .eq('id', 1)
-        .maybeSingle();
+        .from("inventory_sync")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase GET error:", error);
 
-      return json(res, 200, {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      return res.status(200).json({
         success: true,
-        data: data?.data ?? null,
-        updatedAt: data?.updated_at ?? null,
+        data,
       });
     }
 
-    if (req.method === 'POST') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
-      const inventoryData = body?.data;
+    if (req.method === "POST") {
+      const payload = req.body;
 
-      if (!inventoryData || typeof inventoryData !== 'object' || Array.isArray(inventoryData)) {
-        return json(res, 400, { success: false, error: 'Missing or invalid data payload.' });
-      }
-
-      const payload = JSON.stringify(inventoryData);
-      if (Buffer.byteLength(payload, 'utf8') > 5 * 1024 * 1024) {
-        return json(res, 413, { success: false, error: 'Payload exceeds the 5 MB limit.' });
+      if (!payload || typeof payload !== "object") {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid request body",
+        });
       }
 
       const { data, error } = await supabase
-        .from('inventory_sync')
-        .upsert(
-          {
-            id: 1,
-            data: inventoryData,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' },
-        )
-        .select('updated_at')
+        .from("inventory_sync")
+        .insert(payload)
+        .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase POST error:", error);
 
-      return json(res, 200, {
+        return res.status(500).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      return res.status(200).json({
         success: true,
-        message: 'Data saved successfully.',
-        updatedAt: data.updated_at,
+        data,
       });
     }
 
-    res.setHeader('Allow', 'GET, POST, OPTIONS');
-    return json(res, 405, { success: false, error: 'Method not allowed.' });
-  } catch (error) {
-    console.error('[api/sync] Supabase error:', error);
-    return json(res, 500, {
+    res.setHeader("Allow", ["GET", "POST"]);
+
+    return res.status(405).json({
       success: false,
-      error: error?.message || 'Supabase request failed.',
+      error: "Method not allowed",
+    });
+  } catch (error) {
+    console.error("API error:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Internal server error",
     });
   }
 }
