@@ -1,0 +1,952 @@
+/* App.css - Giao diện Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3 */
+
+:root {
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --bg-page: #eef2f8;
+  --header-from: #0b1220;
+  --header-to: #1e3a8a;
+}
+
+html, body, #root {
+  background-color: var(--bg-page) !important;
+  color: var(--ink) !important;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Khung ứng dụng: full-bleed nhưng giới hạn chiều rộng đọc thoải mái trên màn lớn */
+.app-shell {
+  max-width: 1680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.88); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.88); opacity: 0.7; }
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+/* ---------------- HEADER ---------------- */
+.app-header {
+  background: linear-gradient(120deg, var(--header-from) 0%, var(--header-to) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px circle at 85% -10%, rgba(96, 165, 250, 0.35), transparent 60%);
+  pointer-events: none;
+}
+
+.app-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------- STAT CARDS ---------------- */
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 10px;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  border-color: #c7d2fe;
+}
+
+.stat-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+/* Inline Edit display styling - subtle, bold, borderless */
+.inline-edit-display {
+  font-weight: 700;
+  opacity: 0.92;
+  padding: 3px 6px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  color: #1e293b;
+  transition: all 0.2s ease;
+}
+
+.inline-edit-display:hover {
+  opacity: 1;
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.inline-edit-display.stt-display {
+  font-size: 11px;
+  font-weight: 800;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+  border-radius: 4px;
+  padding: 1px 5px;
+  display: inline-block;
+}
+
+.inline-edit-display.stt-display:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+/* Tên thành viên cabin: Chữ nhỏ, xuống dòng tự nhiên, không truncation */
+.inline-edit-name {
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+/* ---------------- TEAM TAG (nhãn nhỏ trên cabin) ---------------- */
+.team-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(4px);
+  border-radius: 999px;
+  padding: 2px 7px;
+  width: fit-content;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.team-tag:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.team-tag-selected {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.team-tag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.team-tag-label {
+  max-width: 85px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------- Màu nền cabin theo Team ---------------- */
+.fill-lead {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+  border-color: #93c5fd !important;
+}
+
+.fill-pink {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
+  border-color: #f9a8d4 !important;
+}
+
+.fill-orange {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
+  border-color: #fdba74 !important;
+}
+
+.fill-cyan {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%) !important;
+  border-color: #67e8f9 !important;
+}
+
+.fill-yellow {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%) !important;
+  border-color: #fcd34d !important;
+}
+
+.fill-purple {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
+  border-color: #c4b5fd !important;
+}
+
+.fill-grey {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  border-color: #cbd5e1 !important;
+  opacity: 0.85;
+}
+
+/* Chấm màu trong nhãn team */
+.team-tag-dot.fill-lead { background-color: #2563eb; }
+.team-tag-dot.fill-pink { background-color: #ec4899; }
+.team-tag-dot.fill-orange { background-color: #f97316; }
+.team-tag-dot.fill-cyan { background-color: #06b6d4; }
+.team-tag-dot.fill-yellow { background-color: #eab308; }
+.team-tag-dot.fill-purple { background-color: #8b5cf6; }
+.team-tag-dot.fill-grey { background-color: #6b7280; }
+
+/* ---------------- Cabin (seat card) ---------------- */
+.seat-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+.seat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  z-index: 5;
+}
+
+.lane-container {
+  background: #ffffff;
+}
+
+/* ---------------- Bảng chọn màu Team (grid trong dropdown) ---------------- */
+.team-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 18rem;
+  padding: 4px;
+}
+
+.team-grid-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-grid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #94a3b8;
+}
+
+.team-grid-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.team-grid-card .color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.team-grid-card .team-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+}
+
+/* ---------------- Thanh chọn Team bên dưới Header chính ---------------- */
+.team-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.team-bar-item:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.team-bar-item.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.team-bar-item .team-count {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(0,0,0,0.06);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.team-bar-item.active .team-count {
+  background: rgba(255,255,255,0.25);
+  color: #ffffff;
+}
+
+/* ---------------- Vùng kéo-thả ---------------- */
+.drop-zone {
+  border: 1.5px dashed transparent;
+  border-radius: 12px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.drop-zone:hover {
+  border-color: #bfdbfe;
+  background-color: rgba(219, 234, 254, 0.25);
+}
+
+/* ---------------- Bảng quản lý Team (nổi bật phía trên) ---------------- */
+.team-manager-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+}
+
+.team-edit-icon {
+  border-radius: 999px;
+  padding: 3px;
+  transition: all 0.15s ease;
+}
+
+.team-edit-icon:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.15);
+}
+
+.team-inline-form {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 14px;
+  animation: formSlideIn 0.15s ease;
+}
+
+@keyframes formSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.color-palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1.5px #e2e8f0;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.selected {
+  box-shadow: 0 0 0 2.5px #0f172a;
+  transform: scale(1.12);
+}
+
+.new-team-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1.5px #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* Dropdown Team cabin: hiệu ứng xuất hiện gọn gàng */
+.dropdown-pop-in {
+  animation: dropdownPop 0.12s ease;
+}
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ---------------- Nút nhanh trên cabin: check đủ bộ / reset / xoá ---------------- */
+.qa-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.qa-btn.p-button {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  min-width: 0;
+}
+
+.qa-btn.p-button .p-button-icon {
+  font-size: 9px;
+}
+
+.qa-btn-lead.p-button {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.qa-btn-lead.p-button .p-button-icon {
+  font-size: 10px;
+}
+
+/* ---------------- Bộ lọc Sàn Lầu ---------------- */
+.floor-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #eef2f8;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.floor-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.floor-filter-btn:hover {
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.floor-filter-btn.active {
+  background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 768px) {
+  .stat-value { font-size: 20px; }
+  .team-tag-label { max-width: 60px; }
+}
+
+/* ============================================================
+   REDESIGN v2 — Team Control Center + responsive cabin workspace
+   ============================================================ */
+
+:root {
+  --design-bg: #f4f6f8;
+  --design-surface: #ffffff;
+  --design-surface-soft: #f8fafc;
+  --design-border: #e5e7eb;
+  --design-border-strong: #d1d5db;
+  --design-text: #111827;
+  --design-muted: #6b7280;
+  --design-shadow: 0 10px 30px rgba(15, 23, 42, .07);
+  --design-shadow-soft: 0 4px 16px rgba(15, 23, 42, .055);
+}
+
+html, body, #root {
+  background: var(--design-bg) !important;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.app-shell {
+  max-width: 1800px;
+  padding: 20px !important;
+}
+
+/* Header: cleaner, less visually dominant */
+.app-header {
+  min-height: 118px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px !important;
+  box-shadow: 0 16px 38px rgba(15,23,42,.16) !important;
+}
+
+/* Statistics become a calm overview strip */
+.stat-card {
+  border-radius: 16px;
+  box-shadow: var(--design-shadow-soft);
+  min-height: 104px;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(15,23,42,.09);
+}
+
+/* Main desktop split */
+.workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 25%) minmax(0, 75%);
+  gap: 18px;
+  align-items: start;
+}
+
+.workspace-main {
+  min-width: 0;
+}
+
+.workspace-layout > .team-manager-panel {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  margin-bottom: 0 !important;
+  border-radius: 20px;
+}
+
+.workspace-main {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* Team Control Center */
+.team-manager-panel {
+  background: rgba(255,255,255,.96);
+  border: 1px solid var(--design-border);
+  padding: 18px !important;
+  box-shadow: var(--design-shadow);
+}
+
+.team-manager-panel > .flex:first-of-type {
+  align-items: flex-start !important;
+}
+
+.team-manager-panel .team-bar-item {
+  width: 100%;
+  min-height: 42px;
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--design-surface-soft);
+  border-color: var(--design-border);
+}
+
+.team-manager-panel .team-bar-item.active {
+  background: #111827;
+  border-color: #111827;
+}
+
+.team-manager-panel .flex.align-items-center.gap-2.flex-wrap {
+  display: grid !important;
+  grid-template-columns: 1fr;
+  gap: 8px !important;
+}
+
+.team-manager-panel .team-count {
+  margin-left: auto;
+}
+
+.team-manager-panel .team-inline-form {
+  position: relative;
+  border-radius: 14px;
+}
+
+.team-sheet-mobile-handle,
+.team-sheet-close,
+.team-fab {
+  display: none;
+}
+
+/* Right-side toolbar */
+.workspace-main > .p-toolbar {
+  border-radius: 18px !important;
+  border: 1px solid var(--design-border) !important;
+  box-shadow: var(--design-shadow-soft) !important;
+  background: rgba(255,255,255,.95);
+}
+
+.workspace-main .floor-filter {
+  background: #f1f5f9;
+}
+
+/* Floors / lanes */
+.workspace-main h2 {
+  font-size: 1.1rem !important;
+  letter-spacing: -.01em;
+}
+
+.lane-container {
+  border-radius: 18px !important;
+  box-shadow: var(--design-shadow-soft) !important;
+  border-color: var(--design-border) !important;
+  background: rgba(255,255,255,.96);
+}
+
+.seat-card {
+  min-height: 142px;
+  border-radius: 14px !important;
+  border-color: color-mix(in srgb, var(--design-border-strong) 75%, transparent) !important;
+  box-shadow: 0 3px 12px rgba(15,23,42,.055) !important;
+}
+
+.seat-card:hover {
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 12px 24px rgba(15,23,42,.12) !important;
+  z-index: 4;
+}
+
+.drop-zone {
+  min-height: 48px;
+}
+
+/* Portal dropdown: independent of grid/overflow/stacking contexts */
+.dropdown-portal {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  isolation: isolate;
+  transform-origin: top left;
+}
+
+.dropdown-portal > .surface-0 {
+  width: min(304px, calc(100vw - 24px));
+  max-height: min(70vh, 420px) !important;
+  border-radius: 16px !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 24px 60px rgba(15,23,42,.20) !important;
+  backdrop-filter: blur(12px);
+}
+
+.team-grid-container {
+  width: 100%;
+  grid-template-columns: 1fr;
+  padding: 6px;
+  gap: 6px;
+}
+
+.team-grid-card {
+  min-height: 44px;
+  border-radius: 11px;
+}
+
+.team-grid-card:hover {
+  transform: translateX(2px);
+}
+
+/* Subtle scrollbar */
+.team-manager-panel::-webkit-scrollbar,
+.dropdown-portal .surface-0::-webkit-scrollbar {
+  width: 7px;
+}
+.team-manager-panel::-webkit-scrollbar-thumb,
+.dropdown-portal .surface-0::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+}
+
+/* Keep controls compact on medium desktop */
+@media (min-width: 769px) {
+  .workspace-main .lane-container {
+    scrollbar-width: thin;
+  }
+}
+
+/* Mobile: management becomes a bottom sheet + FAB */
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 10px !important;
+  }
+
+  .app-header {
+    min-height: 0;
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.3;
+  }
+
+  .workspace-layout {
+    display: block;
+  }
+
+  .workspace-main {
+    width: 100%;
+  }
+
+  .workspace-layout > .team-manager-panel {
+    display: none;
+  }
+
+  .workspace-layout > .team-manager-panel.team-sheet-open {
+    display: block;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    max-height: min(78vh, 720px);
+    margin: 0 !important;
+    padding: 18px 16px 24px !important;
+    border-radius: 24px 24px 0 0 !important;
+    overflow-y: auto;
+    box-shadow: 0 -24px 60px rgba(15,23,42,.20);
+    animation: teamSheetUp .2s ease-out;
+  }
+
+  .workspace-layout > .team-manager-panel.team-sheet-open::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    background: rgba(15,23,42,.32);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+  }
+
+  .team-sheet-mobile-handle {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: -7px auto 14px;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  .team-sheet-close {
+    display: inline-flex !important;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+
+  .team-fab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1200;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 16px;
+    background: #111827;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    box-shadow: 0 12px 30px rgba(15,23,42,.25);
+    cursor: pointer;
+  }
+
+  .team-fab:active {
+    transform: scale(.97);
+  }
+
+  .workspace-main > .p-toolbar {
+    align-items: stretch;
+    border-radius: 16px !important;
+  }
+
+  .workspace-main .p-toolbar-group-start,
+  .workspace-main .p-toolbar-group-end {
+    width: 100%;
+  }
+
+  .workspace-main .p-toolbar-group-start > div,
+  .workspace-main .p-toolbar-group-end > div {
+    width: 100%;
+  }
+
+  .workspace-main .p-toolbar-group-start .p-inputtext {
+    width: 100% !important;
+  }
+
+  .floor-filter {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .floor-filter-btn {
+    flex: 1 0 auto;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .workspace-main .p-toolbar-group-end {
+    margin-top: 6px;
+  }
+
+  .workspace-main .p-toolbar-group-end > div {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workspace-main .p-toolbar-group-end .p-button:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Cabin area: native-feeling horizontal pan on small screens */
+  .lane-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    padding: 10px !important;
+  }
+
+  .lane-container > .flex {
+    flex-shrink: 0;
+  }
+
+  .seat-card {
+    width: 144px !important;
+    min-width: 144px !important;
+  }
+
+  .stat-card {
+    min-height: 88px;
+    padding: 10px 6px;
+  }
+
+  .stat-value {
+    font-size: 19px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .team-manager-panel .team-bar-item {
+    min-height: 46px;
+  }
+}
+
+@keyframes teamSheetUp {
+  from {
+    opacity: .6;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-card,
+  .team-grid-card,
+  .team-bar-item {
+    transition: none !important;
+  }
+}
+
+/* Overview strip uses the full available width */
+.app-shell > .grid.mb-4 {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+  margin-left: 0;
+  margin-right: 0;
+}
+.app-shell > .grid.mb-4 > [class*="col-"] {
+  width: auto !important;
+  padding: 0 !important;
+}
+.team-delete-icon:hover {
+  color: #dc2626 !important;
+  background: rgba(239,68,68,.10);
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+  .workspace-layout {
+    grid-template-columns: minmax(220px, 30%) minmax(0, 70%);
+  }
+  .app-shell > .grid.mb-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .app-shell > .grid.mb-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
