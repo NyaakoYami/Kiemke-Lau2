@@ -263,7 +263,20 @@ const defaultData = [
   },
 ];
 
-// BẢNG CHỌN TEAM DẠNG GRID — dùng ở cabin (chỉ chọn Team, không chọn màu riêng)
+// Tính màu chữ tương phản (trắng/đen) dựa trên độ sáng của màu nền Team,
+// để tên Team luôn đọc rõ dù thẻ được tô bằng bất kỳ màu nào.
+const getContrastTextColor = (hex) => {
+  if (!hex) return "#111827";
+  const clean = hex.replace("#", "");
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62 ? "#111827" : "#ffffff";
+};
+
+// BẢNG CHỌN TEAM DẠNG LƯỚI (POPOVER) — click vào cabin để mở, mỗi Team là
+// một thẻ được tô nền đúng màu đại diện của Team đó (không còn chấm màu rời).
 const TeamGridMenu = ({ teams, onClick, activeColorId }) => (
   <div className="p-2">
     <div className="text-xs font-extrabold text-700 uppercase tracking-wider mb-2 border-bottom-1 surface-border pb-2 flex align-items-center justify-content-between">
@@ -273,33 +286,49 @@ const TeamGridMenu = ({ teams, onClick, activeColorId }) => (
     <div className="team-grid-container">
       {teams.map((t) => {
         const isSelected = activeColorId === t.id;
+        const textColor = getContrastTextColor(t.dotColor);
         return (
-          <div
+          <button
             key={t.id}
-            className={`team-grid-card ${isSelected ? "selected" : ""}`}
+            type="button"
+            className={`team-color-card ${isSelected ? "selected" : ""}`}
+            style={{
+              backgroundColor: t.dotColor,
+              color: textColor,
+              "--team-ring-color": t.dotColor,
+            }}
             onClick={() => onClick(t.id)}
+            title={t.name}
           >
-            <span className="color-dot" style={{ backgroundColor: t.dotColor }} />
-            <span className="team-name">{t.name}</span>
+            <span className="team-color-card-name">{t.name}</span>
             {isSelected && (
-              <i className="pi pi-check text-primary font-extrabold text-xs ml-auto" />
+              <i
+                className="pi pi-check team-color-card-check"
+                style={{ color: textColor }}
+              />
             )}
-          </div>
+          </button>
         );
       })}
     </div>
   </div>
 );
 
-// Nhãn Team nhỏ trên đầu mỗi cabin:
-const TeamTag = ({ team, onOpen, onFilter, isSelected }) => (
+// Nhãn Team nhỏ trên đầu mỗi cabin — click để mở popover đổi Team (đã bỏ
+// trigger hover trước đây để tránh mở nhầm khi chỉ rê chuột ngang qua).
+const TeamTag = ({ team, onOpen }) => (
   <div
-    className={`team-tag flex align-items-center gap-1 cursor-pointer ${
-      isSelected ? "team-tag-selected" : ""
-    }`}
-    onClick={onFilter}
-    onMouseEnter={onOpen}
-    title="Click để lọc team này / Rê chuột để đổi Team cabin"
+    className="team-tag flex align-items-center gap-1 cursor-pointer"
+    onClick={onOpen}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onOpen(e);
+      }
+    }}
+    title="Click để đổi Team cho cabin"
   >
     <span className="team-tag-dot" style={{ backgroundColor: team.dotColor }} />
     <span className="team-tag-label">{team.name}</span>
@@ -1291,12 +1320,6 @@ export default function App() {
                             {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
                             <TeamTag
                               team={team}
-                              isSelected={selectedTeamId === colorId}
-                              onFilter={() =>
-                                setSelectedTeamId((prev) =>
-                                  prev === colorId ? null : colorId,
-                                )
-                              }
                               onOpen={(e) => {
                                 e.stopPropagation();
                                 setActiveSeat(seat.id);
@@ -1500,12 +1523,6 @@ export default function App() {
                             {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
                             <TeamTag
                               team={team}
-                              isSelected={selectedTeamId === colorId}
-                              onFilter={() =>
-                                setSelectedTeamId((prev) =>
-                                  prev === colorId ? null : colorId,
-                                )
-                              }
                               onOpen={(e) => {
                                 e.stopPropagation();
                                 setActiveSeat(seat.id);
