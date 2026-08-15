@@ -21,12 +21,16 @@ const supabase = createClient(supabaseUrl, supabaseSecretKey, {
 export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
-      const { data, error } = await supabase
+      // Bảng inventory_sync chỉ có đúng 1 dòng (id = 1) chứa toàn bộ state.
+      // Trước đây code select("*") toàn bảng và order theo cột "created_at"
+      // (cột này KHÔNG tồn tại trong schema, chỉ có "updated_at") -> Supabase
+      // trả lỗi hoặc trả về một MẢNG nhiều dòng thay vì 1 object, khiến
+      // frontend không bao giờ đọc được data.floors và luôn rơi về dữ liệu mặc định.
+      const { data: row, error } = await supabase
         .from("inventory_sync")
-        .select("*")
-        .order("created_at", {
-          ascending: false,
-        });
+        .select("data, updated_at")
+        .eq("id", 1)
+        .maybeSingle();
 
       if (error) {
         console.error("Supabase GET error:", error);
@@ -39,7 +43,8 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        data: data ?? [],
+        data: row?.data ?? {},
+        updatedAt: row?.updated_at ?? null,
       });
     }
 
@@ -64,10 +69,21 @@ export default async function handler(req, res) {
         });
       }
 
+      // payload = { data: appState }. Trước đây code dùng .insert() nên MỖI LẦN
+      // bấm "Lưu Cloud" lại tạo thêm 1 dòng mới trong bảng, không bao giờ ghi đè
+      // dòng cũ -> dữ liệu cũ/mới lẫn lộn và không đồng bộ 2 chiều được.
+      // Dùng .upsert() với id cố định = 1 để luôn cập nhật đúng 1 dòng duy nhất.
       const { data, error } = await supabase
         .from("inventory_sync")
-        .insert(payload)
-        .select()
+        .upsert(
+          {
+            id: 1,
+            data: payload.data ?? payload,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" },
+        )
+        .select("data, updated_at")
         .single();
 
       if (error) {
@@ -81,7 +97,8 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        data,
+        data: data.data,
+        updatedAt: data.updated_at,
       });
     }
 

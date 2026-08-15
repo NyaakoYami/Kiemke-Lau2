@@ -325,11 +325,42 @@ export default function App() {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [openMenu, closeMenu]);
 
-  const [appState, setAppState] = useState({
-    floors: JSON.parse(JSON.stringify(defaultData)),
-    inventory: {},
-    colors: {},
-    teams: JSON.parse(JSON.stringify(DEFAULT_TEAMS)),
+  // Khoá lưu bản nháp local (chống mất dữ liệu khi F5 / mất mạng / quên bấm "Lưu Cloud")
+  const LOCAL_STORAGE_KEY = "kiemke-lau2:appState";
+
+  const readLocalState = () => {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.floors)) return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeLocalState = (state) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    } catch (err) {
+      console.error("Không thể lưu bản nháp local:", err);
+    }
+  };
+
+  // Khi mở app: ưu tiên bản nháp local đã lưu trước đó (nếu có) thay vì luôn
+  // reset về dữ liệu mẫu mặc định. loadOnline() sẽ chạy sau và ghi đè bằng
+  // bản trên Cloud nếu tải thành công.
+  const [appState, setAppState] = useState(() => {
+    const local = readLocalState();
+    return (
+      local || {
+        floors: JSON.parse(JSON.stringify(defaultData)),
+        inventory: {},
+        colors: {},
+        teams: JSON.parse(JSON.stringify(DEFAULT_TEAMS)),
+      }
+    );
   });
 
   // Đảm bảo dữ liệu cũ (chưa có danh sách teams) vẫn hoạt động bình thường
@@ -337,6 +368,13 @@ export default function App() {
     ...state,
     teams: state.teams && state.teams.length ? state.teams : JSON.parse(JSON.stringify(DEFAULT_TEAMS)),
   });
+
+  // Tự động lưu MỌI thay đổi vào localStorage ngay lập tức, độc lập với việc
+  // đồng bộ Cloud. Đây là lưới an toàn: dù mất mạng hay quên bấm "Lưu Cloud",
+  // F5 vẫn khôi phục đúng dữ liệu vừa chỉnh sửa.
+  useEffect(() => {
+    writeLocalState(appState);
+  }, [appState]);
 
   const [search, setSearch] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
