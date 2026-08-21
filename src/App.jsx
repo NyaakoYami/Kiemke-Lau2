@@ -900,8 +900,7 @@ export default function App() {
             <span>📋</span> Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3
           </h1>
           <p className="mt-2 mb-0 text-sm" style={{ color: "#cbd5e1" }}>
-            Tự động đổi màu Team • Inline Edit chữ nhỏ gọn • Bảng màu Team • Đồng
-            bộ Supabase & JSON
+            Dự án ShopeeFood
           </p>
         </div>
         <div className="flex align-items-center gap-3 flex-wrap">
