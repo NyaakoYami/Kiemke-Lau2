@@ -409,6 +409,44 @@ html, body, #root {
   gap: 8px;
 }
 
+/* ---------------- Bảng màu theo nhóm tông màu (grouped palette) ---------------- */
+/* Mỗi hàng = 1 tông màu: nhãn bên trái + 4 swatches nhạt→đậm bên phải */
+.color-palette-grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.color-palette-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-palette-row-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  width: 68px;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1;
+}
+
+.color-palette-row-swatches {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Swatch trong grouped palette: hình chữ nhật tròn cạnh thay vì tròn đầy
+   để nhìn thấy màu rõ hơn khi kích thước nhỏ */
+.color-palette-row-swatches .color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+}
+
 .color-swatch {
   width: 28px;
   height: 28px;
@@ -421,12 +459,13 @@ html, body, #root {
 }
 
 .color-swatch:hover {
-  transform: scale(1.15);
+  transform: scale(1.18);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2);
 }
 
 .color-swatch.selected {
-  box-shadow: 0 0 0 2.5px #0f172a;
-  transform: scale(1.12);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
+  transform: scale(1.14);
 }
 
 .new-team-preview {

@@ -146,13 +146,22 @@ const DEFAULT_TEAMS = [
   { id: "fill-grey", name: "Trống", dotColor: "#6b7280" },
 ];
 
-// Bảng màu để chọn khi thêm Team mới hoặc đổi màu Team
-const COLOR_PALETTE = [
-  "#2563eb", "#ec4899", "#f97316", "#06b6d4",
-  "#eab308", "#8b5cf6", "#10b981", "#ef4444",
-  "#14b8a6", "#f43f5e", "#84cc16", "#6366f1",
-  "#0ea5e9", "#d946ef", "#f59e0b", "#6b7280",
+// Bảng màu theo nhóm màu sắc: mỗi hàng là 1 tông màu, mỗi cột là 1 độ đậm nhạt
+// (Nhạt → Vừa nhạt → Đậm → Rất đậm)
+const COLOR_PALETTE_GROUPS = [
+  { label: "Xanh dương",  shades: ["#93c5fd", "#3b82f6", "#2563eb", "#1e40af"] },
+  { label: "Tím",         shades: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#6d28d9"] },
+  { label: "Hồng",        shades: ["#f9a8d4", "#f472b6", "#ec4899", "#be185d"] },
+  { label: "Đỏ",          shades: ["#fca5a5", "#f87171", "#ef4444", "#b91c1c"] },
+  { label: "Cam",         shades: ["#fdba74", "#fb923c", "#f97316", "#c2410c"] },
+  { label: "Vàng",        shades: ["#fde68a", "#fbbf24", "#eab308", "#a16207"] },
+  { label: "Xanh lá",    shades: ["#6ee7b7", "#34d399", "#10b981", "#065f46"] },
+  { label: "Xanh ngọc",  shades: ["#67e8f9", "#22d3ee", "#06b6d4", "#0e7490"] },
+  { label: "Trung tính", shades: ["#e2e8f0", "#94a3b8", "#64748b", "#334155"] },
 ];
+
+// Mảng phẳng dùng cho addTeam default & legacy
+const COLOR_PALETTE = COLOR_PALETTE_GROUPS.flatMap((g) => g.shades);
 
 // Tìm thông tin Team theo id, trả về Team ẩn danh nếu không tìm thấy
 const getTeam = (teams, colorId) =>
@@ -1036,16 +1045,23 @@ export default function App() {
                 className="font-extrabold"
               />
             </div>
-            <div className="color-palette-grid">
-              {COLOR_PALETTE.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className={`color-swatch ${getTeam(appState.teams, editingTeamId).dotColor === hex ? "selected" : ""}`}
-                  style={{ backgroundColor: hex }}
-                  onClick={() => updateTeamColor(editingTeamId, hex)}
-                  title={hex}
-                />
+            <div className="color-palette-grouped">
+              {COLOR_PALETTE_GROUPS.map((group) => (
+                <div key={group.label} className="color-palette-row">
+                  <span className="color-palette-row-label">{group.label}</span>
+                  <div className="color-palette-row-swatches">
+                    {group.shades.map((hex) => (
+                      <button
+                        key={hex}
+                        type="button"
+                        className={`color-swatch ${getTeam(appState.teams, editingTeamId).dotColor === hex ? "selected" : ""}`}
+                        style={{ backgroundColor: hex }}
+                        onClick={() => updateTeamColor(editingTeamId, hex)}
+                        title={hex}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             <Button
@@ -1078,16 +1094,23 @@ export default function App() {
                 title="Màu đã chọn"
               />
             </div>
-            <div className="color-palette-grid mb-2">
-              {COLOR_PALETTE.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className={`color-swatch ${newTeamColor === hex ? "selected" : ""}`}
-                  style={{ backgroundColor: hex }}
-                  onClick={() => setNewTeamColor(hex)}
-                  title={hex}
-                />
+            <div className="color-palette-grouped mb-2">
+              {COLOR_PALETTE_GROUPS.map((group) => (
+                <div key={group.label} className="color-palette-row">
+                  <span className="color-palette-row-label">{group.label}</span>
+                  <div className="color-palette-row-swatches">
+                    {group.shades.map((hex) => (
+                      <button
+                        key={hex}
+                        type="button"
+                        className={`color-swatch ${newTeamColor === hex ? "selected" : ""}`}
+                        style={{ backgroundColor: hex }}
+                        onClick={() => setNewTeamColor(hex)}
+                        title={hex}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             <div className="flex gap-2">

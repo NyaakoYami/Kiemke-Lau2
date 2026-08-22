@@ -1,0 +1,87 @@
+name: 🔄 Keepalive Ping
+
+# Chạy tự động mỗi 2-3 ngày để tạo hoạt động giả lập cho project.
+# Điều này giúp tránh Supabase / Vercel hibernation trên gói miễn phí.
+on:
+  # Cron: UTC time — chạy lúc 02:00 UTC mỗi thứ Hai, Tư, Sáu
+  # (~09:00 giờ Việt Nam, 3 lần/tuần = khoảng cách 2-3 ngày)
+  schedule:
+    - cron: "0 2 * * 1,3,5"
+
+  # Cho phép chạy thủ công từ tab Actions trên GitHub
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Lý do chạy thủ công"
+        required: false
+        default: "Manual keepalive ping"
+
+jobs:
+  ping:
+    name: Ping API & DB
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📡 Ping /api/sync (GET) — đọc dữ liệu từ Supabase
+        id: get_sync
+        run: |
+          echo "⏰ Thời gian: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🎯 Endpoint: ${{ vars.APP_URL }}/api/sync"
+
+          HTTP_CODE=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -H "Accept: application/json" \
+            "${{ vars.APP_URL }}/api/sync")
+
+          echo "📦 HTTP Status: $HTTP_CODE"
+          echo "📝 Response:"
+          cat /tmp/response.json | head -c 500 || true
+          echo ""
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ GET ping thành công (HTTP $HTTP_CODE)"
+          else
+            echo "❌ GET ping thất bại (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+      - name: 🗄️ Ping Supabase trực tiếp (không qua Vercel)
+        id: direct_supabase
+        run: |
+          # Gọi trực tiếp vào Supabase REST API để giữ DB luôn active
+          # (endpoint SELECT 1 từ bảng inventory_sync)
+          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
+          SUPABASE_KEY="${{ secrets.SUPABASE_SECRET_KEY }}"
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "⚠️  Secrets SUPABASE_URL / SUPABASE_SECRET_KEY chưa được cấu hình."
+            echo "   Bỏ qua bước này, chỉ dùng APP_URL ping ở bước trên."
+            exit 0
+          fi
+
+          HTTP_CODE=$(curl -s -o /tmp/sb_response.json -w "%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
+            -H "Accept: application/json" \
+            "${SUPABASE_URL}/rest/v1/inventory_sync?select=id,updated_at&id=eq.1")
+
+          echo "📦 Supabase HTTP Status: $HTTP_CODE"
+          cat /tmp/sb_response.json | head -c 300 || true
+          echo ""
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Supabase direct ping thành công (HTTP $HTTP_CODE)"
+          else
+            echo "⚠️  Supabase direct ping trả về $HTTP_CODE — xem log để debug."
+          fi
+
+      - name: 📊 Tóm tắt kết quả
+        if: always()
+        run: |
+          echo "================================================"
+          echo "  KEEPALIVE PING — Báo cáo"
+          echo "================================================"
+          echo "  Project  : Kiemke-Lau2 (ShopeeFood)"
+          echo "  Thời gian: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "  Lịch chạy: Thứ Hai, Tư, Sáu lúc 02:00 UTC"
+          echo "================================================"
