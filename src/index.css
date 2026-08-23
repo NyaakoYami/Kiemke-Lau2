@@ -1,16 +1,21 @@
-/* index.css - base reset (single light theme, full-width app shell) */
+/* index.css — global reset · Hallmark Cobalt / Workbench */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   color-scheme: light;
+  overflow-x: clip; /* gate 34: no horizontal scroll */
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: clip; /* gate 34 */
+  font-family: var(--font-body, 'Space Grotesk', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -28,10 +33,10 @@ p {
 }
 
 code {
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 13px;
-  border-radius: 4px;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  font-size: 12px;
+  border-radius: var(--radius-sm, 6px);
   padding: 2px 6px;
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--color-accent-subtle, oklch(94% 0.04 255));
+  color: var(--color-accent-2, oklch(44% 0.22 255));
 }

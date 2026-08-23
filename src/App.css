@@ -1,57 +1,114 @@
-/* App.css - Giao diện Kiểm Kê Tài Sản - Sàn Lầu 2 & Lầu 3 */
+/* =============================================================
+   Hallmark · macrostructure: Workbench · nav: N6 Masthead · footer: none (app shell)
+   theme: Cobalt · genre: modern-minimal
+   paper: mid · display: grotesk-sans · accent: cool (oklch 55% 0.20 255°)
+   audience: internal ops staff · use: equipment check + team assignment · tone: utilitarian
+   pre-emit critique: P5 H5 E5 S4 R5 V4
+   ============================================================= */
 
+/* ─────────────────────────────────────────────
+   TOKEN BLOCK — every colour & font via named var
+   ───────────────────────────────────────────── */
 :root {
-  --ink: #0f172a;
-  --ink-soft: #475569;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --bg-page: #eef2f8;
-  --header-from: #0b1220;
-  --header-to: #1e3a8a;
+  /* Paper */
+  --color-paper:          oklch(97% 0.005 250);
+  --color-paper-2:        oklch(100% 0 0);
+  --color-paper-3:        oklch(94% 0.010 250);
+
+  /* Ink */
+  --color-ink:            oklch(14% 0.020 250);
+  --color-ink-2:          oklch(38% 0.020 250);
+  --color-ink-3:          oklch(58% 0.015 250);
+  --color-ink-4:          oklch(72% 0.010 250);
+
+  /* Accent — Cobalt */
+  --color-accent:         oklch(55% 0.200 255);
+  --color-accent-2:       oklch(44% 0.220 255);
+  --color-accent-3:       oklch(64% 0.170 255);
+  --color-accent-subtle:  oklch(94% 0.040 255);
+  --color-accent-mid:     oklch(88% 0.060 255);
+
+  /* Semantic */
+  --color-success:        oklch(58% 0.180 150);
+  --color-success-subtle: oklch(94% 0.040 150);
+  --color-danger:         oklch(56% 0.220 25);
+  --color-danger-subtle:  oklch(95% 0.040 25);
+  --color-warn:           oklch(70% 0.180 80);
+  --color-warn-subtle:    oklch(95% 0.050 80);
+
+  /* Border */
+  --color-border:         oklch(89% 0.008 250);
+  --color-border-strong:  oklch(80% 0.012 250);
+  --color-border-accent:  oklch(75% 0.080 255);
+
+  /* Focus */
+  --color-focus:          oklch(55% 0.200 255);
+
+  /* Typography */
+  --font-display:         'Space Grotesk', system-ui, sans-serif;
+  --font-body:            'Space Grotesk', system-ui, sans-serif;
+  --font-mono:            'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Radius scale */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+
+  /* Shadow scale */
+  --shadow-xs:  0 1px 2px oklch(14% 0.02 250 / 0.06);
+  --shadow-sm:  0 1px 4px oklch(14% 0.02 250 / 0.08), 0 2px 8px oklch(14% 0.02 250 / 0.05);
+  --shadow-md:  0 4px 16px oklch(14% 0.02 250 / 0.09), 0 1px 4px oklch(14% 0.02 250 / 0.06);
+  --shadow-lg:  0 12px 36px oklch(14% 0.02 250 / 0.12), 0 4px 12px oklch(14% 0.02 250 / 0.06);
+  --shadow-xl:  0 24px 60px oklch(14% 0.02 250 / 0.18), 0 8px 20px oklch(14% 0.02 250 / 0.08);
+
+  /* Transition */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:    cubic-bezier(0.55, 0, 1, 0.45);
+  --dur-fast:   140ms;
+  --dur-base:   220ms;
+  --dur-slow:   360ms;
 }
 
-html, body, #root {
-  background-color: var(--bg-page) !important;
-  color: var(--ink) !important;
+/* ─────────────────────────────────────────────
+   BASE — page shell
+   ───────────────────────────────────────────── */
+html,
+body,
+#root {
+  background: var(--color-paper) !important;
+  color: var(--color-ink) !important;
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
 }
 
-/* Khung ứng dụng: full-bleed nhưng giới hạn chiều rộng đọc thoải mái trên màn lớn */
+/* App shell — constrain max width, center */
 .app-shell {
-  max-width: 1680px;
+  max-width: 1800px;
   margin: 0 auto;
   width: 100%;
+  padding: 0 20px 32px;
 }
 
-@keyframes pulseDot {
-  0% { transform: scale(0.88); opacity: 0.7; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.88); opacity: 0.7; }
-}
-
-.status-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-}
-
-/* ---------------- HEADER ---------------- */
+/* ─────────────────────────────────────────────
+   N6 MASTHEAD — full-width utility header
+   ───────────────────────────────────────────── */
 .app-header {
-  background: linear-gradient(120deg, var(--header-from) 0%, var(--header-to) 100%);
+  background: var(--color-ink);
   position: relative;
   overflow: hidden;
+  /* No border-radius on masthead — it bleeds full width */
 }
 
-.app-header::after {
-  content: "";
+/* Subtle noise texture via SVG data URI */
+.app-header::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(600px circle at 85% -10%, rgba(96, 165, 250, 0.35), transparent 60%);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 110% -20%, oklch(55% 0.20 255 / 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 80% at -10% 110%, oklch(55% 0.20 255 / 0.10) 0%, transparent 55%);
   pointer-events: none;
 }
 
@@ -60,117 +117,250 @@ html, body, #root {
   z-index: 1;
 }
 
-/* ---------------- STAT CARDS ---------------- */
+/* Header inner padding */
+.app-header .p-toolbar,
+.app-header > .flex {
+  padding: 14px 24px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* App title in header */
+.app-header h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: normal;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────
+   STATUS DOT — connection indicator
+   ───────────────────────────────────────────── */
+@keyframes pulseDot {
+  0%   { transform: scale(0.85); opacity: 0.65; }
+  50%  { transform: scale(1.20); opacity: 1; }
+  100% { transform: scale(0.85); opacity: 0.65; }
+}
+
+.status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color var(--dur-base) var(--ease-out);
+}
+
+/* Status container in header */
+.app-header .flex.align-items-center.gap-2.surface-0 {
+  background: oklch(100% 0 0 / 0.10) !important;
+  border: 1px solid oklch(100% 0 0 / 0.14) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px);
+}
+
+.app-header .flex.align-items-center.gap-2.surface-0 span.text-xs {
+  color: oklch(95% 0.005 250) !important;
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────
+   STAT STRIP — 8-card overview
+   ───────────────────────────────────────────── */
+.app-shell > .grid.mb-4 {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 10px;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.app-shell > .grid.mb-4 > [class*='col-'] {
+  width: auto !important;
+  padding: 0 !important;
+}
+
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 14px 10px;
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
   text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  min-height: 100px;
 }
 
 .stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
-  border-color: #c7d2fe;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-accent);
 }
 
 .stat-icon {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
   margin-bottom: 6px;
 }
 
 .stat-label {
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--color-ink-3);
   margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .stat-value {
+  font-family: var(--font-display);
   font-size: 26px;
-  font-weight: 800;
-  color: var(--ink);
-}
-
-/* Inline Edit display styling - subtle, bold, borderless */
-.inline-edit-display {
   font-weight: 700;
-  opacity: 0.92;
-  padding: 3px 6px;
-  border-radius: 5px;
-  border: 1px solid transparent;
+  font-style: normal; /* gate 38a — no italic headers */
+  color: var(--color-ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ─────────────────────────────────────────────
+   WORKBENCH LAYOUT — sidebar + main
+   ───────────────────────────────────────────── */
+.workspace-layout {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.workspace-main {
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* ─────────────────────────────────────────────
+   TEAM CONTROL CENTER — left sidebar
+   ───────────────────────────────────────────── */
+.workspace-layout > .team-manager-panel {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-bottom: 0 !important;
+}
+
+.team-manager-panel {
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px !important;
+  box-shadow: var(--shadow-md);
+}
+
+/* Sidebar section heading */
+.team-manager-panel > .flex:first-of-type {
+  align-items: flex-start !important;
+  margin-bottom: 12px;
+}
+
+/* Scrollbar inside sidebar */
+.team-manager-panel::-webkit-scrollbar {
+  width: 5px;
+}
+.team-manager-panel::-webkit-scrollbar-track {
   background: transparent;
-  box-shadow: none;
-  color: #1e293b;
-  transition: all 0.2s ease;
+}
+.team-manager-panel::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 99px;
 }
 
-.inline-edit-display:hover {
-  opacity: 1;
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+/* Team list stacks vertically */
+.team-manager-panel .flex.align-items-center.gap-2.flex-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  flex-wrap: nowrap !important;
 }
 
-.inline-edit-display.stt-display {
-  font-size: 11px;
-  font-weight: 800;
-  color: #2563eb;
-  background: rgba(37, 99, 235, 0.08);
-  border-radius: 4px;
-  padding: 1px 5px;
-  display: inline-block;
+/* ─────────────────────────────────────────────
+   TEAM BAR ITEMS — list rows in sidebar
+   ───────────────────────────────────────────── */
+.team-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-paper);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-ink-2);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  user-select: none;
+  width: 100%;
+  min-height: 40px;
+  justify-content: flex-start;
 }
 
-.inline-edit-display.stt-display:hover {
-  background: rgba(37, 99, 235, 0.18);
+.team-bar-item:hover {
+  background: var(--color-paper-3);
+  border-color: var(--color-border-strong);
+  color: var(--color-ink);
 }
 
-/* Tên thành viên cabin: Chữ nhỏ, xuống dòng tự nhiên, không truncation */
-.inline-edit-name {
-  font-size: 11px !important;
-  line-height: 1.25 !important;
-  font-weight: 700 !important;
-  white-space: normal !important;
-  word-break: break-word !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+.team-bar-item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
-/* ---------------- TEAM TAG (nhãn nhỏ trên cabin) ---------------- */
-.team-tag {
+.team-bar-item.active {
+  background: var(--color-ink);
+  color: #ffffff;
+  border-color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.team-bar-item .team-count {
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(4px);
-  border-radius: 999px;
+  background: oklch(14% 0.02 250 / 0.08);
   padding: 2px 7px;
-  width: fit-content;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  transition: all 0.2s ease;
-  user-select: none;
+  border-radius: 99px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
-.team-tag:hover {
-  background: rgba(255, 255, 255, 0.98);
-  border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+.team-bar-item.active .team-count {
+  background: oklch(100% 0 0 / 0.20);
+  color: #ffffff;
 }
 
-.team-tag-selected {
-  background: #eff6ff !important;
-  border-color: #3b82f6 !important;
-  color: #1d4ed8 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-}
-
+/* Team dot */
 .team-tag-dot {
   width: 8px;
   height: 8px;
@@ -179,130 +369,437 @@ html, body, #root {
   flex-shrink: 0;
 }
 
+/* Edit/delete icons in sidebar */
+.team-edit-icon {
+  border-radius: var(--radius-xs);
+  padding: 3px;
+  transition: all var(--dur-fast) var(--ease-out);
+  color: var(--color-ink-3);
+}
+
+.team-edit-icon:hover {
+  background: var(--color-paper-3);
+  color: var(--color-ink);
+  transform: scale(1.1);
+}
+
+.team-delete-icon:hover {
+  color: var(--color-danger) !important;
+  background: var(--color-danger-subtle);
+}
+
+/* ─────────────────────────────────────────────
+   ADD TEAM FORM — inline inside sidebar
+   ───────────────────────────────────────────── */
+.team-inline-form {
+  background: var(--color-paper);
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  animation: formSlideIn var(--dur-base) var(--ease-out);
+}
+
+@keyframes formSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Color palette grouped */
+.color-palette-grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.color-palette-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.color-palette-row-label {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--color-ink-3);
+  width: 64px;
+  flex-shrink: 0;
+  text-align: right;
+  line-height: 1;
+}
+
+.color-palette-row-swatches {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.color-palette-row-swatches .color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-xs);
+}
+
+.color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-paper-2);
+  box-shadow: 0 0 0 1.5px var(--color-border);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.color-swatch:hover {
+  transform: scale(1.20);
+  box-shadow: 0 0 0 2px var(--color-border-strong);
+}
+
+.color-swatch.selected {
+  box-shadow: 0 0 0 2px var(--color-paper-2), 0 0 0 4px var(--color-ink);
+  transform: scale(1.15);
+}
+
+.new-team-preview {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  border: 2px solid var(--color-paper-2);
+  box-shadow: 0 0 0 1.5px var(--color-border);
+  flex-shrink: 0;
+}
+
+.color-palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ─────────────────────────────────────────────
+   TOOLBAR — workspace controls
+   ───────────────────────────────────────────── */
+.workspace-main > .p-toolbar {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: var(--color-paper-2) !important;
+  padding: 10px 14px !important;
+}
+
+/* ─────────────────────────────────────────────
+   FLOOR FILTER — segmented pill control
+   ───────────────────────────────────────────── */
+.floor-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: 99px;
+  padding: 3px;
+}
+
+.floor-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink-2);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.floor-filter-btn:hover {
+  color: var(--color-ink);
+  background: var(--color-paper-2);
+}
+
+.floor-filter-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.floor-filter-btn.active {
+  background: var(--color-ink);
+  color: #ffffff;
+  box-shadow: var(--shadow-xs);
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────
+   LANE CONTAINER — floor/lane sections
+   ───────────────────────────────────────────── */
+.lane-container {
+  background: var(--color-paper-2);
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: 14px !important;
+}
+
+/* Floor section heading */
+.workspace-main h2 {
+  font-family: var(--font-display);
+  font-size: 1rem !important;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+/* ─────────────────────────────────────────────
+   SEAT CARD — cabin cards
+   ───────────────────────────────────────────── */
+.seat-card {
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-xs) !important;
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left accent strip — uses team color tint from fill- classes */
+.seat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--color-border-strong);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.seat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--color-border-strong) !important;
+  z-index: 5;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 1.5px dashed transparent;
+  border-radius: var(--radius-md);
+  min-height: 44px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.drop-zone:hover {
+  border-color: var(--color-border-accent);
+  background-color: var(--color-accent-subtle);
+}
+
+/* ─────────────────────────────────────────────
+   TEAM COLOR FILLS — cabin backgrounds
+   ───────────────────────────────────────────── */
+.fill-lead {
+  background: oklch(97% 0.025 255) !important;
+  border-color: oklch(82% 0.08 255) !important;
+}
+.fill-lead.seat-card::before { background: oklch(55% 0.20 255); }
+
+.fill-pink {
+  background: oklch(97% 0.020 0) !important;
+  border-color: oklch(84% 0.07 0) !important;
+}
+.fill-pink.seat-card::before { background: oklch(58% 0.22 0); }
+
+.fill-orange {
+  background: oklch(97% 0.025 55) !important;
+  border-color: oklch(84% 0.08 55) !important;
+}
+.fill-orange.seat-card::before { background: oklch(68% 0.20 50); }
+
+.fill-cyan {
+  background: oklch(97% 0.025 210) !important;
+  border-color: oklch(82% 0.08 210) !important;
+}
+.fill-cyan.seat-card::before { background: oklch(60% 0.20 210); }
+
+.fill-yellow {
+  background: oklch(97% 0.030 90) !important;
+  border-color: oklch(85% 0.10 90) !important;
+}
+.fill-yellow.seat-card::before { background: oklch(72% 0.18 80); }
+
+.fill-purple {
+  background: oklch(97% 0.022 300) !important;
+  border-color: oklch(83% 0.07 300) !important;
+}
+.fill-purple.seat-card::before { background: oklch(55% 0.20 300); }
+
+.fill-grey {
+  background: var(--color-paper) !important;
+  border-color: var(--color-border) !important;
+  opacity: 0.82;
+}
+.fill-grey.seat-card::before { background: var(--color-border-strong); }
+
+/* ─────────────────────────────────────────────
+   TEAM TAG — cabin label pill
+   ───────────────────────────────────────────── */
+.team-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: oklch(100% 0 0 / 0.80);
+  backdrop-filter: blur(6px);
+  border-radius: 99px;
+  padding: 2px 8px;
+  width: fit-content;
+  border: 1px solid oklch(14% 0.02 250 / 0.10);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+  cursor: pointer;
+  user-select: none;
+}
+
+.team-tag:hover {
+  background: oklch(100% 0 0 / 0.96);
+  border-color: oklch(55% 0.20 255 / 0.40);
+  box-shadow: var(--shadow-xs);
+}
+
+.team-tag:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.team-tag-selected {
+  background: var(--color-accent-subtle) !important;
+  border-color: var(--color-accent) !important;
+  color: var(--color-accent-2) !important;
+  box-shadow: 0 0 0 2px oklch(55% 0.20 255 / 0.20);
+}
+
 .team-tag-label {
-  max-width: 85px;
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ---------------- Màu nền cabin theo Team ---------------- */
-.fill-lead {
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
-  border-color: #93c5fd !important;
+/* ─────────────────────────────────────────────
+   TEAM GRID POPOVER — color selector
+   ───────────────────────────────────────────── */
+.dropdown-portal {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  isolation: isolate;
+  transform-origin: top left;
 }
 
-.fill-pink {
-  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%) !important;
-  border-color: #f9a8d4 !important;
+.dropdown-portal > .surface-0 {
+  width: min(296px, calc(100vw - 24px));
+  max-height: min(68vh, 400px) !important;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-xl) !important;
+  backdrop-filter: blur(12px);
+  background: var(--color-paper-2) !important;
+  overflow-y: auto;
 }
 
-.fill-orange {
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%) !important;
-  border-color: #fdba74 !important;
+.dropdown-portal .surface-0::-webkit-scrollbar { width: 5px; }
+.dropdown-portal .surface-0::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 99px;
 }
 
-.fill-cyan {
-  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%) !important;
-  border-color: #67e8f9 !important;
+.dropdown-pop-in {
+  animation: dropdownPop var(--dur-fast) var(--ease-out);
 }
 
-.fill-yellow {
-  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%) !important;
-  border-color: #fcd34d !important;
+@keyframes dropdownPop {
+  from { opacity: 0; transform: scale(0.94) translateY(-5px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.fill-purple {
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%) !important;
-  border-color: #c4b5fd !important;
-}
-
-.fill-grey {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
-  border-color: #cbd5e1 !important;
-  opacity: 0.85;
-}
-
-/* Chấm màu trong nhãn team */
-.team-tag-dot.fill-lead { background-color: #2563eb; }
-.team-tag-dot.fill-pink { background-color: #ec4899; }
-.team-tag-dot.fill-orange { background-color: #f97316; }
-.team-tag-dot.fill-cyan { background-color: #06b6d4; }
-.team-tag-dot.fill-yellow { background-color: #eab308; }
-.team-tag-dot.fill-purple { background-color: #8b5cf6; }
-.team-tag-dot.fill-grey { background-color: #6b7280; }
-
-/* ---------------- Cabin (seat card) ---------------- */
-.seat-card {
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-}
-
-.seat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
-  z-index: 5;
-}
-
-.lane-container {
-  background: #ffffff;
-}
-
-/* ---------------- Bảng chọn Team (lưới thẻ màu trong popover cabin) ---------------- */
-/* Khung chứa: lưới 2 cột, tự động wrap xuống dòng khi tên Team dài. */
 .team-grid-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  width: 18rem;
-  padding: 4px;
+  gap: 6px;
+  width: 100%;
+  padding: 6px;
 }
 
-/* Mỗi Team là 1 thẻ được TÔ NỀN đúng màu đại diện của Team (không còn chấm
-   màu rời) — màu chữ tự động đổi trắng/đen tuỳ độ sáng nền để luôn đọc rõ. */
+/* Team color card */
 .team-color-card {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-width: calc(50% - 4px);
-  flex: 1 1 calc(50% - 4px);
+  gap: 5px;
+  min-width: calc(50% - 3px);
+  flex: 1 1 calc(50% - 3px);
+  min-height: 44px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
+  font-family: var(--font-body);
   font: inherit;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  font-weight: 700;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    filter var(--dur-fast) var(--ease-out);
   position: relative;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 3px oklch(14% 0.02 250 / 0.14);
 }
 
-/* Hiệu ứng hover rõ ràng: nổi lên + sáng hơn + đổ bóng đậm hơn để dễ chọn */
 .team-color-card:hover,
 .team-color-card:focus-visible {
-  transform: translateY(-3px) scale(1.02);
-  filter: brightness(1.1) saturate(1.05);
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.22);
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.08) saturate(1.05);
+  box-shadow: 0 6px 16px oklch(14% 0.02 250 / 0.22);
   outline: none;
 }
 
 .team-color-card:active {
-  transform: translateY(-1px) scale(0.99);
+  transform: translateY(0) scale(0.99);
 }
 
-/* Thẻ đang được chọn: viền trắng nổi bật + ring theo màu Team */
 .team-color-card.selected {
   box-shadow:
     0 0 0 2px #ffffff,
-    0 0 0 4px var(--team-ring-color, #2563eb),
-    0 6px 14px rgba(15, 23, 42, 0.2);
+    0 0 0 4px var(--team-ring-color, var(--color-accent)),
+    0 6px 14px oklch(14% 0.02 250 / 0.18);
 }
 
 .team-color-card-name {
-  font-size: 12.5px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   text-align: center;
   line-height: 1.2;
   word-break: break-word;
@@ -314,187 +811,69 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-/* ---------------- Thanh chọn Team bên dưới Header chính ---------------- */
-.team-bar-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1.5px solid #e2e8f0;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  color: #334155;
-  transition: all 0.2s ease;
-  user-select: none;
+/* ─────────────────────────────────────────────
+   INLINE EDIT
+   ───────────────────────────────────────────── */
+.inline-edit-display {
+  font-family: var(--font-body);
+  font-weight: 600;
+  opacity: 0.92;
+  padding: 2px 5px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-ink);
+  transition: all var(--dur-fast) var(--ease-out);
 }
 
-.team-bar-item:hover {
-  background: #f8fafc;
-  border-color: #3b82f6;
-  color: #1d4ed8;
-  transform: translateY(-1px);
+.inline-edit-display:hover {
+  opacity: 1;
+  border-color: var(--color-border-accent);
+  background: var(--color-accent-subtle);
+  box-shadow: var(--shadow-xs);
 }
 
-.team-bar-item.active {
-  background: #0f172a;
-  color: #ffffff;
-  border-color: #0f172a;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-}
-
-.team-bar-item .team-count {
-  font-size: 10px;
-  font-weight: 800;
-  background: rgba(0,0,0,0.06);
-  padding: 1px 6px;
-  border-radius: 999px;
-}
-
-.team-bar-item.active .team-count {
-  background: rgba(255,255,255,0.25);
-  color: #ffffff;
-}
-
-/* ---------------- Vùng kéo-thả ---------------- */
-.drop-zone {
-  border: 1.5px dashed transparent;
-  border-radius: 12px;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.drop-zone:hover {
-  border-color: #bfdbfe;
-  background-color: rgba(219, 234, 254, 0.25);
-}
-
-/* ---------------- Bảng quản lý Team (nổi bật phía trên) ---------------- */
-.team-manager-panel {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 18px 20px;
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
-}
-
-.team-edit-icon {
-  border-radius: 999px;
-  padding: 3px;
-  transition: all 0.15s ease;
-}
-
-.team-edit-icon:hover {
-  background: rgba(0, 0, 0, 0.08);
-  transform: scale(1.15);
-}
-
-.team-inline-form {
-  background: #f8fafc;
-  border: 1.5px dashed #cbd5e1;
-  border-radius: 14px;
-  padding: 14px;
-  animation: formSlideIn 0.15s ease;
-}
-
-@keyframes formSlideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.color-palette-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* ---------------- Bảng màu theo nhóm tông màu (grouped palette) ---------------- */
-/* Mỗi hàng = 1 tông màu: nhãn bên trái + 4 swatches nhạt→đậm bên phải */
-.color-palette-grouped {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.color-palette-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.color-palette-row-label {
+.inline-edit-display.stt-display {
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
-  color: #64748b;
-  width: 68px;
-  flex-shrink: 0;
-  text-align: right;
-  line-height: 1;
+  color: var(--color-accent-2);
+  background: var(--color-accent-subtle);
+  border-radius: var(--radius-xs);
+  padding: 1px 5px;
+  display: inline-block;
 }
 
-.color-palette-row-swatches {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+.inline-edit-display.stt-display:hover {
+  background: var(--color-accent-mid);
+  border-color: var(--color-border-accent);
 }
 
-/* Swatch trong grouped palette: hình chữ nhật tròn cạnh thay vì tròn đầy
-   để nhìn thấy màu rõ hơn khi kích thước nhỏ */
-.color-palette-row-swatches .color-swatch {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+/* Tên thành viên cabin */
+.inline-edit-name {
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
-.color-swatch {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1.5px #e2e8f0;
-  cursor: pointer;
-  padding: 0;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.color-swatch:hover {
-  transform: scale(1.18);
-  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.2);
-}
-
-.color-swatch.selected {
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
-  transform: scale(1.14);
-}
-
-.new-team-preview {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1.5px #e2e8f0;
-  flex-shrink: 0;
-}
-
-/* Dropdown Team cabin: hiệu ứng xuất hiện gọn gàng */
-.dropdown-pop-in {
-  animation: dropdownPop 0.12s ease;
-}
-
-@keyframes dropdownPop {
-  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* ---------------- Nút nhanh trên cabin: check đủ bộ / reset / xoá ---------------- */
+/* ─────────────────────────────────────────────
+   QA QUICK BUTTONS — on cabin cards
+   ───────────────────────────────────────────── */
 .qa-group {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  background: rgba(255, 255, 255, 0.55);
-  border-radius: 999px;
+  gap: 2px;
+  background: oklch(100% 0 0 / 0.60);
+  border-radius: 99px;
   padding: 2px;
+  backdrop-filter: blur(4px);
 }
 
 .qa-btn.p-button {
@@ -502,291 +881,140 @@ html, body, #root {
   height: 18px !important;
   padding: 0 !important;
   min-width: 0;
+  border-radius: 99px !important;
 }
 
-.qa-btn.p-button .p-button-icon {
-  font-size: 9px;
-}
+.qa-btn.p-button .p-button-icon { font-size: 9px; }
 
 .qa-btn-lead.p-button {
   width: 20px !important;
   height: 20px !important;
 }
 
-.qa-btn-lead.p-button .p-button-icon {
-  font-size: 10px;
-}
+.qa-btn-lead.p-button .p-button-icon { font-size: 10px; }
 
-/* ---------------- Bộ lọc Sàn Lầu ---------------- */
-.floor-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  background: #eef2f8;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  padding: 3px;
-}
-
-.floor-filter-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 800;
-  padding: 7px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.floor-filter-btn:hover {
-  color: #1d4ed8;
-  background: rgba(255, 255, 255, 0.7);
-}
-
-.floor-filter-btn.active {
-  background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-}
-
-/* ---------------- Responsive ---------------- */
-@media (max-width: 768px) {
-  .stat-value { font-size: 20px; }
-  .team-tag-label { max-width: 60px; }
-}
-
-/* ============================================================
-   REDESIGN v2 — Team Control Center + responsive cabin workspace
-   ============================================================ */
-
-:root {
-  --design-bg: #f4f6f8;
-  --design-surface: #ffffff;
-  --design-surface-soft: #f8fafc;
-  --design-border: #e5e7eb;
-  --design-border-strong: #d1d5db;
-  --design-text: #111827;
-  --design-muted: #6b7280;
-  --design-shadow: 0 10px 30px rgba(15, 23, 42, .07);
-  --design-shadow-soft: 0 4px 16px rgba(15, 23, 42, .055);
-}
-
-html, body, #root {
-  background: var(--design-bg) !important;
-}
-
-body {
-  overflow-x: hidden;
-}
-
-.app-shell {
-  max-width: 1800px;
-  padding: 20px !important;
-}
-
-/* Header: cleaner, less visually dominant */
-.app-header {
-  min-height: 118px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 24px !important;
-  box-shadow: 0 16px 38px rgba(15,23,42,.16) !important;
-}
-
-/* Statistics become a calm overview strip */
-.stat-card {
-  border-radius: 16px;
-  box-shadow: var(--design-shadow-soft);
-  min-height: 104px;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(15,23,42,.09);
-}
-
-/* Main desktop split */
-.workspace-layout {
-  display: grid;
-  grid-template-columns: minmax(250px, 25%) minmax(0, 75%);
-  gap: 18px;
-  align-items: start;
-}
-
-.workspace-main {
-  min-width: 0;
-}
-
-.workspace-layout > .team-manager-panel {
-  grid-column: 1;
-  grid-row: 1;
-  position: sticky;
-  top: 16px;
-  max-height: calc(100vh - 32px);
-  overflow: auto;
-  margin-bottom: 0 !important;
-  border-radius: 20px;
-}
-
-.workspace-main {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-/* Team Control Center */
-.team-manager-panel {
-  background: rgba(255,255,255,.96);
-  border: 1px solid var(--design-border);
-  padding: 18px !important;
-  box-shadow: var(--design-shadow);
-}
-
-.team-manager-panel > .flex:first-of-type {
-  align-items: flex-start !important;
-}
-
-.team-manager-panel .team-bar-item {
-  width: 100%;
-  min-height: 42px;
-  justify-content: flex-start;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: var(--design-surface-soft);
-  border-color: var(--design-border);
-}
-
-.team-manager-panel .team-bar-item.active {
-  background: #111827;
-  border-color: #111827;
-}
-
-.team-manager-panel .flex.align-items-center.gap-2.flex-wrap {
-  display: grid !important;
-  grid-template-columns: 1fr;
-  gap: 8px !important;
-}
-
-.team-manager-panel .team-count {
-  margin-left: auto;
-}
-
-.team-manager-panel .team-inline-form {
-  position: relative;
-  border-radius: 14px;
-}
-
+/* ─────────────────────────────────────────────
+   TEAM MANAGER — mobile FAB/sheet controls
+   ───────────────────────────────────────────── */
 .team-sheet-mobile-handle,
 .team-sheet-close,
 .team-fab {
   display: none;
 }
 
-/* Right-side toolbar */
-.workspace-main > .p-toolbar {
-  border-radius: 18px !important;
-  border: 1px solid var(--design-border) !important;
-  box-shadow: var(--design-shadow-soft) !important;
-  background: rgba(255,255,255,.95);
+/* ─────────────────────────────────────────────
+   PRIMEREACT OVERRIDES — tokens only
+   ───────────────────────────────────────────── */
+
+/* Input text */
+.p-inputtext {
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  border-color: var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--color-paper-2) !important;
+  color: var(--color-ink) !important;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out) !important;
 }
 
-.workspace-main .floor-filter {
-  background: #f1f5f9;
+.p-inputtext:hover {
+  border-color: var(--color-border-strong) !important;
 }
 
-/* Floors / lanes */
-.workspace-main h2 {
-  font-size: 1.1rem !important;
-  letter-spacing: -.01em;
+.p-inputtext:focus,
+.p-inputtext.p-focus {
+  border-color: var(--color-focus) !important;
+  box-shadow: 0 0 0 3px oklch(55% 0.20 255 / 0.18) !important;
+  outline: none !important;
 }
 
-.lane-container {
-  border-radius: 18px !important;
-  box-shadow: var(--design-shadow-soft) !important;
-  border-color: var(--design-border) !important;
-  background: rgba(255,255,255,.96);
+.p-inputtext::placeholder {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-ink-4);
 }
 
-.seat-card {
-  min-height: 142px;
-  border-radius: 14px !important;
-  border-color: color-mix(in srgb, var(--design-border-strong) 75%, transparent) !important;
-  box-shadow: 0 3px 12px rgba(15,23,42,.055) !important;
+/* Button */
+.p-button {
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--dur-fast) var(--ease-out) !important;
 }
 
-.seat-card:hover {
-  transform: translateY(-3px) scale(1.012);
-  box-shadow: 0 12px 24px rgba(15,23,42,.12) !important;
-  z-index: 4;
+.p-button:focus-visible {
+  outline: 2px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
 }
 
-.drop-zone {
-  min-height: 48px;
+/* Primary button */
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-danger):not(.p-button-success):not(.p-button-warning):not(.p-button-info) {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
 }
 
-/* Portal dropdown: independent of grid/overflow/stacking contexts */
-.dropdown-portal {
-  position: fixed !important;
-  z-index: 2147483647 !important;
-  isolation: isolate;
-  transform-origin: top left;
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-danger):not(.p-button-success):not(.p-button-warning):not(.p-button-info):hover {
+  background: var(--color-accent-2) !important;
+  border-color: var(--color-accent-2) !important;
 }
 
-.dropdown-portal > .surface-0 {
-  width: min(304px, calc(100vw - 24px));
-  max-height: min(70vh, 420px) !important;
-  border-radius: 16px !important;
-  border-color: #e5e7eb !important;
-  box-shadow: 0 24px 60px rgba(15,23,42,.20) !important;
-  backdrop-filter: blur(12px);
+/* Checkbox */
+.p-checkbox .p-checkbox-box {
+  border-color: var(--color-border-strong) !important;
+  border-radius: var(--radius-xs) !important;
+  background: var(--color-paper-2) !important;
+  transition: all var(--dur-fast) var(--ease-out) !important;
 }
 
-.team-grid-container {
-  width: 100%;
-  padding: 6px;
-  gap: 6px;
+.p-checkbox .p-checkbox-box.p-highlight {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
 }
 
-.team-color-card {
-  min-height: 44px;
-  border-radius: 11px;
+.p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
+  box-shadow: 0 0 0 3px oklch(55% 0.20 255 / 0.22) !important;
 }
 
-/* Subtle scrollbar */
-.team-manager-panel::-webkit-scrollbar,
-.dropdown-portal .surface-0::-webkit-scrollbar {
-  width: 7px;
-}
-.team-manager-panel::-webkit-scrollbar-thumb,
-.dropdown-portal .surface-0::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 99px;
+/* Toast */
+.p-toast {
+  font-family: var(--font-body) !important;
 }
 
-/* Keep controls compact on medium desktop */
-@media (min-width: 769px) {
-  .workspace-main .lane-container {
-    scrollbar-width: thin;
-  }
+.p-toast .p-toast-message {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
-/* Mobile: management becomes a bottom sheet + FAB */
+/* Badge */
+.p-badge {
+  font-family: var(--font-mono) !important;
+  font-weight: 700 !important;
+  border-radius: 99px !important;
+  font-size: 10px !important;
+}
+
+/* Toolbar */
+.p-toolbar {
+  padding: 8px 14px !important;
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE — mobile (≤ 768px)
+   ───────────────────────────────────────────── */
 @media (max-width: 768px) {
   .app-shell {
-    padding: 10px !important;
+    padding: 0 10px 24px !important;
   }
 
   .app-header {
-    min-height: 0;
-    padding: 16px !important;
-    border-radius: 18px !important;
+    /* On mobile, keep masthead full-bleed */
   }
 
   .app-header h1 {
-    font-size: 1.25rem !important;
+    font-size: 1.15rem !important;
     line-height: 1.3;
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 
   .workspace-layout {
@@ -797,6 +1025,7 @@ body {
     width: 100%;
   }
 
+  /* Sidebar hidden on mobile — becomes bottom sheet */
   .workspace-layout > .team-manager-panel {
     display: none;
   }
@@ -812,30 +1041,31 @@ body {
     width: 100%;
     max-height: min(78vh, 720px);
     margin: 0 !important;
-    padding: 18px 16px 24px !important;
-    border-radius: 24px 24px 0 0 !important;
+    padding: 18px 16px 28px !important;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
     overflow-y: auto;
-    box-shadow: 0 -24px 60px rgba(15,23,42,.20);
-    animation: teamSheetUp .2s ease-out;
+    box-shadow: var(--shadow-xl);
+    animation: teamSheetUp var(--dur-base) var(--ease-out);
   }
 
+  /* Backdrop */
   .workspace-layout > .team-manager-panel.team-sheet-open::before {
-    content: "";
+    content: '';
     position: fixed;
     z-index: -1;
     inset: 0;
-    background: rgba(15,23,42,.32);
+    background: oklch(14% 0.02 250 / 0.36);
     backdrop-filter: blur(2px);
     pointer-events: none;
   }
 
   .team-sheet-mobile-handle {
     display: block;
-    width: 42px;
+    width: 38px;
     height: 4px;
     margin: -7px auto 14px;
-    border-radius: 999px;
-    background: #cbd5e1;
+    border-radius: 99px;
+    background: var(--color-border-strong);
   }
 
   .team-sheet-close {
@@ -851,27 +1081,33 @@ body {
     gap: 8px;
     position: fixed;
     right: 16px;
-    bottom: 16px;
+    bottom: 20px;
     z-index: 1200;
     border: 0;
-    border-radius: 999px;
-    padding: 12px 16px;
-    background: #111827;
-    color: #fff;
-    font: inherit;
+    border-radius: 99px;
+    padding: 12px 18px;
+    background: var(--color-ink);
+    color: #ffffff;
+    font-family: var(--font-body);
     font-size: 12px;
-    font-weight: 800;
-    box-shadow: 0 12px 30px rgba(15,23,42,.25);
+    font-weight: 700;
+    box-shadow: var(--shadow-lg);
     cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .team-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
   }
 
   .team-fab:active {
-    transform: scale(.97);
+    transform: scale(0.96);
   }
 
+  /* Toolbar stacks on mobile */
   .workspace-main > .p-toolbar {
-    align-items: stretch;
-    border-radius: 16px !important;
+    border-radius: var(--radius-md) !important;
   }
 
   .workspace-main .p-toolbar-group-start,
@@ -891,6 +1127,7 @@ body {
   .floor-filter {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .floor-filter-btn {
@@ -912,7 +1149,7 @@ body {
     grid-column: 1 / -1;
   }
 
-  /* Cabin area: native-feeling horizontal pan on small screens */
+  /* Cabin scroll */
   .lane-container {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
@@ -925,76 +1162,82 @@ body {
   }
 
   .seat-card {
-    width: 144px !important;
-    min-width: 144px !important;
+    width: 148px !important;
+    min-width: 148px !important;
+  }
+
+  /* Stat strip: 2 columns on mobile */
+  .app-shell > .grid.mb-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .stat-card {
-    min-height: 88px;
-    padding: 10px 6px;
+    min-height: 86px;
+    padding: 10px 8px;
   }
 
   .stat-value {
-    font-size: 19px;
+    font-size: 22px;
   }
 
   .stat-label {
     font-size: 9px;
   }
 
-  .team-manager-panel .team-bar-item {
-    min-height: 46px;
-  }
-}
-
-@keyframes teamSheetUp {
-  from {
-    opacity: .6;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .seat-card,
-  .team-color-card,
   .team-bar-item {
-    transition: none !important;
+    min-height: 44px;
   }
 }
 
-/* Overview strip uses the full available width */
-.app-shell > .grid.mb-4 {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 10px;
-  margin-left: 0;
-  margin-right: 0;
-}
-.app-shell > .grid.mb-4 > [class*="col-"] {
-  width: auto !important;
-  padding: 0 !important;
-}
-.team-delete-icon:hover {
-  color: #dc2626 !important;
-  background: rgba(239,68,68,.10);
-}
-
-@media (max-width: 1100px) and (min-width: 769px) {
+/* ─────────────────────────────────────────────
+   RESPONSIVE — tablet (769px–1100px)
+   ───────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1100px) {
   .workspace-layout {
-    grid-template-columns: minmax(220px, 30%) minmax(0, 70%);
+    grid-template-columns: 220px minmax(0, 1fr);
   }
+
   .app-shell > .grid.mb-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .workspace-main .lane-container {
+    scrollbar-width: thin;
+  }
 }
 
-@media (max-width: 768px) {
-  .app-shell > .grid.mb-4 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+/* ─────────────────────────────────────────────
+   RESPONSIVE — wide screens (≥ 769px)
+   ───────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .workspace-main .lane-container {
+    scrollbar-width: thin;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────── */
+@keyframes teamSheetUp {
+  from { opacity: 0.6; transform: translateY(100%); }
+  to   { opacity: 1;   transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────
+   REDUCED MOTION — accessibility
+   ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .seat-card,
+  .team-color-card,
+  .team-bar-item,
+  .stat-card,
+  .team-tag,
+  .floor-filter-btn,
+  .inline-edit-display,
+  .team-fab,
+  .dropdown-pop-in {
+    transition: none !important;
+    animation: none !important;
   }
 }
