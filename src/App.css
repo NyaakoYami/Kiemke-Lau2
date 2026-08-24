@@ -563,7 +563,7 @@ body,
    SEAT CARD — cabin cards
    ───────────────────────────────────────────── */
 .seat-card {
-  background: var(--color-paper-2);
+  background: var(--color-paper-2); /* fallback nếu không có inline gradient */
   border: 1px solid var(--color-border) !important;
   border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-xs) !important;
@@ -612,52 +612,6 @@ body,
   border-color: var(--color-border-accent);
   background-color: var(--color-accent-subtle);
 }
-
-/* ─────────────────────────────────────────────
-   TEAM COLOR FILLS — cabin backgrounds
-   ───────────────────────────────────────────── */
-.fill-lead {
-  background: oklch(97% 0.025 255) !important;
-  border-color: oklch(82% 0.08 255) !important;
-}
-.fill-lead.seat-card::before { background: oklch(55% 0.20 255); }
-
-.fill-pink {
-  background: oklch(97% 0.020 0) !important;
-  border-color: oklch(84% 0.07 0) !important;
-}
-.fill-pink.seat-card::before { background: oklch(58% 0.22 0); }
-
-.fill-orange {
-  background: oklch(97% 0.025 55) !important;
-  border-color: oklch(84% 0.08 55) !important;
-}
-.fill-orange.seat-card::before { background: oklch(68% 0.20 50); }
-
-.fill-cyan {
-  background: oklch(97% 0.025 210) !important;
-  border-color: oklch(82% 0.08 210) !important;
-}
-.fill-cyan.seat-card::before { background: oklch(60% 0.20 210); }
-
-.fill-yellow {
-  background: oklch(97% 0.030 90) !important;
-  border-color: oklch(85% 0.10 90) !important;
-}
-.fill-yellow.seat-card::before { background: oklch(72% 0.18 80); }
-
-.fill-purple {
-  background: oklch(97% 0.022 300) !important;
-  border-color: oklch(83% 0.07 300) !important;
-}
-.fill-purple.seat-card::before { background: oklch(55% 0.20 300); }
-
-.fill-grey {
-  background: var(--color-paper) !important;
-  border-color: var(--color-border) !important;
-  opacity: 0.82;
-}
-.fill-grey.seat-card::before { background: var(--color-border-strong); }
 
 /* ─────────────────────────────────────────────
    TEAM TAG — cabin label pill

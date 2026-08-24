@@ -47,6 +47,7 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
     <div
       className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
       onClick={() => setIsEdit(true)}
+      onMouseDown={(e) => e.stopPropagation()}
       title="Click để sửa"
     >
       {value || placeholder}
@@ -329,6 +330,7 @@ const TeamTag = ({ team, onOpen }) => (
   <div
     className="team-tag flex align-items-center gap-1 cursor-pointer"
     onClick={onOpen}
+    onMouseDown={(e) => e.stopPropagation()}
     role="button"
     tabIndex={0}
     onKeyDown={(e) => {
@@ -825,6 +827,7 @@ export default function App() {
     e.dataTransfer.effectAllowed = "move";
   };
 
+  // Thả vào vùng trống của dãy (không nhắm vào 1 cabin cụ thể) -> nối vào cuối.
   const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
     e.preventDefault();
     if (!draggedItem) return;
@@ -842,6 +845,45 @@ export default function App() {
       if (type !== targetType)
         st.inventory[item.id] = initChecklist(targetType === "lead");
       targetArr.push(item);
+    });
+    setDraggedItem(null);
+  };
+
+  // Thả trực tiếp lên 1 cabin cụ thể -> chèn đúng vào vị trí đó thay vì luôn
+  // nhảy về cuối dãy. e.stopPropagation() để không kích hoạt luôn onDrop của
+  // container cha (tránh chèn 2 lần / lệch vị trí).
+  const onDropOnSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!draggedItem) return;
+    const { fIdx, lIdx, type, sIdx } = draggedItem;
+    if (
+      fIdx === targetFIdx &&
+      lIdx === targetLIdx &&
+      type === targetType &&
+      sIdx === targetSIdx
+    ) {
+      setDraggedItem(null);
+      return;
+    }
+    updateState((st) => {
+      const sourceArr =
+        type === "lead"
+          ? st.floors[fIdx].lanes[lIdx].leads
+          : st.floors[fIdx].lanes[lIdx].agents;
+      const targetArr =
+        targetType === "lead"
+          ? st.floors[targetFIdx].lanes[targetLIdx].leads
+          : st.floors[targetFIdx].lanes[targetLIdx].agents;
+      const [item] = sourceArr.splice(sIdx, 1);
+      if (type !== targetType)
+        st.inventory[item.id] = initChecklist(targetType === "lead");
+      // Nếu chèn trong cùng 1 mảng và vị trí gốc nằm trước vị trí đích,
+      // sau khi splice(sIdx) mảng đã ngắn đi 1 phần tử -> lùi chỉ số đích lại 1.
+      let insertAt = targetSIdx;
+      if (sourceArr === targetArr && sIdx < targetSIdx) insertAt -= 1;
+      insertAt = Math.max(0, Math.min(insertAt, targetArr.length));
+      targetArr.splice(insertAt, 0, item);
     });
     setDraggedItem(null);
   };
@@ -1300,10 +1342,17 @@ export default function App() {
                             onDragStart={(e) =>
                               onDragStart(e, fIdx, lIdx, "lead", sIdx)
                             }
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) =>
+                              onDropOnSeat(e, fIdx, lIdx, "lead", sIdx)
+                            }
                             className="seat-card p-2 border-round-xl shadow-2 border-1 cursor-move w-full"
                             style={teamCardStyle(team.dotColor)}
                           >
-                            <div className="flex justify-content-between align-items-center mb-2">
+                            <div
+                              className="flex justify-content-between align-items-center mb-2"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               <div className="qa-group">
                                 {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
@@ -1368,7 +1417,10 @@ export default function App() {
                             />
 
                             {/* CHECKLIST THIẾT BỊ */}
-                            <div className="surface-0 p-2 border-round-lg shadow-1 mt-2 flex flex-column gap-1">
+                            <div
+                              className="surface-0 p-2 border-round-lg shadow-1 mt-2 flex flex-column gap-1"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               {[
                                 { key: "thung", label: "Thùng" },
                                 { key: "man20", label: 'Màn 20"' },
@@ -1503,10 +1555,17 @@ export default function App() {
                             onDragStart={(e) =>
                               onDragStart(e, fIdx, lIdx, "agent", sIdx)
                             }
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) =>
+                              onDropOnSeat(e, fIdx, lIdx, "agent", sIdx)
+                            }
                             className="seat-card p-2 border-round-xl shadow-1 border-1 cursor-move"
                             style={{ width: "152px", ...teamCardStyle(team.dotColor) }}
                           >
-                            <div className="flex justify-content-between align-items-center mb-1">
+                            <div
+                              className="flex justify-content-between align-items-center mb-1"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               <div className="qa-group">
                                 {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
@@ -1588,7 +1647,10 @@ export default function App() {
                             </div>
 
                             {/* CHECKLIST THIẾT BỊ */}
-                            <div className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1 mt-auto">
+                            <div
+                              className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1 mt-auto"
+                              onMouseDown={(e) => e.stopPropagation()}
+                            >
                               {[
                                 { key: "thung", label: "Thùng" },
                                 { key: "man20", label: 'Màn 20"' },
