@@ -313,7 +313,18 @@ const normalizeState = (state) => {
           }))
         : [],
     })),
-    inventory: source.inventory && typeof source.inventory === "object" ? source.inventory : {},
+    inventory: Object.fromEntries(
+      Object.entries(source.inventory && typeof source.inventory === "object" ? source.inventory : {}).map(([id, raw]) => {
+        const inv = raw && typeof raw === "object" ? raw : {};
+        const normalized = { ...inv };
+        ["thung", "man20", "man24", "chuot", "phim", "tai"].forEach((key) => {
+          const qtyKey = `${key}_qty`;
+          const qty = Number(normalized[qtyKey]);
+          normalized[qtyKey] = Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1;
+        });
+        return [id, normalized];
+      }),
+    ),
     colors: source.colors && typeof source.colors === "object" ? source.colors : {},
     teams,
     performanceSetting:
@@ -415,7 +426,9 @@ export default function App() {
           thung: false,
           thung_qty: 1,
           man20: false,
+          man20_qty: 1,
           man24: false,
+          man24_qty: 1,
           chuot: false,
           chuot_qty: 1,
           phim: false,
@@ -428,6 +441,7 @@ export default function App() {
           thung: false,
           thung_qty: 1,
           man20: false,
+          man20_qty: 1,
           chuot: false,
           chuot_qty: 1,
           phim: false,
@@ -742,6 +756,21 @@ export default function App() {
         st.inventory[id] = initChecklist(false);
       }
       st.inventory[id][key] = Boolean(val);
+      if (val) {
+        const qtyKey = `${key}_qty`;
+        const qty = Number(st.inventory[id][qtyKey]);
+        if (!Number.isFinite(qty) || qty < 1) st.inventory[id][qtyKey] = 1;
+      }
+    });
+
+  const updateInventoryQuantity = (id, key, value) =>
+    updateState((st) => {
+      if (!id) return;
+      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
+        st.inventory[id] = initChecklist(false);
+      }
+      const qty = Number.parseInt(value, 10);
+      st.inventory[id][`${key}_qty`] = Number.isFinite(qty) && qty > 0 ? qty : 1;
     });
 
   const updateSttGlobal = (fIdx, lIdx, val) =>
@@ -792,12 +821,18 @@ export default function App() {
       if (!st.inventory[id]) st.inventory[id] = initChecklist(isLead);
       const inv = st.inventory[id];
       inv.thung = true;
+      inv.thung_qty = Number.isFinite(Number(inv.thung_qty)) && Number(inv.thung_qty) > 0 ? Math.floor(Number(inv.thung_qty)) : 1;
       inv.man20 = true;
+      inv.man20_qty = Number.isFinite(Number(inv.man20_qty)) && Number(inv.man20_qty) > 0 ? Math.floor(Number(inv.man20_qty)) : 1;
       inv.chuot = true;
+      inv.chuot_qty = Number.isFinite(Number(inv.chuot_qty)) && Number(inv.chuot_qty) > 0 ? Math.floor(Number(inv.chuot_qty)) : 1;
       inv.phim = true;
+      inv.phim_qty = Number.isFinite(Number(inv.phim_qty)) && Number(inv.phim_qty) > 0 ? Math.floor(Number(inv.phim_qty)) : 1;
       inv.tai = true;
+      inv.tai_qty = Number.isFinite(Number(inv.tai_qty)) && Number(inv.tai_qty) > 0 ? Math.floor(Number(inv.tai_qty)) : 1;
       if (isLead) {
         inv.man24 = true;
+        inv.man24_qty = Number.isFinite(Number(inv.man24_qty)) && Number(inv.man24_qty) > 0 ? Math.floor(Number(inv.man24_qty)) : 1;
         inv.laptop = true;
       }
     });
@@ -914,8 +949,8 @@ export default function App() {
     const inv = rawInv && typeof rawInv === "object" ? rawInv : {};
     stats.seats++;
     if (inv.thung) stats.thung += parseInt(inv.thung_qty, 10) || 1;
-    if (inv.man20) stats.man20++;
-    if (inv.man24) stats.man24++;
+    if (inv.man20) stats.man20 += parseInt(inv.man20_qty, 10) || 1;
+    if (inv.man24) stats.man24 += parseInt(inv.man24_qty, 10) || 1;
     if (inv.chuot) stats.chuot += parseInt(inv.chuot_qty, 10) || 1;
     if (inv.phim) stats.phim += parseInt(inv.phim_qty, 10) || 1;
     if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 1;
@@ -925,20 +960,20 @@ export default function App() {
   const getChecklistItems = (isLead) =>
     isLead
       ? [
-          { key: "thung", label: "Thùng", short: "TH" },
-          { key: "man20", label: 'Màn 20"', short: "20" },
-          { key: "man24", label: 'Màn 24"', short: "24" },
-          { key: "chuot", label: "Chuột", short: "CH" },
-          { key: "phim", label: "Phím", short: "PH" },
-          { key: "tai", label: "Tai USB", short: "TA" },
-          { key: "laptop", label: "Laptop", short: "LT" },
+          { key: "thung", label: "Thùng" },
+          { key: "man20", label: 'Màn 20"' },
+          { key: "man24", label: 'Màn 24"' },
+          { key: "chuot", label: "Chuột" },
+          { key: "phim", label: "Phím" },
+          { key: "tai", label: "Tai USB" },
+          { key: "laptop", label: "Laptop" },
         ]
       : [
-          { key: "thung", label: "Thùng", short: "TH" },
-          { key: "man20", label: 'Màn 20"', short: "20" },
-          { key: "chuot", label: "Chuột", short: "CH" },
-          { key: "phim", label: "Phím", short: "PH" },
-          { key: "tai", label: "Tai nghe", short: "TA" },
+          { key: "thung", label: "Thùng" },
+          { key: "man20", label: 'Màn 20"' },
+          { key: "chuot", label: "Chuột" },
+          { key: "phim", label: "Phím" },
+          { key: "tai", label: "Tai USB" },
         ];
 
   const getSeatProgress = (inv, isLead) => {
@@ -1561,22 +1596,44 @@ export default function App() {
                           onClick={(e) => e.stopPropagation()}
                           onPointerDown={(e) => e.stopPropagation()}
                         >
-                          {getChecklistItems(isLead).map(({ key, label, short }) => (
-                            <label
-                              key={key}
-                              className={`inventory-chip ${inv?.[key] ? "checked" : ""}`}
-                              title={label}
-                              htmlFor={`${seat?.id}_${key}`}
-                            >
-                              <Checkbox
-                                inputId={`${seat?.id}_${key}`}
-                                checked={Boolean(inv?.[key])}
-                                onChange={(e) => updateInventory(seat?.id, key, e.checked)}
-                              />
-                              <span className="chip-code" aria-hidden="true">{short}</span>
-                              <span className="chip-label">{label}</span>
-                            </label>
-                          ))}
+                          {getChecklistItems(isLead).map(({ key, label }) => {
+                            const checked = Boolean(inv?.[key]);
+                            const qtyKey = `${key}_qty`;
+                            const quantity = Number(inv?.[qtyKey]) > 0 ? Number(inv[qtyKey]) : 1;
+                            return (
+                              <div
+                                key={key}
+                                className={`inventory-chip ${checked ? "checked" : ""}`}
+                                title={label}
+                              >
+                                <label className="inventory-check" htmlFor={`${seat?.id}_${key}`}>
+                                  <Checkbox
+                                    inputId={`${seat?.id}_${key}`}
+                                    checked={checked}
+                                    onChange={(e) => updateInventory(seat?.id, key, e.checked)}
+                                  />
+                                  <span className="chip-label">{label}</span>
+                                </label>
+                                {checked && key !== "laptop" && (
+                                  <div className="inventory-quantity" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                                    <span className="quantity-label">SL</span>
+                                    <input
+                                      className="quantity-input"
+                                      type="number"
+                                      min="1"
+                                      step="1"
+                                      inputMode="numeric"
+                                      aria-label={`Số lượng ${label}`}
+                                      value={quantity}
+                                      onChange={(e) => updateInventoryQuantity(seat?.id, key, e.target.value)}
+                                      onBlur={(e) => updateInventoryQuantity(seat?.id, key, e.target.value || 1)}
+                                      onWheel={(e) => e.currentTarget.blur()}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </article>
                     );

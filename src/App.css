@@ -1391,8 +1391,8 @@ input:focus-visible,
 .inventory-chips {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  padding-top: 8px;
+  gap: 6px;
+  padding-top: 9px;
   border-top: 1px solid rgba(23,32,51,.07);
 }
 
@@ -1402,19 +1402,20 @@ input:focus-visible,
 
 .inventory-chip {
   min-width: 0;
-  min-height: 34px;
+  min-height: 40px;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 6px;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 5px 7px;
   border: 1px solid rgba(23,32,51,.08);
-  border-radius: 8px;
-  background: rgba(255,255,255,.56);
+  border-radius: 9px;
+  background: rgba(255,255,255,.58);
   color: var(--color-ink-2);
-  cursor: pointer;
   transition:
     background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
     transform var(--dur-fast) var(--ease-out);
 }
 
@@ -1428,9 +1429,20 @@ input:focus-visible,
 }
 
 .inventory-chip.checked {
-  border-color: color-mix(in srgb, var(--color-success) 25%, var(--color-border));
+  border-color: color-mix(in srgb, var(--color-success) 28%, var(--color-border));
   background: var(--color-success-subtle);
   color: var(--color-success);
+  box-shadow: 0 2px 8px rgba(22,134,90,.06);
+}
+
+.inventory-check {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .inventory-chip .p-checkbox {
@@ -1460,170 +1472,62 @@ input:focus-visible,
   font-size: 9px;
 }
 
-.chip-code {
-  display: inline-grid;
-  place-items: center;
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
-  border-radius: 5px;
-  background: rgba(23,32,51,.055);
-  color: var(--color-ink-3);
-  font-family: var(--font-mono);
-  font-size: 7px;
-  font-weight: 800;
-}
-
-.inventory-chip.checked .chip-code {
-  color: var(--color-success);
-  background: rgba(22,134,90,.1);
-}
-
 .chip-label {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
+  text-overflow: clip;
   white-space: nowrap;
-  font-size: 8px;
-  font-weight: 650;
-}
-
-/* ─────────────────────────────
-   Empty / popover
-   ───────────────────────────── */
-
-.zone-empty,
-.empty-state {
-  display: grid;
-  place-items: center;
-  gap: 7px;
-  min-height: 88px;
-  padding: 16px;
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  color: var(--color-ink-3);
-  text-align: center;
-}
-
-.zone-empty {
-  grid-column: 1 / -1;
-  font-size: 10px;
-}
-
-.zone-empty i,
-.empty-state > i {
-  font-size: 18px;
-  color: var(--color-muted);
-}
-
-.empty-state {
-  margin-top: 16px;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-xs);
-}
-
-.empty-state strong {
-  font-size: 13px;
-}
-
-.empty-state span {
-  color: var(--color-ink-3);
-  font-size: 11px;
-}
-
-.dropdown-portal {
-  position: fixed;
-  z-index: 2147483647;
-  isolation: isolate;
-}
-
-.dropdown-surface {
-  width: min(310px, calc(100vw - 24px));
-  max-height: min(68vh, 420px);
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-lg);
-}
-
-.dropdown-pop-in {
-  transform-origin: top left;
-  animation: dropdownIn var(--dur-fast) var(--ease-out);
-}
-
-@keyframes dropdownIn {
-  from { opacity: 0; transform: translateY(-4px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.team-grid-container {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 8px;
-}
-
-.team-color-card {
-  min-width: 0;
-  min-height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: var(--radius-sm);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
   color: inherit;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 11px;
+}
+
+.inventory-quantity {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 5px;
+  border-left: 1px solid rgba(23,32,51,.09);
+}
+
+.quantity-label {
+  font-size: 7px;
+  line-height: 1;
   font-weight: 800;
-  box-shadow: var(--shadow-xs);
-  transition:
-    transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out),
-    filter var(--dur-fast) var(--ease-out);
+  letter-spacing: .04em;
+  color: var(--color-ink-3);
 }
 
-.team-color-card:hover {
-  transform: translateY(-1px);
-  filter: saturate(1.06);
-  box-shadow: var(--shadow-sm);
-}
-
-.team-color-card:active {
-  transform: translateY(1px);
-}
-
-.team-color-card.selected {
-  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--team-ring-color, var(--color-primary)), var(--shadow-sm);
-}
-
-.team-color-card-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.team-color-card-check {
+.quantity-input {
+  width: 38px;
+  height: 27px;
+  padding: 2px 4px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
   font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
-/* ─────────────────────────────
-   Mobile team sheet
-   ───────────────────────────── */
-
-.team-sheet-mobile-handle,
-.team-sheet-close,
-.team-fab {
-  display: none;
+.quantity-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(49,94,251,.11);
 }
 
-/* ─────────────────────────────
-   Responsive
-   ───────────────────────────── */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+  margin: 0;
+  opacity: .55;
+}
 
 @media (max-width: 1200px) {
   .stat-grid {
@@ -1874,7 +1778,15 @@ input:focus-visible,
   }
 
   .chip-label {
-    font-size: 7.5px;
+    font-size: 8.5px;
+  }
+
+  .inventory-chip {
+    min-height: 39px;
+  }
+
+  .quantity-input {
+    width: 36px;
   }
 }
 
@@ -2002,3 +1914,14 @@ input:focus-visible,
     transition-duration: .01ms !important;
   }
 }
+@media (max-width: 360px) {
+  .inventory-chips,
+  .seat-card-lead .inventory-chips {
+    grid-template-columns: 1fr;
+  }
+
+  .chip-label {
+    font-size: 9px;
+  }
+}
+
