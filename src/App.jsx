@@ -156,6 +156,102 @@ const COLOR_PALETTE_GROUPS = [
 // Mảng phẳng dùng cho addTeam default & legacy
 const COLOR_PALETTE = COLOR_PALETTE_GROUPS.flatMap((g) => g.shades);
 
+const defaultData = [
+  {
+    floorName: "Sàn Lầu 3",
+    lanes: [
+      {
+        laneLetter: "A",
+        startStt: 18,
+        leads: [{ id: genId(), name: "Thu Hiền - TL" }],
+        agents: [
+          "Trần Chi", "Nguyễn Trâm", "Trần Trinh", "Nguyễn Thiên", "Đoàn Giao",
+          "NB Content", "NB Content", "Lê Trinh", "Nguyễn Tỷ", "Cao Nhung",
+          "Huỳnh Ngà", "Huỳnh Châu", "Lê Châu", "Trống", "Trống"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 18 + i })),
+      },
+      {
+        laneLetter: "B",
+        startStt: 38,
+        leads: [{ id: genId(), name: "Vy - DA" }],
+        agents: [
+          "Nguyễn Khanh", "Lý - Senior", "Nguyễn Hậu", "Võ Hiền", "Phan Loan",
+          "Võ Lan", "NB Content", "NB Content", "Tuyến - Senior", "Nguyễn Thúy"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 38 + i })),
+      },
+      {
+        laneLetter: "C",
+        startStt: 48,
+        leads: [{ id: genId(), name: "Lead Hỗ Trợ" }],
+        agents: [
+          "Huỳnh Giang", "Trần Tâm", "Nguyễn Phương", "Ngô Hằng", "Lai Nghi",
+          "NB Tele", "Trống", "Trống", "Trống", "Trống"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 48 + i })),
+      },
+      {
+        laneLetter: "D",
+        startStt: 58,
+        leads: [{ id: genId(), name: "Anh Thư - SUP" }],
+        agents: [
+          "Full", "Full", "PT - Phúc Hậu", "Trung Hiếu", "Quốc Khánh",
+          "Trống", "Nhung Huỳnh", "Yến Ly", "Gia Hưng", "Bích Quỳnh",
+          "PT - Phương Thy", "PT - Khánh Vy", "PT - Liên Anh", "PT - Thu Hồng",
+          "PT - Loan", "PT - Cắt Tường", "PT - Khoa"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 58 + i })),
+      },
+    ],
+  },
+  {
+    floorName: "Sàn Lầu 2",
+    lanes: [
+      {
+        laneLetter: "A",
+        startStt: 1,
+        leads: [{ id: genId(), name: "Oanh - Senior TL" }],
+        agents: [
+          "Trống", "Thiên Kim Senior", "Kim Ái Senior", "Huy Hoàng", "Diệu Trinh",
+          "PT Thảo Phương", "PT Sỹ Danh", "PT Trúc Linh", "PT Thu Hiền", "Full",
+          "PT Thành Đạt", "Full", "PT - Gia Hân", "PT - Sang", "PT - Trang",
+          "PT - Huy", "PT - Gia Bội", "PT - Hào"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 1 + i })),
+      },
+      {
+        laneLetter: "B",
+        startStt: 19,
+        leads: [{ id: genId(), name: "Chinh - TL" }],
+        agents: [
+          "Thiên Ngân", "Tú Trinh", "Trung Nghị", "Minh Tâm", "Minh Thư",
+          "Duy Khánh", "Hồng Ân", "Nhật Lam", "Khánh Ly", "Hoàng Gấm NB",
+          "Hoàng Khải", "Phi Phụng", "Bảo Anh Senior", "Ngọc Tú", "Uyên",
+          "Thanh", "PT Bảo My", "Full", "Cảnh", "Trúc"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 19 + i })),
+      },
+      {
+        laneLetter: "C",
+        startStt: 39,
+        leads: [{ id: genId(), name: "Lead Hỗ Trợ 2" }],
+        agents: [
+          "Thiếu 1 màn hình", "Full", "Trực", "Kim Ngân", "Đan Vy",
+          "Nguyễn Senior", "Thắng", "Full", "Nguyễn Kim Ngân", "Thị Thủy",
+          "Ý Lan", "Hải Yến", "Ái Linh", "Hân Senior", "Minh Thái",
+          "Quang Hậu", "Công Hiệp", "Full", "Minh Hoàng"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 39 + i })),
+      },
+      {
+        laneLetter: "D",
+        startStt: 59,
+        leads: [{ id: genId(), name: "Phương - TL QA" }],
+        agents: [
+          "Hoàng Khôi", "Minh Đạo", "Văn Anh", "Kim Chi", "Thảo Vi",
+          "Thừa Nghiên", "Mai Xuân", "Thị Quỳnh", "Nguyễn Nhi", "Thị Hồng",
+          "Chấn Điền", "Nhật Khánh", "Tú Quyền", "Tân Tài", "Tuấn Anh", "Toàn"
+        ].map((n, i) => ({ id: genId(), name: n, stt: 59 + i })),
+      },
+    ],
+  },
+];
+
+
 // Tìm thông tin Team theo id, trả về Team ẩn danh nếu không tìm thấy
 const getTeam = (teams, colorId) => {
   const safeTeams = Array.isArray(teams) ? teams : DEFAULT_TEAMS;
@@ -196,6 +292,43 @@ const TeamTag = ({ team, onOpen }) => {
   );
 };
 
+// Chuẩn hóa state ở module scope để initializer của useState không truy cập
+// một const chưa được khởi tạo (Temporal Dead Zone).
+const normalizeState = (state) => {
+  const source = state && typeof state === "object" ? state : {};
+  const floors = Array.isArray(source.floors) ? source.floors : [];
+  const teams = Array.isArray(source.teams) && source.teams.length
+    ? source.teams.filter((team) => team?.id)
+    : JSON.parse(JSON.stringify(DEFAULT_TEAMS));
+
+  return {
+    floors: floors.map((floor) => ({
+      floorName: floor?.floorName || "Sàn chưa đặt tên",
+      lanes: Array.isArray(floor?.lanes)
+        ? floor.lanes.map((lane) => ({
+            laneLetter: lane?.laneLetter || "—",
+            startStt: Number.isFinite(Number(lane?.startStt)) ? Number(lane.startStt) : 1,
+            leads: Array.isArray(lane?.leads) ? lane.leads.filter(Boolean) : [],
+            agents: Array.isArray(lane?.agents) ? lane.agents.filter(Boolean) : [],
+          }))
+        : [],
+    })),
+    inventory: source.inventory && typeof source.inventory === "object" ? source.inventory : {},
+    colors: source.colors && typeof source.colors === "object" ? source.colors : {},
+    teams,
+    performanceSetting:
+      source.performanceSetting && typeof source.performanceSetting === "object"
+        ? {
+            enabled: source.performanceSetting?.enabled === true,
+            items: Array.isArray(source.performanceSetting?.items)
+              ? source.performanceSetting.items
+              : [],
+          }
+        : { enabled: false, items: [] },
+  };
+};
+
+  
 export default function App() {
   const toast = useRef(null);
   const fileInputRef = useRef(null);
@@ -253,42 +386,7 @@ export default function App() {
     );
   });
 
-  // Đảm bảo dữ liệu cũ (chưa có danh sách teams) vẫn hoạt động bình thường
-  const normalizeState = (state) => {
-    const source = state && typeof state === "object" ? state : {};
-    const floors = Array.isArray(source.floors) ? source.floors : [];
-    const teams = Array.isArray(source.teams) && source.teams.length
-      ? source.teams.filter((team) => team?.id)
-      : JSON.parse(JSON.stringify(DEFAULT_TEAMS));
-
-    return {
-      floors: floors.map((floor) => ({
-        floorName: floor?.floorName || "Sàn chưa đặt tên",
-        lanes: Array.isArray(floor?.lanes)
-          ? floor.lanes.map((lane) => ({
-              laneLetter: lane?.laneLetter || "—",
-              startStt: Number.isFinite(Number(lane?.startStt)) ? Number(lane.startStt) : 1,
-              leads: Array.isArray(lane?.leads) ? lane.leads.filter(Boolean) : [],
-              agents: Array.isArray(lane?.agents) ? lane.agents.filter(Boolean) : [],
-            }))
-          : [],
-      })),
-      inventory: source.inventory && typeof source.inventory === "object" ? source.inventory : {},
-      colors: source.colors && typeof source.colors === "object" ? source.colors : {},
-      teams,
-      performanceSetting:
-        source.performanceSetting && typeof source.performanceSetting === "object"
-          ? {
-              enabled: source.performanceSetting?.enabled === true,
-              items: Array.isArray(source.performanceSetting?.items)
-                ? source.performanceSetting.items
-                : [],
-            }
-          : { enabled: false, items: [] },
-    };
-  };
-
-  // Tự động lưu MỌI thay đổi vào localStorage ngay lập tức, độc lập với việc
+// Tự động lưu MỌI thay đổi vào localStorage ngay lập tức, độc lập với việc
   // đồng bộ Cloud. Đây là lưới an toàn: dù mất mạng hay quên bấm "Lưu Cloud",
   // F5 vẫn khôi phục đúng dữ liệu vừa chỉnh sửa.
   useEffect(() => {
