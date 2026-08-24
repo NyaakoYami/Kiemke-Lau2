@@ -910,6 +910,15 @@ export default function App() {
     if (inv.laptop) stats.laptop++;
   });
 
+  const getProgressInfo = (inv, isLead) => {
+    const keys = isLead ? ['thung', 'man20', 'man24', 'chuot', 'phim', 'tai', 'laptop'] : ['thung', 'man20', 'chuot', 'phim', 'tai'];
+    const total = keys.length;
+    let checked = 0;
+    keys.forEach(k => { if (inv[k]) checked++; });
+    if (checked === 0) return { label: 'Trống', cssClass: 'empty' };
+    if (checked === total) return { label: `Đủ bộ (${checked}/${total})`, cssClass: 'full' };
+    return { label: `Thiếu (${checked}/${total})`, cssClass: 'partial' };
+  };
 
   return (
     <div className="app-shell p-3 md:p-4 surface-ground min-h-screen" onClick={closeMenu}>
@@ -1338,32 +1347,28 @@ export default function App() {
                         return (
                           <div
                             key={seat.id}
-                            draggable
-                            onDragStart={(e) =>
-                              onDragStart(e, fIdx, lIdx, "lead", sIdx)
-                            }
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) =>
                               onDropOnSeat(e, fIdx, lIdx, "lead", sIdx)
                             }
-                            className="seat-card p-2 border-round-xl shadow-2 border-1 cursor-move w-full"
+                            className="seat-card seat-card-lead p-2 border-round-xl shadow-2 border-1 w-full"
                             style={teamCardStyle(team.dotColor)}
                           >
                             <div
-                              className="flex justify-content-between align-items-center mb-2"
+                              className="flex justify-content-between align-items-center mb-1"
                               onMouseDown={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <div className="qa-group">
-                                {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
                                   icon="pi pi-check"
                                   rounded
                                   severity="success"
                                   className="qa-btn qa-btn-lead"
                                   title="Check đủ bộ"
+                                  aria-label="Check đủ bộ"
                                   onClick={() => markFull(seat.id, true)}
                                 />
-                                {/* NÚT NHANH 🔄 RESET */}
                                 <Button
                                   icon="pi pi-refresh"
                                   rounded
@@ -1371,84 +1376,86 @@ export default function App() {
                                   outlined
                                   className="qa-btn qa-btn-lead"
                                   title="Reset checklist"
+                                  aria-label="Reset checklist"
                                   onClick={() => markReset(seat.id)}
                                 />
                               </div>
 
-                              <Button
-                                icon="pi pi-times"
-                                rounded
-                                text
-                                severity="danger"
-                                className="qa-btn qa-btn-lead"
-                                title="Xoá cabin"
-                                onClick={() =>
-                                  removeSeat(fIdx, lIdx, "lead", sIdx)
-                                }
-                              />
+                              <div className="flex align-items-center gap-1">
+                                <Button
+                                  icon="pi pi-times"
+                                  rounded
+                                  text
+                                  severity="danger"
+                                  className="qa-btn qa-btn-lead"
+                                  title="Xoá cabin"
+                                  aria-label="Xoá cabin"
+                                  onClick={() => removeSeat(fIdx, lIdx, "lead", sIdx)}
+                                />
+                                <div
+                                  className="drag-handle"
+                                  draggable
+                                  onDragStart={(e) => {
+                                    const card = e.target.closest('.seat-card');
+                                    if (card) e.dataTransfer.setDragImage(card, 0, 0);
+                                    onDragStart(e, fIdx, lIdx, "lead", sIdx);
+                                  }}
+                                  title="Kéo thả cabin"
+                                >
+                                  <i className="pi pi-bars text-500 text-xs"></i>
+                                </div>
+                              </div>
                             </div>
 
-                            {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
-                            <TeamTag
-                              team={team}
-                              onOpen={(e) => {
-                                e.stopPropagation();
-                                setActiveSeat(seat.id);
-                                setOpenMenu({ type: "seat", seatId: seat.id, x: e.clientX, y: e.clientY });
-                              }}
-                            />
-
-                            {/* TÊN LEAD INLINE EDIT: CHỮ NHỎ, FULL TÊN */}
-                            <InlineEdit
-                              value={seat.name}
-                              onChange={(val) =>
-                                updateProp(
-                                  fIdx,
-                                  lIdx,
-                                  "lead",
-                                  sIdx,
-                                  "name",
-                                  val,
-                                )
-                              }
-                              placeholder="Tên Lead"
-                              isName={true}
-                              className="text-xs w-full mt-2"
-                            />
-
-                            {/* CHECKLIST THIẾT BỊ */}
-                            <div
-                              className="surface-0 p-2 border-round-lg shadow-1 mt-2 flex flex-column gap-1"
-                              onMouseDown={(e) => e.stopPropagation()}
+                            <div 
+                              onMouseDown={(e) => e.stopPropagation()} 
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 flex flex-column"
                             >
-                              {[
-                                { key: "thung", label: "Thùng" },
-                                { key: "man20", label: 'Màn 20"' },
-                                { key: "man24", label: 'Màn 24"' },
-                                { key: "chuot", label: "Chuột" },
-                                { key: "phim", label: "Phím" },
-                                { key: "tai", label: "Tai USB" },
-                                { key: "laptop", label: "Laptop" },
-                              ].map(({ key, label }) => (
-                                <div
-                                  key={key}
-                                  className="flex align-items-center gap-2 text-xs"
-                                >
-                                  <Checkbox
-                                    inputId={`${seat.id}_${key}`}
-                                    checked={!!inv[key]}
-                                    onChange={(e) =>
-                                      updateInventory(seat.id, key, e.checked)
-                                    }
-                                  />
-                                  <label
-                                    htmlFor={`${seat.id}_${key}`}
-                                    className="cursor-pointer font-medium text-700 select-none flex-1"
+                              <TeamTag
+                                team={team}
+                                onOpen={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSeat(seat.id);
+                                  setOpenMenu({ type: "seat", seatId: seat.id, x: e.clientX, y: e.clientY });
+                                }}
+                              />
+
+                              <InlineEdit
+                                value={seat.name}
+                                onChange={(val) =>
+                                  updateProp(fIdx, lIdx, "lead", sIdx, "name", val)
+                                }
+                                placeholder="Tên Lead"
+                                isName={true}
+                                className="text-xs w-full mt-2"
+                              />
+
+                              <div className="checklist-progress-container">
+                                <span className={`progress-badge ${getProgressInfo(inv, true).cssClass}`}>
+                                  {getProgressInfo(inv, true).label}
+                                </span>
+                              </div>
+
+                              <div className="checklist-chips-grid mt-auto">
+                                {[
+                                  { key: "thung", label: "Thùng" },
+                                  { key: "man20", label: 'Màn20' },
+                                  { key: "man24", label: 'Màn24' },
+                                  { key: "chuot", label: "Chuột" },
+                                  { key: "phim", label: "Phím" },
+                                  { key: "tai", label: "Tai" },
+                                  { key: "laptop", label: "Lap" },
+                                ].map(({ key, label }) => (
+                                  <div
+                                    key={key}
+                                    className={`checklist-chip ${inv[key] ? 'active' : ''}`}
+                                    onClick={() => updateInventory(seat.id, key, !inv[key])}
                                   >
                                     {label}
-                                  </label>
-                                </div>
-                              ))}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         );
@@ -1551,32 +1558,28 @@ export default function App() {
                         return (
                           <div
                             key={seat.id}
-                            draggable
-                            onDragStart={(e) =>
-                              onDragStart(e, fIdx, lIdx, "agent", sIdx)
-                            }
                             onDragOver={(e) => e.preventDefault()}
                             onDrop={(e) =>
                               onDropOnSeat(e, fIdx, lIdx, "agent", sIdx)
                             }
-                            className="seat-card p-2 border-round-xl shadow-1 border-1 cursor-move"
+                            className="seat-card seat-card-agent p-2 border-round-xl shadow-1 border-1"
                             style={{ width: "152px", ...teamCardStyle(team.dotColor) }}
                           >
                             <div
                               className="flex justify-content-between align-items-center mb-1"
                               onMouseDown={(e) => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <div className="qa-group">
-                                {/* NÚT NHANH ✔️ ĐỦ BỘ */}
                                 <Button
                                   icon="pi pi-check"
                                   rounded
                                   severity="success"
                                   className="qa-btn"
                                   title="Check đủ bộ"
+                                  aria-label="Check đủ bộ"
                                   onClick={() => markFull(seat.id, false)}
                                 />
-                                {/* NÚT NHANH 🔄 RESET */}
                                 <Button
                                   icon="pi pi-refresh"
                                   rounded
@@ -1584,99 +1587,94 @@ export default function App() {
                                   outlined
                                   className="qa-btn"
                                   title="Reset checklist"
+                                  aria-label="Reset checklist"
                                   onClick={() => markReset(seat.id)}
                                 />
                               </div>
 
-                              <Button
-                                icon="pi pi-times"
-                                rounded
-                                text
-                                severity="danger"
-                                className="qa-btn"
-                                title="Xoá cabin"
-                                onClick={() =>
-                                  removeSeat(fIdx, lIdx, "agent", sIdx)
-                                }
-                              />
-                            </div>
-
-                            {/* NHÃN TEAM TRÊN ĐẦU CABIN */}
-                            <TeamTag
-                              team={team}
-                              onOpen={(e) => {
-                                e.stopPropagation();
-                                setActiveSeat(seat.id);
-                                setOpenMenu({ type: "seat", seatId: seat.id, x: e.clientX, y: e.clientY });
-                              }}
-                            />
-
-                            {/* STT & TÊN AGENT INLINE EDIT: CHỮ NHỎ, FULL TÊN (30-35 KÝ TỰ) */}
-                            <div className="flex align-items-center gap-1 mt-1">
-                              <InlineEdit
-                                value={seat.stt || ""}
-                                onChange={(val) =>
-                                  updateProp(
-                                    fIdx,
-                                    lIdx,
-                                    "agent",
-                                    sIdx,
-                                    "stt",
-                                    val,
-                                  )
-                                }
-                                placeholder="STT"
-                                isStt={true}
-                              />
-                              <InlineEdit
-                                value={seat.name}
-                                onChange={(val) =>
-                                  updateProp(
-                                    fIdx,
-                                    lIdx,
-                                    "agent",
-                                    sIdx,
-                                    "name",
-                                    val,
-                                  )
-                                }
-                                placeholder="Tên Agent..."
-                                isName={true}
-                                className="flex-1"
-                              />
-                            </div>
-
-                            {/* CHECKLIST THIẾT BỊ */}
-                            <div
-                              className="surface-0 p-1.5 border-round-lg shadow-1 mt-2 flex flex-column gap-1 mt-auto"
-                              onMouseDown={(e) => e.stopPropagation()}
-                            >
-                              {[
-                                { key: "thung", label: "Thùng" },
-                                { key: "man20", label: 'Màn 20"' },
-                                { key: "chuot", label: "Chuột" },
-                                { key: "phim", label: "Phím" },
-                                { key: "tai", label: "Tai nghe" },
-                              ].map(({ key, label }) => (
+                              <div className="flex align-items-center gap-1">
+                                <Button
+                                  icon="pi pi-times"
+                                  rounded
+                                  text
+                                  severity="danger"
+                                  className="qa-btn"
+                                  title="Xoá cabin"
+                                  aria-label="Xoá cabin"
+                                  onClick={() => removeSeat(fIdx, lIdx, "agent", sIdx)}
+                                />
                                 <div
-                                  key={key}
-                                  className="flex align-items-center gap-1.5 text-xs"
+                                  className="drag-handle"
+                                  draggable
+                                  onDragStart={(e) => {
+                                    const card = e.target.closest('.seat-card');
+                                    if (card) e.dataTransfer.setDragImage(card, 0, 0);
+                                    onDragStart(e, fIdx, lIdx, "agent", sIdx);
+                                  }}
+                                  title="Kéo thả cabin"
                                 >
-                                  <Checkbox
-                                    inputId={`${seat.id}_${key}`}
-                                    checked={!!inv[key]}
-                                    onChange={(e) =>
-                                      updateInventory(seat.id, key, e.checked)
-                                    }
-                                  />
-                                  <label
-                                    htmlFor={`${seat.id}_${key}`}
-                                    className="cursor-pointer font-medium text-700 select-none flex-1 text-xs"
+                                  <i className="pi pi-bars text-500 text-xs"></i>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div 
+                              onMouseDown={(e) => e.stopPropagation()} 
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 flex flex-column"
+                            >
+                              <TeamTag
+                                team={team}
+                                onOpen={(e) => {
+                                  e.stopPropagation();
+                                  setActiveSeat(seat.id);
+                                  setOpenMenu({ type: "seat", seatId: seat.id, x: e.clientX, y: e.clientY });
+                                }}
+                              />
+
+                              <div className="flex align-items-center gap-1 mt-1">
+                                <InlineEdit
+                                  value={seat.stt || ""}
+                                  onChange={(val) =>
+                                    updateProp(fIdx, lIdx, "agent", sIdx, "stt", val)
+                                  }
+                                  placeholder="STT"
+                                  isStt={true}
+                                />
+                                <InlineEdit
+                                  value={seat.name}
+                                  onChange={(val) =>
+                                    updateProp(fIdx, lIdx, "agent", sIdx, "name", val)
+                                  }
+                                  placeholder="Tên Agent..."
+                                  isName={true}
+                                  className="flex-1"
+                                />
+                              </div>
+
+                              <div className="checklist-progress-container">
+                                <span className={`progress-badge ${getProgressInfo(inv, false).cssClass}`}>
+                                  {getProgressInfo(inv, false).label}
+                                </span>
+                              </div>
+
+                              <div className="checklist-chips-grid mt-auto">
+                                {[
+                                  { key: "thung", label: "Thùng" },
+                                  { key: "man20", label: 'Màn20' },
+                                  { key: "chuot", label: "Chuột" },
+                                  { key: "phim", label: "Phím" },
+                                  { key: "tai", label: "Tai" },
+                                ].map(({ key, label }) => (
+                                  <div
+                                    key={key}
+                                    className={`checklist-chip ${inv[key] ? 'active' : ''}`}
+                                    onClick={() => updateInventory(seat.id, key, !inv[key])}
                                   >
                                     {label}
-                                  </label>
-                                </div>
-                              ))}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           </div>
                         );

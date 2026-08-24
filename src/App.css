@@ -564,9 +564,9 @@ body,
    ───────────────────────────────────────────── */
 .seat-card {
   background: var(--color-paper-2); /* fallback nếu không có inline gradient */
-  border: 1px solid var(--color-border) !important;
-  border-radius: var(--radius-md) !important;
-  box-shadow: var(--shadow-xs) !important;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
   min-height: 136px;
   display: flex;
   flex-direction: column;
@@ -576,6 +576,14 @@ body,
     border-color var(--dur-fast) var(--ease-out);
   position: relative;
   overflow: hidden;
+}
+
+.seat-card-lead {
+  border-width: 2px;
+  border-color: var(--color-border-accent);
+}
+
+.seat-card-agent {
 }
 
 /* Left accent strip — uses team color tint from fill- classes */
@@ -593,8 +601,8 @@ body,
 
 .seat-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md) !important;
-  border-color: var(--color-border-strong) !important;
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
   z-index: 5;
 }
 
@@ -815,6 +823,100 @@ body,
   text-overflow: clip !important;
   overflow-wrap: anywhere;
   min-width: 0;
+}
+
+/* ─────────────────────────────────────────────
+   CHECKLIST CHIPS & PROGRESS
+   ───────────────────────────────────────────── */
+.checklist-progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.progress-badge {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress-badge.full {
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+}
+
+.progress-badge.partial {
+  background: var(--color-warn-subtle);
+  color: var(--color-warn);
+}
+
+.progress-badge.empty {
+  background: var(--color-paper-3);
+  color: var(--color-ink-3);
+}
+
+.checklist-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.checklist-chip {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-paper-2);
+  color: var(--color-ink-3);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--dur-fast) var(--ease-out);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.checklist-chip:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-paper-3);
+  color: var(--color-ink-2);
+}
+
+.checklist-chip.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.drag-handle {
+  cursor: grab;
+  opacity: 0.4;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 /* ─────────────────────────────────────────────
