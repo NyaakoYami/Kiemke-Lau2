@@ -1135,6 +1135,28 @@ input:focus-visible,
 }
 
 
+/* Dropdown portal (menu chọn Team gắn trực tiếp vào document.body) */
+.dropdown-portal {
+  position: fixed;
+  z-index: 3000;
+}
+.dropdown-surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-height: min(360px, calc(100vh - 24px));
+  overflow-y: auto;
+}
+.dropdown-pop-in {
+  animation: dropdownPopIn var(--dur-base) var(--ease-out);
+  transform-origin: top left;
+}
+@keyframes dropdownPopIn {
+  from { opacity: 0; transform: scale(.96) translateY(-4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* Team picker + destructive reset */
 .team-grid-container {
   width: min(300px, calc(100vw - 24px));

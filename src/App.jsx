@@ -355,7 +355,7 @@ const normalizeState = (state) => {
         return [id, normalized];
       }),
     ),
-    colors: source.colors && typeof source.colors === "object" ? source.colors : {},
+    colors: source.colors && typeof source.colors === "object" ? { ...source.colors } : {},
     teams,
     performanceSetting:
       source.performanceSetting && typeof source.performanceSetting === "object"
@@ -1642,6 +1642,7 @@ export default function App() {
                         <div
                           className="seat-identity"
                           onMouseDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
                           onClick={(e) => e.stopPropagation()}
                         >
                           <TeamTag
