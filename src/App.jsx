@@ -268,6 +268,36 @@ const teamCardStyle = (hex) => ({
   "--team-color": hex || "#9ca3af",
 });
 
+// Menu chọn Team dùng chung cho cabin và thao tác bulk.
+// Đặt ở module scope để không thể gặp lỗi TeamGridMenu is not defined khi render portal.
+const TeamGridMenu = ({ teams, activeColorId, onClick }) => {
+  const safeTeams = Array.isArray(teams) ? teams.filter((team) => team?.id) : [];
+  return (
+    <div className="team-grid-container" role="menu" aria-label="Chọn Team">
+      <div className="team-grid-title">Chọn Team</div>
+      <div className="team-grid">
+        {safeTeams.map((team) => {
+          const active = team.id === activeColorId;
+          return (
+            <button
+              key={team.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={active}
+              className={`team-grid-item ${active ? "is-active" : ""}`}
+              onClick={() => onClick?.(team.id)}
+            >
+              <span className="team-grid-dot" style={{ backgroundColor: team.dotColor || "#9ca3af" }} aria-hidden="true" />
+              <span className="team-grid-name">{team.name || "Khác"}</span>
+              {active && <i className="pi pi-check" aria-hidden="true" />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // Nhãn Team nhỏ trên đầu mỗi cabin — click để mở popover đổi Team (đã bỏ
 // trigger hover trước đây để tránh mở nhầm khi chỉ rê chuột ngang qua).
 const TeamTag = ({ team, onOpen }) => {
@@ -419,6 +449,9 @@ export default function App() {
   // Trạng thái kết nối / đồng bộ Supabase
   const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
   const [syncStatus, setSyncStatus] = useState("synced"); // synced | dirty | syncing | error
+  const hasHydratedRef = useRef(false);
+  const autoSyncTimerRef = useRef(null);
+  const isAutoSyncingRef = useRef(false);
 
   const initChecklist = (isLead) =>
     isLead
@@ -488,10 +521,19 @@ export default function App() {
       console.error("Supabase load error:", err);
       setConnectionStatus("error");
       ensureInventoryValid(appState);
+    } finally {
+      // Chỉ bật auto-save sau lần load/khởi tạo đầu tiên để không ghi đè Cloud
+      // bằng local state cũ ngay khi ứng dụng vừa mount.
+      hasHydratedRef.current = true;
     }
   };
 
   const syncOnline = async () => {
+    if (autoSyncTimerRef.current) {
+      clearTimeout(autoSyncTimerRef.current);
+      autoSyncTimerRef.current = null;
+    }
+    isAutoSyncingRef.current = true;
     setIsSyncing(true);
     setSyncStatus("syncing");
     try {
@@ -520,8 +562,43 @@ export default function App() {
       });
     } finally {
       setIsSyncing(false);
+      isAutoSyncingRef.current = false;
     }
   };
+
+  // Auto-save Supabase: debounce 750ms sau mỗi thay đổi state.
+  // Nút "Lưu Cloud" thủ công vẫn dùng syncOnline() như cũ.
+  useEffect(() => {
+    if (!hasHydratedRef.current) return undefined;
+    if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current);
+
+    autoSyncTimerRef.current = setTimeout(async () => {
+      if (isAutoSyncingRef.current || isSyncing) return;
+      isAutoSyncingRef.current = true;
+      setSyncStatus("syncing");
+      try {
+        await syncRequest({
+          method: "POST",
+          body: JSON.stringify({ data: appState }),
+        });
+        setConnectionStatus("connected");
+        setSyncStatus("synced");
+      } catch (err) {
+        console.error("Supabase auto-sync error:", err);
+        setConnectionStatus("error");
+        setSyncStatus("error");
+      } finally {
+        isAutoSyncingRef.current = false;
+      }
+    }, 750);
+
+    return () => {
+      if (autoSyncTimerRef.current) {
+        clearTimeout(autoSyncTimerRef.current);
+        autoSyncTimerRef.current = null;
+      }
+    };
+  }, [appState, isSyncing]);
 
   const ensureInventoryValid = (state) => {
     const source = normalizeState(state);
@@ -559,6 +636,32 @@ export default function App() {
       return next;
     });
     markDirty();
+  };
+
+  const resetAllInventory = () => {
+    const confirmed = window.confirm(
+      "Xoá toàn bộ dữ liệu kiểm kê? Tên cabin, vị trí, Team và cách sắp xếp sẽ được giữ nguyên."
+    );
+    if (!confirmed) return;
+
+    updateState((next) => {
+      const inventory = {};
+      next.floors.forEach((floor) => {
+        (floor?.lanes || []).forEach((lane) => {
+          [...(lane?.leads || []), ...(lane?.agents || [])].forEach((seat) => {
+            if (seat?.id) inventory[seat.id] = initChecklist(Boolean((lane?.leads || []).some((x) => x?.id === seat.id)));
+          });
+        });
+      });
+      next.inventory = inventory;
+    });
+
+    toast.current?.show({
+      severity: "info",
+      summary: "Đã reset kiểm kê",
+      detail: "Toàn bộ checkbox và số lượng đã được xoá. Cấu trúc cabin vẫn được giữ nguyên.",
+      life: 3500,
+    });
   };
 
   // XUẤT VÀ NHẬP JSON
@@ -1388,6 +1491,15 @@ export default function App() {
                 onChange={importFromJson}
                 accept=".json"
                 hidden
+              />
+              <Button
+                label="Reset kiểm kê"
+                icon="pi pi-refresh"
+                severity="danger"
+                outlined
+                className="toolbar-button reset-button"
+                onClick={resetAllInventory}
+                title="Xoá toàn bộ checkbox và số lượng thiết bị, giữ nguyên cabin và bố cục"
               />
               <Button
                 label="Xuất JSON"
