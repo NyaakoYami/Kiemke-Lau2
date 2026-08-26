@@ -1224,12 +1224,33 @@ input:focus-visible,
 .qa-group {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
   margin-left: auto;
   padding: 2px;
   border: 1px solid rgba(255,255,255,.48);
   border-radius: 999px;
   background: rgba(255,255,255,.48);
+}
+
+/* FIX: the delete (✕) button sat directly beside "mark full" (✓) with only
+   2px between them — a 1-pixel slip on a touch screen deleted a cabin.
+   A small divider + extra gap makes the destructive action visually and
+   physically separate from the two safe actions. It still has a native
+   window.confirm() before anything is removed. */
+.qa-group .qa-btn:last-child {
+  margin-left: 3px;
+  position: relative;
+}
+
+.qa-group .qa-btn:last-child::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 16px;
+  background: rgba(23,32,51,.14);
 }
 
 .qa-btn.p-button {
@@ -2387,13 +2408,17 @@ textarea,
   margin-top: 1px;
 }
 
+/* FIX: "overflow-wrap: anywhere" + "white-space: normal" inside a narrow
+   grid track (minmax(0, 1fr)) forced the browser to break mid-word,
+   which rendered labels like "Thùng máy" one character per line.
+   Single-line + ellipsis keeps the chip height stable; the full label is
+   still available on hover via the existing title={label} on .inventory-chip. */
 .chip-label {
   min-width: 0;
   max-width: 100%;
-  overflow: visible;
-  overflow-wrap: anywhere;
-  word-break: normal;
-  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 10px;
   line-height: 1.3;
 }
@@ -3007,6 +3032,9 @@ textarea,
 
 .control-actions .toolbar-button.primary {
   flex-basis: 100%;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
 }
 
 /* Compact agent cards: optimized for fast touch scanning in the field. */
@@ -3026,6 +3054,10 @@ textarea,
 .compact-agent-card .qa-group .qa-btn {
   width: 26px;
   height: 26px;
+}
+
+.compact-agent-card .qa-group {
+  gap: 5px;
 }
 
 .compact-agent-card .seat-identity {
