@@ -1917,6 +1917,23 @@ input:focus-visible,
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 380px) {
+  .inventory-chip {
+    grid-template-columns: minmax(0, 1fr) 58px;
+    padding-inline: 6px;
+  }
+
+  .chip-label {
+    font-size: 9px;
+  }
+
+  .inventory-quantity {
+    width: 58px;
+    min-width: 58px;
+    max-width: 58px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2340,43 +2357,81 @@ textarea,
   border-color: var(--team-color) !important;
 }
 
-/* Inventory chip: label and quantity are separate layout regions. */
+/* Inventory chip: label and quantity are permanently separated into two regions. */
 .inventory-chips {
-  grid-auto-rows: minmax(42px, auto);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(46px, auto);
+  gap: 7px;
   align-items: stretch;
 }
 
 .inventory-chip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-content: center;
-  min-height: 44px;
-  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+  min-height: 46px;
+  overflow: visible;
+  padding: 8px;
 }
 
 .inventory-check {
   min-width: 0;
-  overflow: hidden;
+  max-width: 100%;
+  overflow: visible;
+  align-items: flex-start;
+}
+
+.inventory-check .p-checkbox {
+  margin-top: 1px;
 }
 
 .chip-label {
   min-width: 0;
   max-width: 100%;
+  overflow: visible;
   overflow-wrap: anywhere;
+  word-break: normal;
   white-space: normal;
-  line-height: 1.25;
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .inventory-quantity {
-  min-width: 0;
-  max-width: 74px;
-  justify-self: end;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-left: 0;
+  padding-top: 6px;
+  border-left: none;
+  border-top: 1px dashed rgba(23,32,51,.15);
+  overflow: visible;
+}
+
+.quantity-label {
+  text-align: left;
+  font-weight: 600;
 }
 
 .quantity-input {
-  width: 42px;
-  max-width: 42px;
+  width: 60px;
+  max-width: 60px;
+  min-width: 0;
+  height: 30px;
+  padding: 2px 4px;
+  text-align: center;
+}
+
+/* Laptop has no quantity box: its package selector occupies a dedicated full-width row. */
+.inventory-chip-laptop {
+  grid-column: 1 / -1;
 }
 
 /* Laptop is a two-row control: checkbox/label on row 1, package selector on row 2. */
@@ -2665,6 +2720,10 @@ textarea,
   .inventory-chips,
   .seat-card-lead .inventory-chips {
     grid-template-columns: 1fr;
+  }
+
+  .inventory-chip {
+    grid-template-columns: minmax(0, 1fr) 62px;
   }
 
   .inventory-chip-laptop {

@@ -1819,7 +1819,6 @@ export default function App() {
                 severity="success"
                 className="toolbar-button primary"
                 onClick={syncOnline}
-                disabled={isSyncing}
               />
             </div>
           </div>
