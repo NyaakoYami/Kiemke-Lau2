@@ -8,12 +8,45 @@ import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 import "./App.css";
 
+const HERO_PATHS = {
+  eye: 'M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+  lock: 'M16.5 10.5V7a4.5 4.5 0 0 0-9 0v3.5m-1 0h11a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 18.5 20h-13A1.5 1.5 0 0 1 4 18.5v-7A1.5 1.5 0 0 1 5.5 10.5Z',
+  login: 'M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15 M12 9l3 3-3 3m3-3H3',
+  logout: 'M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15 M15 12H3m0 0 3-3m-3 3 3 3',
+  plus: 'M12 4.5v15m7.5-7.5h-15',
+  x: 'M6 18 18 6M6 6l12 12',
+  check: 'm4.5 12.75 6 6 9-13.5',
+  search: 'm21 21-4.35-4.35m1.35-5.15a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z',
+  building: 'M3.75 21h16.5M6 21V5.25L12 3l6 2.25V21M9 21v-3h6v3M9 8.25h.01M9 11.25h.01M9 14.25h.01M15 8.25h.01M15 11.25h.01M15 14.25h.01',
+  chart: 'M3 13.5 8.25 8.25l3.75 3.75L21 3m0 0v6m0-6h-6',
+  users: 'M15 19.128a9.003 9.003 0 0 0-6 0M12 12.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5ZM19.5 9.75a3 3 0 1 0-2.12-5.12M21 19.128a8.997 8.997 0 0 0-2.25-1.49',
+  cloud: 'M3.75 15.75a4.5 4.5 0 0 1 4.5-4.5h.33A5.25 5.25 0 0 1 18.75 12h.75a3.75 3.75 0 0 1 0 7.5H7.5a3.75 3.75 0 0 1-3.75-3.75Z',
+  download: 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 10.5 12 15m0 0-4.5-4.5M12 15V3',
+  upload: 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M7.5 7.5 12 3m0 0 4.5 4.5M12 3v12',
+  filter: 'M10.5 6h10.75M2.75 6h3.5M2.75 12h10.75M16.25 12h5M10.5 18h10.75M2.75 18h3.5',
+  refresh: 'M4.5 12a7.5 7.5 0 0 1 12.75-5.303L19.5 9m0 0V4.5M19.5 9H15M19.5 12a7.5 7.5 0 0 1-12.75 5.303L4.5 15m0 0v4.5M4.5 15H9',
+  trash: 'm14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21H8.084a2.25 2.25 0 0 1-2.244-1.327L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-9.392.563c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.934 0L17.25 3.75h-10.5l-.75 1.478',
+  palette: 'M9.75 3.104c-3.786.88-6.75 4.28-6.75 8.396A8.5 8.5 0 0 0 11.5 20h1.25a2.25 2.25 0 0 0 2.25-2.25v-.5A2.25 2.25 0 0 1 17.25 15H18a3 3 0 0 0 3-3c0-4.686-4.03-8.5-9-8.5-.77 0-1.524.1-2.25.286Z',
+};
+
+function HeroIcon({ name, size = 18, className = '', title }) {
+  const path = HERO_PATHS[name];
+  if (!path) return null;
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden={title ? undefined : true} role={title ? 'img' : undefined}>
+      {title ? <title>{title}</title> : null}
+      {path.split(' M').map((d, i) => <path key={i} d={(i ? 'M' : '') + d} />)}
+    </svg>
+  );
+}
+
+
 
 // -------------------------------------------------------------
 // COMPONENT NHẬP LIỆU INLINE (Click để sửa)
 // Hiển thị dạng chữ đậm chìm, gọn - chỉ hiện khung InputText khi click
 // -------------------------------------------------------------
-function InlineEdit({ value, onChange, placeholder, className, isStt = false, isName = false }) {
+function InlineEdit({ value, onChange, placeholder, className, isStt = false, isName = false, readOnly = false }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
 
@@ -28,7 +61,7 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
     setIsEdit(false);
   };
 
-  if (isEdit) {
+  if (isEdit && !readOnly) {
     return (
       <InputText
         autoFocus
@@ -44,9 +77,10 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
   return (
     <div
       className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
-      onClick={() => setIsEdit(true)}
+      onClick={() => !readOnly && setIsEdit(true)}
       onMouseDown={(e) => e.stopPropagation()}
-      title="Click để sửa"
+      title={readOnly ? "Chế độ xem" : "Click để sửa"}
+      aria-readonly={readOnly}
     >
       {value || placeholder}
     </div>
@@ -270,7 +304,7 @@ const teamCardStyle = (hex) => ({
 
 // Menu chọn Team dùng chung cho cabin và thao tác bulk.
 // Đặt ở module scope để không thể gặp lỗi TeamGridMenu is not defined khi render portal.
-const TeamGridMenu = ({ teams, activeColorId, onClick }) => {
+const TeamGridMenu = ({ teams, activeColorId, onClick, readOnly = false }) => {
   const safeTeams = Array.isArray(teams) ? teams.filter((team) => team?.id) : [];
   return (
     <div className="team-grid-container" role="menu" aria-label="Chọn Team">
@@ -285,7 +319,8 @@ const TeamGridMenu = ({ teams, activeColorId, onClick }) => {
               role="menuitemradio"
               aria-checked={active}
               className={`team-grid-item ${active ? "is-active" : ""}`}
-              onClick={() => onClick?.(team.id)}
+              onClick={() => !readOnly && onClick?.(team.id)}
+              disabled={readOnly}
             >
               <span className="team-grid-dot" style={{ backgroundColor: team.dotColor || "#9ca3af" }} aria-hidden="true" />
               <span className="team-grid-name">{team.name || "Khác"}</span>
@@ -300,16 +335,17 @@ const TeamGridMenu = ({ teams, activeColorId, onClick }) => {
 
 // Nhãn Team nhỏ trên đầu mỗi cabin — click để mở popover đổi Team (đã bỏ
 // trigger hover trước đây để tránh mở nhầm khi chỉ rê chuột ngang qua).
-const TeamTag = ({ team, onOpen }) => {
+const TeamTag = ({ team, onOpen, readOnly = false }) => {
   const safeTeam = team || getTeam([], "unknown");
   return (
     <button
       type="button"
       className="team-tag"
-      onClick={onOpen}
+      onClick={readOnly ? undefined : onOpen}
       onMouseDown={(e) => e.stopPropagation()}
       aria-label={`Đổi Team cho cabin. Team hiện tại: ${safeTeam.name}`}
-      title="Click để đổi Team cho cabin"
+      title={readOnly ? "Chế độ xem" : "Click để đổi Team cho cabin"}
+      aria-disabled={readOnly}
     >
       <span
         className="team-tag-dot"
@@ -446,6 +482,13 @@ export default function App() {
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamColor, setNewTeamColor] = useState(COLOR_PALETTE[0]);
 
+  // Mỗi lần mở ứng dụng đều bắt đầu ở Read-only; quyền Admin chỉ tồn tại trong phiên React hiện tại.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+
   // Trạng thái kết nối / đồng bộ Supabase
   const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
   const [syncStatus, setSyncStatus] = useState("synced"); // synced | dirty | syncing | error
@@ -469,6 +512,7 @@ export default function App() {
           tai: false,
           tai_qty: 1,
           laptop: false,
+          laptop_package: "",
         }
       : {
           thung: false,
@@ -529,6 +573,7 @@ export default function App() {
   };
 
   const syncOnline = async () => {
+    if (!isAdmin) { setShowLogin(true); return; }
     if (autoSyncTimerRef.current) {
       clearTimeout(autoSyncTimerRef.current);
       autoSyncTimerRef.current = null;
@@ -569,7 +614,7 @@ export default function App() {
   // Auto-save Supabase: debounce 750ms sau mỗi thay đổi state.
   // Nút "Lưu Cloud" thủ công vẫn dùng syncOnline() như cũ.
   useEffect(() => {
-    if (!hasHydratedRef.current) return undefined;
+    if (!hasHydratedRef.current || !isAdmin) return undefined;
     if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current);
 
     autoSyncTimerRef.current = setTimeout(async () => {
@@ -598,7 +643,7 @@ export default function App() {
         autoSyncTimerRef.current = null;
       }
     };
-  }, [appState, isSyncing]);
+  }, [appState, isSyncing, isAdmin]);
 
   const ensureInventoryValid = (state) => {
     const source = normalizeState(state);
@@ -630,6 +675,7 @@ export default function App() {
   };
 
   const updateState = (updater) => {
+    if (!isAdmin) { setShowLogin(true); return; }
     setAppState((prev) => {
       const next = normalizeState(prev);
       updater(next);
@@ -697,6 +743,7 @@ export default function App() {
   };
 
   const importFromJson = (e) => {
+    if (!isAdmin) { setShowLogin(true); return; }
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -859,11 +906,21 @@ export default function App() {
         st.inventory[id] = initChecklist(false);
       }
       st.inventory[id][key] = Boolean(val);
+      if (key === "laptop" && val) st.inventory[id].laptop_package = st.inventory[id].laptop_package || "Laptop + Sạc + Chuột";
+      if (!val && key === "laptop") st.inventory[id].laptop_package = "";
       if (val) {
         const qtyKey = `${key}_qty`;
         const qty = Number(st.inventory[id][qtyKey]);
         if (!Number.isFinite(qty) || qty < 1) st.inventory[id][qtyKey] = 1;
       }
+    });
+
+  const updateLaptopPackage = (id, value) =>
+    updateState((st) => {
+      if (!id) return;
+      if (!st.inventory[id] || typeof st.inventory[id] !== "object") st.inventory[id] = initChecklist(true);
+      st.inventory[id].laptop = Boolean(value);
+      st.inventory[id].laptop_package = value ? (st.inventory[id].laptop_package || "Laptop + Sạc + Chuột") : "";
     });
 
   const updateInventoryQuantity = (id, key, value) =>
@@ -937,6 +994,7 @@ export default function App() {
         inv.man24 = true;
         inv.man24_qty = Number.isFinite(Number(inv.man24_qty)) && Number(inv.man24_qty) > 0 ? Math.floor(Number(inv.man24_qty)) : 1;
         inv.laptop = true;
+        inv.laptop_package = inv.laptop_package || "Laptop + Sạc + Chuột";
       }
     });
   };
@@ -971,6 +1029,7 @@ export default function App() {
 
   // Drag & Drop — only the explicit handle is draggable.
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
+    if (!isAdmin) return;
     if (!e.currentTarget?.dataset?.dragHandle) return;
     setDraggedItem({ fIdx, lIdx, type, sIdx });
     e.dataTransfer.effectAllowed = "move";
@@ -978,6 +1037,7 @@ export default function App() {
   };
 
   const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
+    if (!isAdmin) return;
     e.preventDefault();
     if (!draggedItem) return;
 
@@ -1000,6 +1060,7 @@ export default function App() {
   };
 
   const onDropOnSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
+    if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
     if (!draggedItem) return;
@@ -1090,6 +1151,29 @@ export default function App() {
     };
   };
 
+  const handleAdminLogin = () => {
+    const email = loginEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@vietmyssu\.com$/.test(email)) {
+      setLoginError("Vui lòng nhập email hợp lệ có đuôi @vietmyssu.com.");
+      return;
+    }
+    setIsAdmin(true);
+    setAdminEmail(email);
+    setLoginError("");
+    setShowLogin(false);
+    toast.current?.show({ severity: "success", summary: "Đã mở quyền chỉnh sửa", detail: "Bạn đang ở chế độ Admin / Write mode.", life: 2500 });
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdmin(false);
+    setEditingTeamId(null);
+    setShowAddTeam(false);
+    setShowTeamSheet(false);
+    setAdminEmail("");
+    setShowLogin(false);
+    setOpenMenu(null);
+  };
+
   const safeFloors = Array.isArray(appState?.floors) ? appState.floors : [];
   stats.seats = safeFloors.reduce(
     (sum, floor) =>
@@ -1105,6 +1189,21 @@ export default function App() {
   );
   const safeTeams = Array.isArray(appState?.teams) ? appState.teams : DEFAULT_TEAMS;
   const selectedTeam = selectedTeamId ? getTeam(safeTeams, selectedTeamId) : null;
+
+  const floorBreakdown = safeFloors.map((floor) => {
+    const seats = (floor?.lanes || []).flatMap((lane) => [
+      ...(lane?.leads || []).map((seat) => ({ ...seat, isLead: true })),
+      ...(lane?.agents || []).map((seat) => ({ ...seat, isLead: false })),
+    ]);
+    const inventory = seats.map((seat) => appState?.inventory?.[seat.id] || {});
+    const checkedSeats = seats.filter((seat) => getChecklistItems(Boolean(seat.isLead)).some((item) => Boolean(appState?.inventory?.[seat.id]?.[item.key]))).length;
+    const assets = inventory.reduce((sum, inv) => sum + Object.entries(inv).reduce((n, [key, value]) => {
+      if (!key.endsWith('_qty') && typeof value === 'boolean' && value) return n + (key === 'laptop' ? 1 : Number(inv[`${key}_qty`]) || 1);
+      return n;
+    }, 0), 0);
+    const laptop = inventory.filter((inv) => inv.laptop).length;
+    return { name: floor?.floorName || 'Sàn chưa đặt tên', cabins: seats.length, checked: checkedSeats, completion: seats.length ? Math.round((checkedSeats / seats.length) * 100) : 0, assets, laptop };
+  });
 
   return (
     <div className="app-shell" onClick={closeMenu}>
@@ -1122,6 +1221,7 @@ export default function App() {
           <div className="dropdown-surface">
             {openMenu.type === "seat" && (
               <TeamGridMenu
+                readOnly={!isAdmin}
                 teams={safeTeams}
                 activeColorId={appState?.colors?.[openMenu.seatId]}
                 onClick={(cId) => {
@@ -1132,6 +1232,7 @@ export default function App() {
             )}
             {openMenu.type === "bulk" && (
               <TeamGridMenu
+                readOnly={!isAdmin}
                 teams={safeTeams}
                 onClick={(cId) => {
                   applyBulkColor(cId);
@@ -1156,6 +1257,11 @@ export default function App() {
           </div>
 
           <div className="header-meta">
+            <div className={`mode-pill ${isAdmin ? "is-admin" : "is-readonly"}`}>
+              <HeroIcon name={isAdmin ? "lock" : "eye"} size={16} />
+              <span>{isAdmin ? "Admin · Chỉnh sửa" : "Chế độ xem"}</span>
+              {isAdmin ? <small>{adminEmail}</small> : null}
+            </div>
             <div className="header-date">
               <span className="meta-label">Ngày kiểm kê</span>
               <strong>
@@ -1168,6 +1274,17 @@ export default function App() {
               </strong>
             </div>
             <StatusDot connectionStatus={connectionStatus} syncStatus={syncStatus} />
+            {isAdmin ? (
+              <button type="button" className="header-auth-btn" onClick={handleAdminLogout}>
+                <HeroIcon name="logout" size={16} />
+                <span>Thoát Admin</span>
+              </button>
+            ) : (
+              <button type="button" className="header-auth-btn primary" onClick={() => { setLoginError(""); setShowLogin(true); }}>
+                <HeroIcon name="login" size={16} />
+                <span>Đăng nhập</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1212,6 +1329,36 @@ export default function App() {
         </div>
       </section>
 
+      <section className="floor-breakdown-section" aria-labelledby="floor-breakdown-heading">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">Floor breakdown</span>
+            <h2 id="floor-breakdown-heading">Phân rã tài sản theo từng lầu</h2>
+          </div>
+          <span className="section-note">Theo dõi vị trí · cabin · mức hoàn tất · tài sản</span>
+        </div>
+        <div className="floor-breakdown-grid">
+          {floorBreakdown.map((item) => (
+            <article className="floor-breakdown-card" key={item.name}>
+              <header className="floor-breakdown-card-head">
+                <span className="floor-breakdown-icon"><HeroIcon name="building" size={18} /></span>
+                <div>
+                  <h3>{item.name}</h3>
+                  <p>{item.cabins} cabin · {item.laptop} laptop</p>
+                </div>
+                <strong>{item.completion}%</strong>
+              </header>
+              <div className="floor-breakdown-metrics">
+                <span><b>{item.assets}</b><small>Tài sản</small></span>
+                <span><b>{item.checked}</b><small>Cabin đã kiểm</small></span>
+                <span><b>{Math.max(item.cabins - item.checked, 0)}</b><small>Còn lại</small></span>
+              </div>
+              <div className="floor-breakdown-track" aria-label={`Tiến độ ${item.name} ${item.completion}%`}><span style={{ width: `${item.completion}%` }} /></div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <div className="workspace-layout">
         <aside className={`team-manager-panel ${showTeamSheet ? "team-sheet-open" : ""}`}>
           <div className="team-sheet-mobile-handle" aria-hidden="true" />
@@ -1248,6 +1395,7 @@ export default function App() {
             )}
             <Button
               label="Thêm Team"
+              disabled={!isAdmin}
               icon="pi pi-plus"
               size="small"
               severity="success"
@@ -1294,6 +1442,7 @@ export default function App() {
                   <button
                     type="button"
                     className="team-icon-action"
+                    disabled={!isAdmin}
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingTeamId((prev) => (prev === team.id ? null : team.id));
@@ -1311,9 +1460,9 @@ export default function App() {
                       e.stopPropagation();
                       deleteTeam(team.id);
                     }}
+                    disabled={!isAdmin || team.id === "fill-grey"}
                     aria-label={team.id === "fill-grey" ? "Team Trống không thể xoá" : `Xoá Team ${team.name}`}
                     title={team.id === "fill-grey" ? "Team Trống không thể xoá" : "Xoá Team"}
-                    disabled={team.id === "fill-grey"}
                   >
                     <i className="pi pi-trash" aria-hidden="true" />
                   </button>
@@ -1332,6 +1481,7 @@ export default function App() {
                     value={editingTeam?.name || ""}
                     onChange={(val) => renameTeam(editingTeamId, val)}
                     className="font-extrabold"
+                    readOnly={!isAdmin}
                   />
                 </div>
                 <div className="color-palette-grouped">
@@ -1345,6 +1495,7 @@ export default function App() {
                             type="button"
                             className={`color-swatch ${editingTeam?.dotColor === hex ? "selected" : ""}`}
                             style={{ backgroundColor: hex }}
+                            disabled={!isAdmin}
                             onClick={() => updateTeamColor(editingTeamId, hex)}
                             aria-label={`Chọn màu ${hex}`}
                             title={hex}
@@ -1370,12 +1521,15 @@ export default function App() {
             <div className="team-inline-form">
               <div className="form-title">Thêm Team mới</div>
               <div className="new-team-row">
+                <label className="sr-only" htmlFor="new-team-name">Tên Team mới</label>
                 <InputText
+                  id="new-team-name"
                   placeholder="Tên Team mới..."
                   value={newTeamName}
                   onChange={(e) => setNewTeamName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addTeam(newTeamName, newTeamColor)}
                   className="new-team-input"
+                  disabled={!isAdmin}
                   autoFocus
                   aria-label="Tên Team mới"
                 />
@@ -1392,6 +1546,7 @@ export default function App() {
                           type="button"
                           className={`color-swatch ${newTeamColor === hex ? "selected" : ""}`}
                           style={{ backgroundColor: hex }}
+                          disabled={!isAdmin}
                           onClick={() => setNewTeamColor(hex)}
                           aria-label={`Chọn màu ${hex}`}
                           title={hex}
@@ -1430,8 +1585,10 @@ export default function App() {
           <div className="control-bar">
             <div className="control-primary">
               <div className="search-field">
+                <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
                 <i className="pi pi-search" aria-hidden="true" />
                 <InputText
+                  id="asset-search"
                   placeholder="Tìm tên Agent hoặc STT..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -1493,6 +1650,7 @@ export default function App() {
                 hidden
               />
               <Button
+                disabled={!isAdmin}
                 label="Reset kiểm kê"
                 icon="pi pi-refresh"
                 severity="danger"
@@ -1511,6 +1669,7 @@ export default function App() {
                 title="Xuất dữ liệu dự phòng ra file JSON"
               />
               <Button
+                disabled={!isAdmin}
                 label="Nhập JSON"
                 icon="pi pi-upload"
                 severity="secondary"
@@ -1520,6 +1679,7 @@ export default function App() {
                 title="Nhập dữ liệu từ file JSON"
               />
               <Button
+                disabled={!isAdmin || isSyncing}
                 label={isSyncing ? "Đang lưu..." : "Lưu Cloud"}
                 icon="pi pi-cloud-upload"
                 severity="success"
@@ -1587,7 +1747,7 @@ export default function App() {
                           <button
                             type="button"
                             className="drag-handle"
-                            draggable
+                            draggable={isAdmin}
                             data-drag-handle="true"
                             onDragStart={(e) => onDragStart(e, fIdx, lIdx, type, currentIndex)}
                             onDragEnd={() => setDraggedItem(null)}
@@ -1612,6 +1772,7 @@ export default function App() {
                               rounded
                               severity="success"
                               className="qa-btn"
+                              disabled={!isAdmin}
                               title="Đánh dấu đủ bộ"
                               aria-label={`Đánh dấu đủ bộ cho ${seat?.name || "cabin"}`}
                               onClick={() => markFull(seat?.id, isLead)}
@@ -1622,6 +1783,7 @@ export default function App() {
                               severity="secondary"
                               outlined
                               className="qa-btn"
+                              disabled={!isAdmin}
                               title="Reset checklist"
                               aria-label={`Đặt lại checklist cho ${seat?.name || "cabin"}`}
                               onClick={() => markReset(seat?.id)}
@@ -1632,6 +1794,7 @@ export default function App() {
                               text
                               severity="danger"
                               className="qa-btn"
+                              disabled={!isAdmin}
                               title="Xoá cabin"
                               aria-label={`Xoá cabin ${seat?.name || "chưa đặt tên"}`}
                               onClick={() => removeSeat(fIdx, lIdx, type, currentIndex)}
@@ -1647,6 +1810,7 @@ export default function App() {
                         >
                           <TeamTag
                             team={team}
+                            readOnly={!isAdmin}
                             onOpen={(e) => {
                               e.stopPropagation();
                               setOpenMenu({
@@ -1666,6 +1830,7 @@ export default function App() {
                                 placeholder="Tên Lead"
                                 isName
                                 className="seat-name"
+                                readOnly={!isAdmin}
                               />
                             ) : (
                               <>
@@ -1674,6 +1839,7 @@ export default function App() {
                                   onChange={(val) => updateProp(fIdx, lIdx, "agent", currentIndex, "stt", val)}
                                   placeholder="STT"
                                   isStt
+                                  readOnly={!isAdmin}
                                 />
                                 <InlineEdit
                                   value={seat?.name || ""}
@@ -1681,6 +1847,7 @@ export default function App() {
                                   placeholder="Tên Agent..."
                                   isName
                                   className="seat-name"
+                                  readOnly={!isAdmin}
                                 />
                               </>
                             )}
@@ -1723,14 +1890,17 @@ export default function App() {
                                   <Checkbox
                                     inputId={`${seat?.id}_${key}`}
                                     checked={checked}
+                                    disabled={!isAdmin}
                                     onChange={(e) => updateInventory(seat?.id, key, e.checked)}
                                   />
                                   <span className="chip-label">{label}</span>
                                 </label>
                                 {checked && key !== "laptop" && (
                                   <div className="inventory-quantity" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                                    <label className="sr-only" htmlFor={`${seat?.id}_${key}_qty`}>Số lượng {label}</label>
                                     <span className="quantity-label">SL</span>
                                     <input
+                                      id={`${seat?.id}_${key}_qty`}
                                       className="quantity-input"
                                       type="number"
                                       min="1"
@@ -1738,10 +1908,26 @@ export default function App() {
                                       inputMode="numeric"
                                       aria-label={`Số lượng ${label}`}
                                       value={quantity}
+                                      readOnly={!isAdmin}
                                       onChange={(e) => updateInventoryQuantity(seat?.id, key, e.target.value)}
                                       onBlur={(e) => updateInventoryQuantity(seat?.id, key, e.target.value || 1)}
                                       onWheel={(e) => e.currentTarget.blur()}
                                     />
+                                  </div>
+                                )}
+                                {checked && key === "laptop" && (
+                                  <div className="laptop-package" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                                    <label className="sr-only" htmlFor={`${seat?.id}_laptop_package`}>Phân loại Laptop</label>
+                                    <select
+                                      id={`${seat?.id}_laptop_package`}
+                                      value={inv?.laptop_package || "Laptop + Sạc + Chuột"}
+                                      disabled={!isAdmin}
+                                      onChange={(e) => updateLaptopPackage(seat?.id, e.target.value)}
+                                      aria-label="Phân loại Laptop"
+                                    >
+                                      <option value="Laptop + Sạc + Chuột">Laptop + Sạc + Chuột</option>
+                                      <option value="Laptop + Sạc + Chuột + Túi chống sốc">Laptop + Sạc + Chuột + Túi chống sốc</option>
+                                    </select>
                                   </div>
                                 )}
                               </div>
@@ -1781,6 +1967,7 @@ export default function App() {
                             <span>STT bắt đầu</span>
                             <InputText
                               value={lane?.startStt ?? ""}
+                              readOnly={!isAdmin}
                               onChange={(e) => updateLaneProp(fIdx, lIdx, "startStt", e.target.value)}
                               aria-label={`STT bắt đầu dãy ${lane?.laneLetter || ""}`}
                               className="stt-input"
@@ -1789,6 +1976,7 @@ export default function App() {
                           <Button
                             icon="pi pi-bolt"
                             label="Áp dụng STT"
+                            disabled={!isAdmin}
                             size="small"
                             severity="info"
                             className="compact-button"
@@ -1798,6 +1986,7 @@ export default function App() {
                           <Button
                             icon="pi pi-palette"
                             label="Đổi màu dãy"
+                            disabled={!isAdmin}
                             size="small"
                             outlined
                             severity="secondary"
@@ -1826,6 +2015,7 @@ export default function App() {
                                 text
                                 severity="success"
                                 className="zone-add"
+                                disabled={!isAdmin}
                                 title="Thêm Lead"
                                 aria-label={`Thêm Lead vào dãy ${lane?.laneLetter || ""}`}
                                 onClick={() => addSeat(fIdx, lIdx, "lead")}
@@ -1868,6 +2058,7 @@ export default function App() {
                               <Button
                                 icon="pi pi-plus"
                                 label="Thêm Agent"
+                                disabled={!isAdmin}
                                 size="small"
                                 outlined
                                 severity="success"
@@ -1905,6 +2096,23 @@ export default function App() {
           })}
         </main>
       </div>
+
+      {showLogin && (
+        <div className="auth-overlay" role="presentation" onMouseDown={() => setShowLogin(false)}>
+          <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(e) => e.stopPropagation()}>
+            <button type="button" className="auth-close" onClick={() => setShowLogin(false)} aria-label="Đóng cửa sổ đăng nhập"><HeroIcon name="x" size={20} /></button>
+            <div className="auth-icon"><HeroIcon name="lock" size={24} /></div>
+            <span className="section-kicker">Admin access</span>
+            <h2 id="auth-title">Mở chế độ chỉnh sửa</h2>
+            <p>Ứng dụng mặc định ở chế độ Xem. Nhập email công ty để mở quyền thêm, sửa, xoá và đồng bộ dữ liệu.</p>
+            <label htmlFor="admin-email">Email công ty</label>
+            <input id="admin-email" className="auth-input" type="email" autoFocus value={loginEmail} onChange={(e) => { setLoginEmail(e.target.value); setLoginError(""); }} onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()} placeholder="ten@vietmyssu.com" autoComplete="email" />
+            {loginError && <p className="auth-error" role="alert">{loginError}</p>}
+            <button type="button" className="auth-submit" onClick={handleAdminLogin}><HeroIcon name="login" size={17} /> Xác nhận quyền Admin</button>
+            <small>Không yêu cầu mật khẩu · Chỉ chấp nhận @vietmyssu.com</small>
+          </section>
+        </div>
+      )}
 
       <button
         type="button"
