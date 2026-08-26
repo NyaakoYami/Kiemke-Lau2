@@ -29,6 +29,22 @@ const HERO_PATHS = {
   palette: 'M9.75 3.104c-3.786.88-6.75 4.28-6.75 8.396A8.5 8.5 0 0 0 11.5 20h1.25a2.25 2.25 0 0 0 2.25-2.25v-.5A2.25 2.25 0 0 1 17.25 15H18a3 3 0 0 0 3-3c0-4.686-4.03-8.5-9-8.5-.77 0-1.524.1-2.25.286Z',
 };
 
+const LAPTOP_PACKAGES = Object.freeze([
+  { value: "Laptop + Sạc + Chuột", label: "Laptop + Sạc + Chuột" },
+  { value: "Laptop + Sạc + Chuột + Túi chống sốc", label: "Laptop + Sạc + Chuột + Túi chống sốc" },
+]);
+
+const ASSET_REPORT_ITEMS = Object.freeze([
+  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
+  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
+  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop" },
+  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
+  { key: "phim", label: "Phím", icon: "pi pi-table" },
+  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
+  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile" },
+  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-mobile" },
+]);
+
 function HeroIcon({ name, size = 18, className = '', title }) {
   const path = HERO_PATHS[name];
   if (!path) return null;
@@ -388,6 +404,9 @@ const normalizeState = (state) => {
           const qty = Number(normalized[qtyKey]);
           normalized[qtyKey] = Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1;
         });
+        if (normalized.laptop_package && !LAPTOP_PACKAGES.some((item) => item.value === normalized.laptop_package)) {
+          normalized.laptop_package = LAPTOP_PACKAGES[0].value;
+        }
         return [id, normalized];
       }),
     ),
@@ -909,7 +928,7 @@ export default function App() {
         st.inventory[id] = initChecklist(false);
       }
       st.inventory[id][key] = Boolean(val);
-      if (key === "laptop" && val) st.inventory[id].laptop_package = st.inventory[id].laptop_package || "Laptop + Sạc + Chuột";
+      if (key === "laptop" && val) st.inventory[id].laptop_package = st.inventory[id].laptop_package || LAPTOP_PACKAGES[0].value;
       if (!val && key === "laptop") st.inventory[id].laptop_package = "";
       if (val) {
         const qtyKey = `${key}_qty`;
@@ -923,7 +942,7 @@ export default function App() {
       if (!id) return;
       if (!st.inventory[id] || typeof st.inventory[id] !== "object") st.inventory[id] = initChecklist(true);
       st.inventory[id].laptop = Boolean(value);
-      st.inventory[id].laptop_package = value ? (st.inventory[id].laptop_package || "Laptop + Sạc + Chuột") : "";
+      st.inventory[id].laptop_package = value ? (st.inventory[id].laptop_package || LAPTOP_PACKAGES[0].value) : "";
     });
 
   const updateInventoryQuantity = (id, key, value) =>
@@ -997,7 +1016,7 @@ export default function App() {
         inv.man24 = true;
         inv.man24_qty = Number.isFinite(Number(inv.man24_qty)) && Number(inv.man24_qty) > 0 ? Math.floor(Number(inv.man24_qty)) : 1;
         inv.laptop = true;
-        inv.laptop_package = inv.laptop_package || "Laptop + Sạc + Chuột";
+        inv.laptop_package = inv.laptop_package || LAPTOP_PACKAGES[0].value;
       }
     });
   };
@@ -1169,7 +1188,7 @@ export default function App() {
     setDragOverTarget(null);
   };
 
-  // Thống kê tài sản
+  // Thống kê tài sản theo đúng 8 danh mục hiển thị mới.
   const stats = {
     thung: 0,
     man20: 0,
@@ -1177,7 +1196,8 @@ export default function App() {
     chuot: 0,
     phim: 0,
     tai: 0,
-    laptop: 0,
+    laptop_standard: 0,
+    laptop_bag: 0,
     totalAssets: 0,
   };
 
@@ -1189,9 +1209,12 @@ export default function App() {
     if (inv.chuot) stats.chuot += parseInt(inv.chuot_qty, 10) || 1;
     if (inv.phim) stats.phim += parseInt(inv.phim_qty, 10) || 1;
     if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 1;
-    if (inv.laptop) stats.laptop++;
+    if (inv.laptop) {
+      if (inv.laptop_package === LAPTOP_PACKAGES[1].value) stats.laptop_bag += 1;
+      else stats.laptop_standard += 1;
+    }
   });
-  stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop;
+  stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop_standard + stats.laptop_bag;
 
   const getChecklistItems = (isLead) =>
     isLead
@@ -1260,22 +1283,26 @@ export default function App() {
       getChecklistItems(Boolean(seat.isLead)).some((item) => Boolean(appState?.inventory?.[seat.id]?.[item.key]))
     ).length;
     const devices = {
-      pc: 0,
+      thung: 0,
       man20: 0,
       man24: 0,
       phim: 0,
       chuot: 0,
       tai: 0,
-      laptop: 0,
+      laptop_standard: 0,
+      laptop_bag: 0,
     };
     inventory.forEach((inv) => {
-      if (inv.thung) devices.pc += Number(inv.thung_qty) || 1;
+      if (inv.thung) devices.thung += Number(inv.thung_qty) || 1;
       if (inv.man20) devices.man20 += Number(inv.man20_qty) || 1;
       if (inv.man24) devices.man24 += Number(inv.man24_qty) || 1;
       if (inv.phim) devices.phim += Number(inv.phim_qty) || 1;
       if (inv.chuot) devices.chuot += Number(inv.chuot_qty) || 1;
       if (inv.tai) devices.tai += Number(inv.tai_qty) || 1;
-      if (inv.laptop) devices.laptop += 1;
+      if (inv.laptop) {
+        if (inv.laptop_package === LAPTOP_PACKAGES[1].value) devices.laptop_bag += 1;
+        else devices.laptop_standard += 1;
+      }
     });
     const assets = Object.values(devices).reduce((sum, value) => sum + value, 0);
     const progress = seats.length ? Math.round((checkedSeats / seats.length) * 100) : 0;
@@ -1398,7 +1425,8 @@ export default function App() {
             { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
             { label: "Phím", val: stats.phim, icon: "pi pi-table" },
             { label: "Tai USB", val: stats.tai, icon: "pi pi-volume-up" },
-            { label: "Laptop", val: stats.laptop, icon: "pi pi-mobile" },
+            { label: "Laptop + Sạc + Chuột", val: stats.laptop_standard, icon: "pi pi-mobile" },
+            { label: "Laptop + Sạc + Chuột + Túi chống sốc", val: stats.laptop_bag, icon: "pi pi-mobile" },
           ].map((item) => (
             <article className="stat-card" key={item.label}>
               <div className="stat-card-top">
@@ -1450,13 +1478,14 @@ export default function App() {
               <section className="floor-device-report" aria-labelledby={`device-report-${item.name.replace(/\s+/g, "-")}`}>
                 <h4 id={`device-report-${item.name.replace(/\s+/g, "-")}`}>Chi tiết thiết bị</h4>
                 <dl className="floor-device-grid">
-                  <div><dt>Thùng máy</dt><dd>{item.devices.pc}</dd></div>
+                  <div><dt>Thùng máy</dt><dd>{item.devices.thung}</dd></div>
                   <div><dt>Màn 20&quot;</dt><dd>{item.devices.man20}</dd></div>
                   <div><dt>Màn 24&quot;</dt><dd>{item.devices.man24}</dd></div>
-                  <div><dt>Phím</dt><dd>{item.devices.phim}</dd></div>
                   <div><dt>Chuột</dt><dd>{item.devices.chuot}</dd></div>
+                  <div><dt>Phím</dt><dd>{item.devices.phim}</dd></div>
                   <div><dt>Tai USB</dt><dd>{item.devices.tai}</dd></div>
-                  <div><dt>Laptop</dt><dd>{item.devices.laptop}</dd></div>
+                  <div className="is-wide"><dt>Laptop + Sạc + Chuột</dt><dd>{item.devices.laptop_standard}</dd></div>
+                  <div className="is-wide"><dt>Laptop + Sạc + Chuột + Túi chống sốc</dt><dd>{item.devices.laptop_bag}</dd></div>
                 </dl>
               </section>
             </article>
@@ -1977,7 +2006,7 @@ export default function App() {
                             return (
                               <div
                                 key={key}
-                                className={`inventory-chip ${checked ? "checked" : ""}`}
+                                className={`inventory-chip inventory-chip-${key} ${checked ? "checked" : ""}`}
                                 title={label}
                               >
                                 <label className="inventory-check" htmlFor={`${seat?.id}_${key}`}>
@@ -2019,8 +2048,9 @@ export default function App() {
                                       onChange={(e) => updateLaptopPackage(seat?.id, e.target.value)}
                                       aria-label="Phân loại Laptop"
                                     >
-                                      <option value="Laptop + Sạc + Chuột">Laptop + Sạc + Chuột</option>
-                                      <option value="Laptop + Sạc + Chuột + Túi chống sốc">Laptop + Sạc + Chuột + Túi chống sốc</option>
+                                      {LAPTOP_PACKAGES.map((packageItem) => (
+                                        <option key={packageItem.value} value={packageItem.value}>{packageItem.label}</option>
+                                      ))}
                                     </select>
                                   </div>
                                 )}

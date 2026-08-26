@@ -1178,8 +1178,8 @@ input:focus-visible,
 @media (hover: hover) and (pointer: fine) {
   .seat-card:hover {
     transform: translateY(-2px);
-    border-color: var(--team-color);
-    box-shadow: 0 4px 12px var(--team-color);
+    border-color: color-mix(in srgb, var(--team-color) 58%, var(--color-border));
+    box-shadow: var(--shadow-md);
     z-index: 2;
   }
 }
@@ -2047,10 +2047,10 @@ textarea,
   touch-action: manipulation;
   user-select: none;
   border-width: 1px;
-  border-top-color: var(--team-color);
+  border-top-color: color-mix(in srgb, var(--team-color) 50%, var(--color-border));
   box-shadow:
     0 1px 0 rgba(255,255,255,.85) inset,
-    0 4px 12px rgba(0,0,0,0.05);
+    0 5px 16px color-mix(in srgb, var(--team-color) 9%, transparent);
   transition:
     transform 220ms cubic-bezier(.16,1,.3,1),
     box-shadow 220ms cubic-bezier(.16,1,.3,1),
@@ -2064,7 +2064,7 @@ textarea,
   position: absolute;
   inset: 0 0 auto 0;
   height: 3px;
-  background: var(--team-color);
+  background: linear-gradient(90deg, var(--team-color), color-mix(in srgb, var(--team-color) 45%, white));
   opacity: .95;
 }
 
@@ -2083,9 +2083,8 @@ textarea,
   transform: translateY(-4px) scale(1.012);
   border-color: var(--team-color);
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.8),
-    0 0 0 4px var(--team-color),
-    0 8px 24px rgba(0,0,0,0.12);
+    0 0 0 2px color-mix(in srgb, var(--team-color) 22%, transparent),
+    0 16px 34px color-mix(in srgb, var(--team-color) 20%, transparent);
 }
 
 .seat-card .seat-topline,
@@ -2290,103 +2289,269 @@ textarea,
   }
 }
 
-/* V4 UI Updates */
+/* =============================================================
+   V5 — Asset taxonomy, cabin quantity safety & auth modal polish
+   ============================================================= */
 
-/* Auth Modal */
+/* Dashboard cards: long asset names wrap instead of colliding. */
+.stat-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.stat-card-top {
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.stat-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.stat-card .stat-value {
+  flex: 0 0 auto;
+}
+
+/* Cabin team color: preserve the selected Team color as an exact visual anchor. */
+.seat-card {
+  border-color: var(--team-color) !important;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--team-color) 8%, var(--color-surface)) 0%,
+      var(--color-surface) 44%,
+      var(--color-surface) 100%);
+}
+
+.seat-card-accent {
+  width: 5px;
+  background: var(--team-color) !important;
+}
+
+.seat-card::before {
+  height: 4px;
+  background: var(--team-color) !important;
+}
+
+.seat-card.status-complete,
+.seat-card.status-partial,
+.seat-card.status-empty {
+  border-color: var(--team-color) !important;
+}
+
+/* Inventory chip: label and quantity are separate layout regions. */
+.inventory-chips {
+  grid-auto-rows: minmax(42px, auto);
+  align-items: stretch;
+}
+
+.inventory-chip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  min-height: 44px;
+  overflow: hidden;
+}
+
+.inventory-check {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chip-label {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.inventory-quantity {
+  min-width: 0;
+  max-width: 74px;
+  justify-self: end;
+  overflow: hidden;
+}
+
+.quantity-input {
+  width: 42px;
+  max-width: 42px;
+}
+
+/* Laptop is a two-row control: checkbox/label on row 1, package selector on row 2. */
+.inventory-chip-laptop {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 7px;
+  align-items: center;
+  padding: 8px 9px;
+}
+
+.inventory-chip-laptop .inventory-check {
+  width: 100%;
+}
+
+.laptop-package {
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.laptop-package select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 30px 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--team-color) 35%, var(--color-border-strong));
+  border-radius: 9px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: 600 9px/1.3 "Poppins", system-ui, sans-serif;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+}
+
+.laptop-package select:focus {
+  border-color: var(--team-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--team-color) 15%, transparent);
+}
+
+.laptop-package select:disabled {
+  cursor: not-allowed;
+  opacity: .78;
+}
+
+/* Floor device report: all eight mandatory categories are visible and readable. */
+.floor-device-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.floor-device-grid > div {
+  min-height: 42px;
+  align-items: flex-start;
+}
+
+.floor-device-grid > div.is-wide {
+  grid-column: span 2;
+}
+
+.floor-device-grid dt {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
+
+.floor-device-grid dd {
+  flex: 0 0 auto;
+  min-width: 20px;
+  text-align: right;
+}
+
+.floor-breakdown-card-head p {
+  overflow-wrap: anywhere;
+}
+
+/* Auth modal: fixed to viewport and visually anchored near the header login action. */
 .auth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 9999;
+  z-index: 5000;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.2s ease-out;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 88px 28px 28px;
+  background: rgba(17, 24, 39, .18);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: authOverlayIn 180ms ease-out both;
 }
 
 .auth-modal {
   position: relative;
-  background: #fff;
-  width: 90%;
-  max-width: 400px;
-  padding: 32px 24px;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.auth-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #64748b;
-  padding: 6px;
-  border-radius: 50%;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  width: min(410px, calc(100vw - 32px));
+  margin: 0;
+  padding: 26px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 24px;
+  background: rgba(255,255,255,.98);
+  box-shadow:
+    0 22px 70px rgba(15,23,42,.18),
+    0 4px 16px rgba(15,23,42,.08);
+  color: var(--color-ink);
+  animation: authModalIn 240ms cubic-bezier(.16,1,.3,1) both;
 }
 
 .auth-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 14px;
   border-radius: 14px;
-  background: #eff6ff;
-  color: #3b82f6;
-  margin-bottom: 4px;
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+  box-shadow: inset 0 0 0 1px rgba(49,94,251,.08);
+}
+
+.auth-modal .section-kicker {
+  margin-bottom: 5px;
 }
 
 .auth-modal h2 {
-  margin: 0 0 -8px 0;
-  font-size: 20px;
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+}
+
+.auth-modal > p:not(.auth-error) {
+  margin: 10px 0 18px;
+  color: var(--color-ink-2);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.auth-modal > label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-ink);
+  font-size: 11px;
   font-weight: 700;
-  color: #0f172a;
-}
-
-.auth-modal p {
-  font-size: 14px;
-  color: #475569;
-  line-height: 1.5;
-  margin: 0 0 8px 0;
-}
-
-.auth-modal label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: -10px;
 }
 
 .auth-input {
+  display: block;
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #cbd5e1;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--color-border-strong);
   border-radius: 12px;
+  background: #fff;
+  color: var(--color-ink);
+  font: 500 12px/1 "Poppins", system-ui, sans-serif;
   outline: none;
-  transition: all 0.2s;
-  font-family: inherit;
-  font-size: 14px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.auth-input::placeholder {
+  color: #a4adba;
+}
+
+.auth-input:hover {
+  border-color: #b9c4d2;
 }
 
 .auth-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(49,94,251,.12);
+  transform: translateY(-1px);
 }
 
 .auth-submit {
@@ -2395,94 +2560,161 @@ textarea,
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px 16px;
-  background: #3b82f6;
-  color: #fff;
-  border: none;
+  min-height: 46px;
+  margin-top: 14px;
+  padding: 0 14px;
+  border: 1px solid var(--color-primary);
   border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
+  background: var(--color-primary);
+  color: #fff;
+  font: 700 11px/1 "Poppins", system-ui, sans-serif;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  margin-top: 8px;
+  box-shadow: 0 8px 20px rgba(49,94,251,.18);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 .auth-submit:hover {
-  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(49,94,251,.23);
 }
 
-.auth-submit:active {
-  transform: scale(0.98);
+.auth-submit:focus-visible,
+.auth-close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.auth-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--color-ink-2);
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.auth-close:hover {
+  transform: rotate(3deg);
+  background: var(--color-surface-2);
 }
 
 .auth-error {
-  color: #ef4444;
-  font-size: 13px;
-  margin: -4px 0 0;
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(196,61,75,.16);
+  border-radius: 9px;
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+  font-size: 10px;
+  line-height: 1.4;
 }
 
-.auth-modal small {
+.auth-modal > small {
+  display: block;
+  margin-top: 12px;
+  color: var(--color-ink-3);
+  font-size: 9px;
+  line-height: 1.5;
   text-align: center;
-  color: #94a3b8;
-  font-size: 12px;
-  margin-top: 4px;
 }
 
-@keyframes fadeIn {
+@keyframes authOverlayIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-@keyframes scaleUp {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes authModalIn {
+  from { opacity: 0; transform: translateY(-10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Fix Cabin Quantity & Laptop Dropdown Overlap */
-.inventory-chip {
-  flex-wrap: wrap;
-  position: relative;
+@media (max-width: 1200px) {
+  .stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .floor-device-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .floor-device-grid > div.is-wide {
+    grid-column: auto;
+  }
 }
 
-.inventory-chip.checked {
-  padding-bottom: 32px; /* make space for absolute elements if needed, or flex layout */
+@media (max-width: 720px) {
+  .auth-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+
+  .auth-modal {
+    width: min(430px, 100%);
+    padding: 23px 20px 20px;
+  }
+
+  .inventory-chips,
+  .seat-card-lead .inventory-chips {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-chip-laptop {
+    grid-column: auto;
+  }
+
+  .floor-device-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Actually, let's use flexbox for laptop package */
-.laptop-package {
-  width: 100%;
-  margin-top: 6px;
+@media (max-width: 520px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat-card {
+    min-height: 108px;
+    padding: 12px;
+  }
+
+  .stat-label {
+    font-size: 8px;
+  }
+
+  .inventory-chip {
+    min-height: 46px;
+  }
+
+  .laptop-package select {
+    min-height: 38px;
+    font-size: 9px;
+  }
 }
 
-.laptop-package select {
-  width: 100%;
-  max-width: 100%;
-  padding: 4px 8px;
-  font-size: 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #334155;
-  outline: none;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+@media (prefers-reduced-motion: reduce) {
+  .auth-overlay,
+  .auth-modal,
+  .auth-submit,
+  .auth-close,
+  .auth-input {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
-.laptop-package select:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+/* Exact Team color surfaces: the selected hex is never replaced by a different Team tone. */
+.seat-card {
+  box-shadow:
+    0 0 0 1px var(--team-color),
+    0 10px 24px color-mix(in srgb, var(--team-color) 28%, transparent),
+    0 1px 0 rgba(255,255,255,.9) inset;
 }
-
-.inventory-quantity {
-  margin-left: auto;
-  position: absolute;
-  right: 6px;
-  bottom: 6px;
-  z-index: 2;
-}
-
-.inventory-chip:not(:has(.laptop-package)).checked {
-  padding-bottom: 5px; /* restore normal padding */
-}
-
