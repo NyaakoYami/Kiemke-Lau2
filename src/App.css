@@ -1224,33 +1224,12 @@ input:focus-visible,
 .qa-group {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 2px;
   margin-left: auto;
   padding: 2px;
   border: 1px solid rgba(255,255,255,.48);
   border-radius: 999px;
   background: rgba(255,255,255,.48);
-}
-
-/* FIX: the delete (✕) button sat directly beside "mark full" (✓) with only
-   2px between them — a 1-pixel slip on a touch screen deleted a cabin.
-   A small divider + extra gap makes the destructive action visually and
-   physically separate from the two safe actions. It still has a native
-   window.confirm() before anything is removed. */
-.qa-group .qa-btn:last-child {
-  margin-left: 3px;
-  position: relative;
-}
-
-.qa-group .qa-btn:last-child::before {
-  content: "";
-  position: absolute;
-  left: -6px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 16px;
-  background: rgba(23,32,51,.14);
 }
 
 .qa-btn.p-button {
@@ -1938,23 +1917,6 @@ input:focus-visible,
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 380px) {
-  .inventory-chip {
-    grid-template-columns: minmax(0, 1fr) 58px;
-    padding-inline: 6px;
-  }
-
-  .chip-label {
-    font-size: 9px;
-  }
-
-  .inventory-quantity {
-    width: 58px;
-    min-width: 58px;
-    max-width: 58px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -2378,81 +2340,43 @@ textarea,
   border-color: var(--team-color) !important;
 }
 
-/* Inventory chip: label and quantity are permanently separated into two regions. */
+/* Inventory chip: label and quantity are separate layout regions. */
 .inventory-chips {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: minmax(46px, auto);
-  gap: 7px;
+  grid-auto-rows: minmax(42px, auto);
   align-items: stretch;
 }
 
 .inventory-chip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 58px;
-  align-items: center;
-  min-width: 0;
-  min-height: 46px;
-  overflow: visible;
-  padding: 7px 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  min-height: 44px;
+  overflow: hidden;
 }
 
 .inventory-check {
   min-width: 0;
-  max-width: 100%;
-  overflow: visible;
-  align-items: flex-start;
+  overflow: hidden;
 }
 
-.inventory-check .p-checkbox {
-  margin-top: 1px;
-}
-
-/* FIX: "overflow-wrap: anywhere" + "white-space: normal" inside a narrow
-   grid track (minmax(0, 1fr)) forced the browser to break mid-word,
-   which rendered labels like "Thùng máy" one character per line.
-   Single-line + ellipsis keeps the chip height stable; the full label is
-   still available on hover via the existing title={label} on .inventory-chip. */
 .chip-label {
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 10px;
-  line-height: 1.3;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.25;
 }
 
 .inventory-quantity {
-  width: 58px;
-  min-width: 58px;
-  max-width: 58px;
+  min-width: 0;
+  max-width: 74px;
   justify-self: end;
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  align-items: center;
-  gap: 4px;
-  padding-left: 7px;
-  border-left: 1px solid rgba(23,32,51,.11);
-  overflow: visible;
-}
-
-.quantity-label {
-  text-align: center;
+  overflow: hidden;
 }
 
 .quantity-input {
-  width: 36px;
-  max-width: 36px;
-  min-width: 0;
-  height: 30px;
-  padding: 2px 4px;
-  text-align: center;
-}
-
-/* Laptop has no quantity box: its package selector occupies a dedicated full-width row. */
-.inventory-chip-laptop {
-  grid-column: 1 / -1;
+  width: 42px;
+  max-width: 42px;
 }
 
 /* Laptop is a two-row control: checkbox/label on row 1, package selector on row 2. */
@@ -2743,10 +2667,6 @@ textarea,
     grid-template-columns: 1fr;
   }
 
-  .inventory-chip {
-    grid-template-columns: minmax(0, 1fr) 62px;
-  }
-
   .inventory-chip-laptop {
     grid-column: auto;
   }
@@ -2797,413 +2717,4 @@ textarea,
     0 0 0 1px var(--team-color),
     0 10px 24px color-mix(in srgb, var(--team-color) 28%, transparent),
     0 1px 0 rgba(255,255,255,.9) inset;
-}
-
-/* =============================================================
-   V7 — Operations dashboard redesign
-   ============================================================= */
-
-.overview-groups {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(300px, .9fr);
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.overview-group {
-  min-width: 0;
-  padding: 15px;
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: rgba(255,255,255,.82);
-  box-shadow: var(--shadow-xs);
-}
-
-.overview-group.fixed-assets {
-  background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(239,244,255,.72));
-}
-
-.overview-group.mobile-assets {
-  background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(247,242,255,.78));
-}
-
-.overview-group-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 11px;
-}
-
-.group-kicker {
-  display: block;
-  color: var(--color-primary);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .09em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.overview-group-head h3 {
-  margin: 3px 0 0;
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.group-total {
-  flex: 0 0 auto;
-  padding: 5px 8px;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: rgba(255,255,255,.8);
-  color: var(--color-ink-2);
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.stat-grid-fixed {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 0;
-}
-
-.stat-grid-mobile {
-  grid-template-columns: 1fr;
-  margin-top: 0;
-}
-
-.stat-card-laptop {
-  min-height: 82px;
-}
-
-.stat-card-laptop .stat-card-top {
-  align-items: flex-start;
-}
-
-.floor-quick-tabs {
-  position: sticky;
-  top: 10px;
-  z-index: 30;
-  display: flex;
-  gap: 7px;
-  width: max-content;
-  max-width: 100%;
-  margin: 14px 0 12px;
-  padding: 5px;
-  overflow-x: auto;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  background: rgba(255,255,255,.9);
-  box-shadow: 0 8px 24px rgba(23,32,51,.08);
-  backdrop-filter: blur(12px);
-}
-
-.floor-quick-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--color-ink-2);
-  font-size: 10px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
-}
-
-.floor-quick-tab b {
-  min-width: 20px;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: var(--color-surface-3);
-  color: var(--color-ink-2);
-  font-size: 9px;
-}
-
-.floor-quick-tab:hover {
-  transform: translateY(-1px);
-  background: var(--color-surface-2);
-}
-
-.floor-quick-tab.active {
-  border-color: rgba(49,94,251,.16);
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: 0 6px 14px rgba(49,94,251,.2);
-}
-
-.floor-quick-tab.active b {
-  background: rgba(255,255,255,.18);
-  color: #fff;
-}
-
-.cabin-summary {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.cabin-summary > span {
-  position: relative;
-  overflow: hidden;
-}
-
-.cabin-summary .summary-total { background: #f7f9fc; }
-.cabin-summary .summary-agent { background: var(--color-info-subtle); border-color: rgba(36,99,166,.12); }
-.cabin-summary .summary-full { background: var(--color-success-subtle); border-color: rgba(22,134,90,.12); }
-.cabin-summary .summary-empty { background: var(--color-surface-3); }
-
-/* V7 removes the old progress concept from Floor Breakdown. */
-.floor-breakdown-card .floor-breakdown-progress {
-  display: none !important;
-}
-
-.filter-panel {
-  min-width: 0;
-  flex: 1 1 auto;
-  padding: 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: rgba(255,255,255,.9);
-}
-
-.filter-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 9px;
-}
-
-.filter-panel-head h2 {
-  margin: 3px 0 0;
-  font-size: 13px;
-}
-
-.filter-panel .control-primary {
-  width: 100%;
-}
-
-.control-bar {
-  position: sticky;
-  top: 10px;
-  z-index: 40;
-  align-items: stretch;
-  padding: 8px;
-  border: 1px solid rgba(225,231,239,.92);
-  border-radius: 18px;
-  background: rgba(245,247,251,.88);
-  box-shadow: 0 10px 30px rgba(23,32,51,.07);
-  backdrop-filter: blur(14px);
-}
-
-.control-actions {
-  flex: 0 0 auto;
-  min-width: 260px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-  padding: 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  background: #fff;
-}
-
-.action-panel-label {
-  display: grid;
-  gap: 2px;
-  min-width: 100%;
-  margin-bottom: 2px;
-}
-
-.action-panel-label strong {
-  font-size: 11px;
-  line-height: 1.2;
-}
-
-.control-actions .toolbar-button {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.control-actions .toolbar-button.primary {
-  flex-basis: 100%;
-  margin-top: 6px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--color-border);
-}
-
-/* Compact agent cards: optimized for fast touch scanning in the field. */
-.compact-agent-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.compact-agent-card {
-  min-width: 0;
-  border-radius: 15px;
-}
-
-.compact-agent-card .seat-topline {
-  padding-bottom: 4px;
-}
-
-.compact-agent-card .qa-group .qa-btn {
-  width: 26px;
-  height: 26px;
-}
-
-.compact-agent-card .qa-group {
-  gap: 5px;
-}
-
-.compact-agent-card .seat-identity {
-  padding-top: 3px;
-}
-
-.compact-agent-card .seat-progress-row {
-  margin-top: 8px;
-}
-
-.compact-agent-card .inventory-chips {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.compact-agent-card .inventory-chip {
-  min-height: 40px;
-  grid-template-columns: minmax(0,1fr) 50px;
-  padding: 5px 6px;
-}
-
-.compact-agent-card .inventory-quantity {
-  width: 50px;
-  min-width: 50px;
-  max-width: 50px;
-  grid-template-columns: 16px 1fr;
-  padding-left: 5px;
-}
-
-.compact-agent-card .quantity-input {
-  width: 31px;
-  max-width: 31px;
-  height: 27px;
-}
-
-.compact-agent-card .chip-label {
-  font-size: 9px;
-}
-
-.compact-agent-card .status-badge {
-  padding: 4px 7px;
-  font-size: 8px;
-}
-
-.compact-agent-card .progress-count {
-  font-size: 8px;
-}
-
-@media (max-width: 1250px) {
-  .overview-groups {
-    grid-template-columns: 1fr;
-  }
-
-  .stat-grid-mobile {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .compact-agent-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1000px) {
-  .control-bar {
-    position: static;
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .control-actions {
-    min-width: 0;
-    justify-content: stretch;
-  }
-
-  .control-actions .toolbar-button {
-    flex: 1 1 150px;
-  }
-
-  .control-actions .toolbar-button.primary {
-    flex-basis: 150px;
-  }
-}
-
-@media (max-width: 760px) {
-  .floor-quick-tabs {
-    width: 100%;
-  }
-
-  .floor-quick-tab {
-    flex: 1 0 auto;
-    justify-content: center;
-  }
-
-  .cabin-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .compact-agent-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-panel-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .control-actions .toolbar-button {
-    flex: 1 1 calc(50% - 6px);
-  }
-
-  .control-actions .toolbar-button.primary {
-    flex-basis: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .overview-group {
-    padding: 12px;
-  }
-
-  .stat-grid-fixed {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .stat-grid-mobile {
-    grid-template-columns: 1fr;
-  }
-
-  .group-total {
-    display: none;
-  }
-
-  .cabin-summary > span {
-    padding: 10px 8px;
-  }
-
-  .cabin-summary b {
-    font-size: 17px;
-  }
-
-  .cabin-summary small {
-    font-size: 7px;
-  }
-
-  .control-actions .toolbar-button {
-    flex-basis: 100%;
-  }
 }
