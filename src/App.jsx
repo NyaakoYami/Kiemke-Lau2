@@ -1196,7 +1196,7 @@ export default function App() {
   const getChecklistItems = (isLead) =>
     isLead
       ? [
-          { key: "thung", label: "Thùng" },
+          { key: "thung", label: "Thùng máy" },
           { key: "man20", label: 'Màn 20"' },
           { key: "man24", label: 'Màn 24"' },
           { key: "chuot", label: "Chuột" },
@@ -1205,7 +1205,7 @@ export default function App() {
           { key: "laptop", label: "Laptop" },
         ]
       : [
-          { key: "thung", label: "Thùng" },
+          { key: "thung", label: "Thùng máy" },
           { key: "man20", label: 'Màn 20"' },
           { key: "chuot", label: "Chuột" },
           { key: "phim", label: "Phím" },
@@ -1392,7 +1392,7 @@ export default function App() {
 
         <div className="stat-grid">
           {[
-            { label: "PC / Thùng máy", val: stats.thung, icon: "pi pi-box" },
+            { label: "Thùng máy", val: stats.thung, icon: "pi pi-box" },
             { label: 'Màn 20"', val: stats.man20, icon: "pi pi-desktop" },
             { label: 'Màn 24"', val: stats.man24, icon: "pi pi-desktop" },
             { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
@@ -1450,7 +1450,7 @@ export default function App() {
               <section className="floor-device-report" aria-labelledby={`device-report-${item.name.replace(/\s+/g, "-")}`}>
                 <h4 id={`device-report-${item.name.replace(/\s+/g, "-")}`}>Chi tiết thiết bị</h4>
                 <dl className="floor-device-grid">
-                  <div><dt>PC / Thùng máy</dt><dd>{item.devices.pc}</dd></div>
+                  <div><dt>Thùng máy</dt><dd>{item.devices.pc}</dd></div>
                   <div><dt>Màn 20&quot;</dt><dd>{item.devices.man20}</dd></div>
                   <div><dt>Màn 24&quot;</dt><dd>{item.devices.man24}</dd></div>
                   <div><dt>Phím</dt><dd>{item.devices.phim}</dd></div>
