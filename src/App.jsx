@@ -1273,15 +1273,26 @@ export default function App() {
   const safeTeams = Array.isArray(appState?.teams) ? appState.teams : DEFAULT_TEAMS;
   const selectedTeam = selectedTeamId ? getTeam(safeTeams, selectedTeamId) : null;
 
+  const isSpecialTeam = (team, kind) => {
+    const id = String(team?.id || "").toLowerCase();
+    const name = String(team?.name || "").trim().toLowerCase();
+    if (kind === "full") return id === "fill-cyan" || name === "full";
+    if (kind === "empty") return id === "fill-grey" || name === "trống" || name === "empty";
+    return false;
+  };
+
   const floorBreakdown = safeFloors.map((floor) => {
-    const seats = (floor?.lanes || []).flatMap((lane) => [
-      ...(lane?.leads || []).map((seat) => ({ ...seat, isLead: true })),
-      ...(lane?.agents || []).map((seat) => ({ ...seat, isLead: false })),
-    ]);
-    const inventory = seats.map((seat) => appState?.inventory?.[seat.id] || {});
-    const checkedSeats = seats.filter((seat) =>
-      getChecklistItems(Boolean(seat.isLead)).some((item) => Boolean(appState?.inventory?.[seat.id]?.[item.key]))
-    ).length;
+    // Floor Breakdown quản lý cabin Agent; Lead không được tính vào 3 nhóm cabin này.
+    const agents = (floor?.lanes || []).flatMap((lane) => Array.isArray(lane?.agents) ? lane.agents : []);
+    const fullCabins = agents.filter((seat) => {
+      const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
+      return isSpecialTeam(getTeam(safeTeams, colorId), "full");
+    }).length;
+    const emptyCabins = agents.filter((seat) => {
+      const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
+      return isSpecialTeam(getTeam(safeTeams, colorId), "empty");
+    }).length;
+    const agentCabins = Math.max(agents.length - fullCabins - emptyCabins, 0);
     const devices = {
       thung: 0,
       man20: 0,
@@ -1292,7 +1303,8 @@ export default function App() {
       laptop_standard: 0,
       laptop_bag: 0,
     };
-    inventory.forEach((inv) => {
+    agents.forEach((seat) => {
+      const inv = appState?.inventory?.[seat?.id] || {};
       if (inv.thung) devices.thung += Number(inv.thung_qty) || 1;
       if (inv.man20) devices.man20 += Number(inv.man20_qty) || 1;
       if (inv.man24) devices.man24 += Number(inv.man24_qty) || 1;
@@ -1305,15 +1317,14 @@ export default function App() {
       }
     });
     const assets = Object.values(devices).reduce((sum, value) => sum + value, 0);
-    const progress = seats.length ? Math.round((checkedSeats / seats.length) * 100) : 0;
     return {
       name: floor?.floorName || "Sàn chưa đặt tên",
-      cabins: seats.length,
-      checked: checkedSeats,
-      remaining: Math.max(seats.length - checkedSeats, 0),
+      cabins: agents.length,
+      agentCabins,
+      fullCabins,
+      emptyCabins,
       assets,
       devices,
-      progress,
     };
   });
 
@@ -1417,25 +1428,58 @@ export default function App() {
           <span className="section-note">Cập nhật theo dữ liệu hiện tại</span>
         </div>
 
-        <div className="stat-grid">
-          {[
-            { label: "Thùng máy", val: stats.thung, icon: "pi pi-box" },
-            { label: 'Màn 20"', val: stats.man20, icon: "pi pi-desktop" },
-            { label: 'Màn 24"', val: stats.man24, icon: "pi pi-desktop" },
-            { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
-            { label: "Phím", val: stats.phim, icon: "pi pi-table" },
-            { label: "Tai USB", val: stats.tai, icon: "pi pi-volume-up" },
-            { label: "Laptop + Sạc + Chuột", val: stats.laptop_standard, icon: "pi pi-mobile" },
-            { label: "Laptop + Sạc + Chuột + Túi chống sốc", val: stats.laptop_bag, icon: "pi pi-mobile" },
-          ].map((item) => (
-            <article className="stat-card" key={item.label}>
-              <div className="stat-card-top">
-                <span className="stat-icon" aria-hidden="true"><i className={item.icon} /></span>
-                <span className="stat-label">{item.label}</span>
+        <div className="overview-groups">
+          <section className="overview-group fixed-assets" aria-labelledby="fixed-assets-heading">
+            <header className="overview-group-head">
+              <div>
+                <span className="group-kicker">01 · Thiết bị cố định</span>
+                <h3 id="fixed-assets-heading">Bàn làm việc</h3>
               </div>
-              <strong className="stat-value">{item.val}</strong>
-            </article>
-          ))}
+              <span className="group-total">{stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai} thiết bị</span>
+            </header>
+            <div className="stat-grid stat-grid-fixed">
+              {[
+                { label: "Thùng máy", val: stats.thung, icon: "pi pi-box" },
+                { label: 'Màn 20"', val: stats.man20, icon: "pi pi-desktop" },
+                { label: 'Màn 24"', val: stats.man24, icon: "pi pi-desktop" },
+                { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
+                { label: "Phím", val: stats.phim, icon: "pi pi-table" },
+                { label: "Tai USB", val: stats.tai, icon: "pi pi-volume-up" },
+              ].map((item) => (
+                <article className="stat-card" key={item.label}>
+                  <div className="stat-card-top">
+                    <span className="stat-icon" aria-hidden="true"><i className={item.icon} /></span>
+                    <span className="stat-label">{item.label}</span>
+                  </div>
+                  <strong className="stat-value">{item.val}</strong>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="overview-group mobile-assets" aria-labelledby="mobile-assets-heading">
+            <header className="overview-group-head">
+              <div>
+                <span className="group-kicker">02 · Thiết bị di động</span>
+                <h3 id="mobile-assets-heading">Laptop</h3>
+              </div>
+              <span className="group-total">{stats.laptop_standard + stats.laptop_bag} thiết bị</span>
+            </header>
+            <div className="stat-grid stat-grid-mobile">
+              {[
+                { label: "Laptop + Sạc + Chuột", val: stats.laptop_standard, icon: "pi pi-mobile" },
+                { label: "Laptop + Sạc + Chuột + Túi chống sốc", val: stats.laptop_bag, icon: "pi pi-mobile" },
+              ].map((item) => (
+                <article className="stat-card stat-card-laptop" key={item.label}>
+                  <div className="stat-card-top">
+                    <span className="stat-icon" aria-hidden="true"><i className={item.icon} /></span>
+                    <span className="stat-label">{item.label}</span>
+                  </div>
+                  <strong className="stat-value">{item.val}</strong>
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
 
@@ -1447,32 +1491,37 @@ export default function App() {
           </div>
           <span className="section-note">Theo dõi cabin và chi tiết thiết bị theo từng lầu</span>
         </div>
-        <div className="floor-breakdown-grid">
+        <nav className="floor-quick-tabs" role="tablist" aria-label="Chuyển nhanh giữa các lầu">
+          <button type="button" role="tab" className={`floor-quick-tab ${selectedFloor === "Tất cả" ? "active" : ""}`} onClick={() => setSelectedFloor("Tất cả")} aria-selected={selectedFloor === "Tất cả"}>
+            <HeroIcon name="building" size={16} />
+            <span>Tất cả</span>
+            <b>{floorBreakdown.reduce((sum, item) => sum + item.cabins, 0)}</b>
+          </button>
           {floorBreakdown.map((item) => (
+            <button type="button" role="tab" className={`floor-quick-tab ${selectedFloor === item.name ? "active" : ""}`} key={item.name} onClick={() => setSelectedFloor(item.name)} aria-selected={selectedFloor === item.name}>
+              <HeroIcon name="building" size={16} />
+              <span>{item.name.replace("Sàn ", "")}</span>
+              <b>{item.cabins}</b>
+            </button>
+          ))}
+        </nav>
+
+        <div className="floor-breakdown-grid">
+          {floorBreakdown.filter((item) => selectedFloor === "Tất cả" || selectedFloor === item.name).map((item) => (
             <article className="floor-breakdown-card" key={item.name}>
               <header className="floor-breakdown-card-head">
                 <span className="floor-breakdown-icon"><HeroIcon name="building" size={18} /></span>
                 <div>
                   <h3>{item.name}</h3>
-                  <p>{item.assets} thiết bị đang ghi nhận</p>
+                  <p>Chi tiết thiết bị được cập nhật theo cabin Agent</p>
                 </div>
               </header>
 
-              <div className="floor-breakdown-summary" aria-label={`Tóm tắt ${item.name}`}>
-                <span><b>{item.cabins}</b><small>Tổng cabin</small></span>
-                <span><b>{item.checked}</b><small>Cabin đã kiểm</small></span>
-                <span><b>{item.remaining}</b><small>Cabin còn lại</small></span>
-                <span><b>{item.assets}</b><small>Tổng tài sản</small></span>
-              </div>
-
-              <div className="floor-breakdown-progress">
-                <div className="floor-breakdown-progress-head">
-                  <span>Tiến độ kiểm kê cabin</span>
-                  <strong>{item.checked}/{item.cabins}</strong>
-                </div>
-                <div className="floor-breakdown-track" role="progressbar" aria-label={`Tiến độ kiểm kê ${item.name}`} aria-valuemin="0" aria-valuemax={item.cabins} aria-valuenow={item.checked}>
-                  <span style={{ width: `${item.progress}%` }} />
-                </div>
+              <div className="floor-breakdown-summary cabin-summary" aria-label={`Tóm tắt cabin ${item.name}`}>
+                <span className="summary-total"><b>{item.cabins}</b><small>Tổng cabin</small></span>
+                <span className="summary-agent"><b>{item.agentCabins}</b><small>Cabin Agent</small></span>
+                <span className="summary-full"><b>{item.fullCabins}</b><small>Cabin còn lại · Full</small></span>
+                <span className="summary-empty"><b>{item.emptyCabins}</b><small>Cabin trống · Trống</small></span>
               </div>
 
               <section className="floor-device-report" aria-labelledby={`device-report-${item.name.replace(/\s+/g, "-")}`}>
@@ -1717,6 +1766,20 @@ export default function App() {
 
         <main className="workspace-main">
           <div className="control-bar">
+            <section className="filter-panel" aria-labelledby="filter-panel-heading">
+              <header className="filter-panel-head">
+                <div>
+                  <span className="section-kicker">Bộ lọc dữ liệu</span>
+                  <h2 id="filter-panel-heading">Tìm kiếm & phạm vi</h2>
+                </div>
+                {selectedTeam && (
+                  <button type="button" className="active-filter" onClick={() => setSelectedTeamId(null)} aria-label={`Bỏ lọc Team ${selectedTeam.name}`}>
+                    <span className="team-tag-dot" style={{ backgroundColor: selectedTeam.dotColor }} aria-hidden="true" />
+                    <span>{selectedTeam.name}</span>
+                    <i className="pi pi-times" aria-hidden="true" />
+                  </button>
+                )}
+              </header>
             <div className="control-primary">
               <div className="search-field">
                 <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
@@ -1760,22 +1823,14 @@ export default function App() {
                   </button>
                 ))}
               </div>
-
-              {selectedTeam && (
-                <button
-                  type="button"
-                  className="active-filter"
-                  onClick={() => setSelectedTeamId(null)}
-                  aria-label={`Bỏ lọc Team ${selectedTeam.name}`}
-                >
-                  <span className="team-tag-dot" style={{ backgroundColor: selectedTeam.dotColor }} aria-hidden="true" />
-                  <span>{selectedTeam.name}</span>
-                  <i className="pi pi-times" aria-hidden="true" />
-                </button>
-              )}
             </div>
+            </section>
 
-            <div className="control-actions">
+            <aside className="control-actions" aria-label="Hành động hệ thống">
+              <div className="action-panel-label">
+                <span className="section-kicker">Hệ thống</span>
+                <strong>Thao tác dữ liệu</strong>
+              </div>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -1820,7 +1875,7 @@ export default function App() {
                 className="toolbar-button primary"
                 onClick={syncOnline}
               />
-            </div>
+            </aside>
           </div>
 
           {safeFloors.length === 0 && (
@@ -1862,7 +1917,7 @@ export default function App() {
                     return (
                       <article
                         key={seat?.id || `${type}-${currentIndex}`}
-                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass} ${draggedItem?.fIdx === fIdx && draggedItem?.lIdx === lIdx && draggedItem?.type === type && draggedItem?.sIdx === currentIndex ? "is-dragging" : ""} ${dragOverTarget?.fIdx === fIdx && dragOverTarget?.lIdx === lIdx && dragOverTarget?.type === type && dragOverTarget?.sIdx === currentIndex ? "is-drop-target" : ""}`}
+                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent compact-agent-card"} status-${statusClass} ${draggedItem?.fIdx === fIdx && draggedItem?.lIdx === lIdx && draggedItem?.type === type && draggedItem?.sIdx === currentIndex ? "is-dragging" : ""} ${dragOverTarget?.fIdx === fIdx && dragOverTarget?.lIdx === lIdx && dragOverTarget?.type === type && dragOverTarget?.sIdx === currentIndex ? "is-drop-target" : ""}`}
                         style={teamCardStyle(team?.dotColor)}
                         data-seat-id={seat?.id || ""}
                         data-floor-index={fIdx}
@@ -2192,7 +2247,7 @@ export default function App() {
                           </div>
 
                           <div
-                            className="seat-grid agent-grid drop-zone"
+                            className="seat-grid agent-grid compact-agent-grid drop-zone"
                             onDragOver={(e) => {
                               if (draggedItem) e.preventDefault();
                             }}
