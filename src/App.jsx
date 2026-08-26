@@ -473,6 +473,9 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverTarget, setDragOverTarget] = useState(null);
+  const pressTimerRef = useRef(null);
+  const pointerDragRef = useRef(null);
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn Lầu
   const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
@@ -1027,74 +1030,143 @@ export default function App() {
     });
   };
 
-  // Drag & Drop — only the explicit handle is draggable.
+  // Drag & Drop — Press & Hold trực tiếp trên Cabin, không cần icon handle.
+  // Hỗ trợ cả mouse và touch; chỉ kích hoạt sau một khoảng giữ ngắn để không phá click/input.
+  const clearPressTimer = () => {
+    if (pressTimerRef.current) {
+      window.clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  const commitSeatMove = (source, target) => {
+    if (!isAdmin || !source || !target) return;
+    if (
+      source.fIdx === target.fIdx &&
+      source.lIdx === target.lIdx &&
+      source.type === target.type &&
+      source.sIdx === target.sIdx
+    ) return;
+
+    updateState((st) => {
+      const sourceLane = st.floors?.[source.fIdx]?.lanes?.[source.lIdx];
+      const targetLane = st.floors?.[target.fIdx]?.lanes?.[target.lIdx];
+      const sourceArr = source.type === "lead" ? sourceLane?.leads : sourceLane?.agents;
+      const targetArr = target.type === "lead" ? targetLane?.leads : targetLane?.agents;
+      if (!Array.isArray(sourceArr) || !Array.isArray(targetArr)) return;
+
+      const [item] = sourceArr.splice(source.sIdx, 1);
+      if (!item) return;
+      if (source.type !== target.type) {
+        st.inventory[item.id] = initChecklist(target.type === "lead");
+      }
+
+      let insertAt = Number.isInteger(target.sIdx) ? target.sIdx : targetArr.length;
+      if (sourceArr === targetArr && source.sIdx < insertAt) insertAt -= 1;
+      insertAt = Math.max(0, Math.min(insertAt, targetArr.length));
+      targetArr.splice(insertAt, 0, item);
+    });
+  };
+
+  const finishPointerDrag = (cancelled = false) => {
+    clearPressTimer();
+    const drag = pointerDragRef.current;
+    if (!drag) {
+      setDragOverTarget(null);
+      return;
+    }
+    if (!cancelled && drag.target) commitSeatMove(drag.source, drag.target);
+    pointerDragRef.current = null;
+    setDraggedItem(null);
+    setDragOverTarget(null);
+  };
+
+  const handleSeatPointerDown = (e, source) => {
+    if (!isAdmin || pointerDragRef.current) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (e.target.closest("button, input, select, textarea, label, a, .team-tag, .inventory-chips, .qa-group, .seat-identity")) return;
+
+    clearPressTimer();
+    pressTimerRef.current = window.setTimeout(() => {
+      pointerDragRef.current = { source, target: source, pointerId: e.pointerId };
+      setDraggedItem(source);
+      setDragOverTarget(source);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(18);
+    }, 420);
+  };
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const drag = pointerDragRef.current;
+      if (!drag) return;
+      event.preventDefault();
+      const el = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".seat-card[data-seat-id]");
+      if (!el) return;
+      const target = {
+        fIdx: Number(el.dataset.floorIndex),
+        lIdx: Number(el.dataset.laneIndex),
+        type: el.dataset.seatType,
+        sIdx: Number(el.dataset.seatIndex),
+      };
+      drag.target = target;
+      setDragOverTarget(target);
+    };
+
+    const handlePointerUp = () => {
+      if (pointerDragRef.current) finishPointerDrag(false);
+      else clearPressTimer();
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: false });
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+      clearPressTimer();
+    };
+  });
+
+  // Native HTML5 DnD fallback cho desktop; không còn hiển thị drag handle.
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
     if (!isAdmin) return;
-    if (!e.currentTarget?.dataset?.dragHandle) return;
-    setDraggedItem({ fIdx, lIdx, type, sIdx });
+    const source = { fIdx, lIdx, type, sIdx };
+    pointerDragRef.current = { source, target: source, pointerId: null };
+    setDraggedItem(source);
+    setDragOverTarget(source);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", "kiem-ke-seat");
   };
 
-  const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
-    if (!isAdmin) return;
+  const onDragOverSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
+    if (!isAdmin || !draggedItem) return;
     e.preventDefault();
-    if (!draggedItem) return;
-
-    const { fIdx, lIdx, type, sIdx } = draggedItem;
-    updateState((st) => {
-      const sourceLane = st.floors?.[fIdx]?.lanes?.[lIdx];
-      const targetLane = st.floors?.[targetFIdx]?.lanes?.[targetLIdx];
-      const sourceArr = type === "lead" ? sourceLane?.leads : sourceLane?.agents;
-      const targetArr = targetType === "lead" ? targetLane?.leads : targetLane?.agents;
-      if (!Array.isArray(sourceArr) || !Array.isArray(targetArr)) return;
-
-      const [item] = sourceArr.splice(sIdx, 1);
-      if (!item) return;
-      if (type !== targetType) {
-        st.inventory[item.id] = initChecklist(targetType === "lead");
-      }
-      targetArr.push(item);
-    });
-    setDraggedItem(null);
+    const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx };
+    setDragOverTarget(target);
+    if (pointerDragRef.current) pointerDragRef.current.target = target;
   };
 
   const onDropOnSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
     if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
-    if (!draggedItem) return;
-
-    const { fIdx, lIdx, type, sIdx } = draggedItem;
-    if (
-      fIdx === targetFIdx &&
-      lIdx === targetLIdx &&
-      type === targetType &&
-      sIdx === targetSIdx
-    ) {
-      setDraggedItem(null);
-      return;
-    }
-
-    updateState((st) => {
-      const sourceLane = st.floors?.[fIdx]?.lanes?.[lIdx];
-      const targetLane = st.floors?.[targetFIdx]?.lanes?.[targetLIdx];
-      const sourceArr = type === "lead" ? sourceLane?.leads : sourceLane?.agents;
-      const targetArr = targetType === "lead" ? targetLane?.leads : targetLane?.agents;
-      if (!Array.isArray(sourceArr) || !Array.isArray(targetArr)) return;
-
-      const [item] = sourceArr.splice(sIdx, 1);
-      if (!item) return;
-      if (type !== targetType) {
-        st.inventory[item.id] = initChecklist(targetType === "lead");
-      }
-
-      let insertAt = Number.isInteger(targetSIdx) ? targetSIdx : targetArr.length;
-      if (sourceArr === targetArr && sIdx < insertAt) insertAt -= 1;
-      insertAt = Math.max(0, Math.min(insertAt, targetArr.length));
-      targetArr.splice(insertAt, 0, item);
-    });
+    const source = draggedItem;
+    if (source) commitSeatMove(source, { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx });
+    pointerDragRef.current = null;
     setDraggedItem(null);
+    setDragOverTarget(null);
+  };
+
+  const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
+    if (!isAdmin) return;
+    e.preventDefault();
+    if (!draggedItem) return;
+    const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: Number.MAX_SAFE_INTEGER };
+    commitSeatMove(draggedItem, target);
+    pointerDragRef.current = null;
+    setDraggedItem(null);
+    setDragOverTarget(null);
   };
 
   // Thống kê tài sản
@@ -1106,12 +1178,11 @@ export default function App() {
     phim: 0,
     tai: 0,
     laptop: 0,
-    seats: 0,
+    totalAssets: 0,
   };
 
   Object.values(appState?.inventory || {}).forEach((rawInv) => {
     const inv = rawInv && typeof rawInv === "object" ? rawInv : {};
-    stats.seats++;
     if (inv.thung) stats.thung += parseInt(inv.thung_qty, 10) || 1;
     if (inv.man20) stats.man20 += parseInt(inv.man20_qty, 10) || 1;
     if (inv.man24) stats.man24 += parseInt(inv.man24_qty, 10) || 1;
@@ -1120,6 +1191,7 @@ export default function App() {
     if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 1;
     if (inv.laptop) stats.laptop++;
   });
+  stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop;
 
   const getChecklistItems = (isLead) =>
     isLead
@@ -1175,18 +1247,6 @@ export default function App() {
   };
 
   const safeFloors = Array.isArray(appState?.floors) ? appState.floors : [];
-  stats.seats = safeFloors.reduce(
-    (sum, floor) =>
-      sum +
-      (Array.isArray(floor?.lanes) ? floor.lanes : []).reduce(
-        (laneSum, lane) =>
-          laneSum +
-          (Array.isArray(lane?.leads) ? lane.leads.length : 0) +
-          (Array.isArray(lane?.agents) ? lane.agents.length : 0),
-        0,
-      ),
-    0,
-  );
   const safeTeams = Array.isArray(appState?.teams) ? appState.teams : DEFAULT_TEAMS;
   const selectedTeam = selectedTeamId ? getTeam(safeTeams, selectedTeamId) : null;
 
@@ -1196,13 +1256,38 @@ export default function App() {
       ...(lane?.agents || []).map((seat) => ({ ...seat, isLead: false })),
     ]);
     const inventory = seats.map((seat) => appState?.inventory?.[seat.id] || {});
-    const checkedSeats = seats.filter((seat) => getChecklistItems(Boolean(seat.isLead)).some((item) => Boolean(appState?.inventory?.[seat.id]?.[item.key]))).length;
-    const assets = inventory.reduce((sum, inv) => sum + Object.entries(inv).reduce((n, [key, value]) => {
-      if (!key.endsWith('_qty') && typeof value === 'boolean' && value) return n + (key === 'laptop' ? 1 : Number(inv[`${key}_qty`]) || 1);
-      return n;
-    }, 0), 0);
-    const laptop = inventory.filter((inv) => inv.laptop).length;
-    return { name: floor?.floorName || 'Sàn chưa đặt tên', cabins: seats.length, checked: checkedSeats, completion: seats.length ? Math.round((checkedSeats / seats.length) * 100) : 0, assets, laptop };
+    const checkedSeats = seats.filter((seat) =>
+      getChecklistItems(Boolean(seat.isLead)).some((item) => Boolean(appState?.inventory?.[seat.id]?.[item.key]))
+    ).length;
+    const devices = {
+      pc: 0,
+      man20: 0,
+      man24: 0,
+      phim: 0,
+      chuot: 0,
+      tai: 0,
+      laptop: 0,
+    };
+    inventory.forEach((inv) => {
+      if (inv.thung) devices.pc += Number(inv.thung_qty) || 1;
+      if (inv.man20) devices.man20 += Number(inv.man20_qty) || 1;
+      if (inv.man24) devices.man24 += Number(inv.man24_qty) || 1;
+      if (inv.phim) devices.phim += Number(inv.phim_qty) || 1;
+      if (inv.chuot) devices.chuot += Number(inv.chuot_qty) || 1;
+      if (inv.tai) devices.tai += Number(inv.tai_qty) || 1;
+      if (inv.laptop) devices.laptop += 1;
+    });
+    const assets = Object.values(devices).reduce((sum, value) => sum + value, 0);
+    const progress = seats.length ? Math.round((checkedSeats / seats.length) * 100) : 0;
+    return {
+      name: floor?.floorName || "Sàn chưa đặt tên",
+      cabins: seats.length,
+      checked: checkedSeats,
+      remaining: Math.max(seats.length - checkedSeats, 0),
+      assets,
+      devices,
+      progress,
+    };
   });
 
   return (
@@ -1290,9 +1375,7 @@ export default function App() {
 
         <div className="header-rule" aria-hidden="true" />
         <div className="header-summary">
-          <span><strong>{stats.seats}</strong> vị trí đang theo dõi</span>
-          <span className="summary-separator" aria-hidden="true">/</span>
-          <span><strong>{safeTeams.length}</strong> team</span>
+          <span><strong>{safeTeams.length}</strong> team đang quản lý</span>
           <span className="summary-separator" aria-hidden="true">/</span>
           <span>{syncStatus === "synced" ? "Cloud đã đồng bộ" : "Có thay đổi chưa đồng bộ"}</span>
         </div>
@@ -1309,14 +1392,13 @@ export default function App() {
 
         <div className="stat-grid">
           {[
-            { label: "Thùng máy", val: stats.thung, icon: "pi pi-box" },
+            { label: "PC / Thùng máy", val: stats.thung, icon: "pi pi-box" },
             { label: 'Màn 20"', val: stats.man20, icon: "pi pi-desktop" },
             { label: 'Màn 24"', val: stats.man24, icon: "pi pi-desktop" },
             { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
             { label: "Phím", val: stats.phim, icon: "pi pi-table" },
             { label: "Tai USB", val: stats.tai, icon: "pi pi-volume-up" },
             { label: "Laptop", val: stats.laptop, icon: "pi pi-mobile" },
-            { label: "Tổng chỗ", val: stats.seats, icon: "pi pi-users" },
           ].map((item) => (
             <article className="stat-card" key={item.label}>
               <div className="stat-card-top">
@@ -1335,7 +1417,7 @@ export default function App() {
             <span className="section-kicker">Floor breakdown</span>
             <h2 id="floor-breakdown-heading">Phân rã tài sản theo từng lầu</h2>
           </div>
-          <span className="section-note">Theo dõi vị trí · cabin · mức hoàn tất · tài sản</span>
+          <span className="section-note">Theo dõi cabin và chi tiết thiết bị theo từng lầu</span>
         </div>
         <div className="floor-breakdown-grid">
           {floorBreakdown.map((item) => (
@@ -1344,16 +1426,39 @@ export default function App() {
                 <span className="floor-breakdown-icon"><HeroIcon name="building" size={18} /></span>
                 <div>
                   <h3>{item.name}</h3>
-                  <p>{item.cabins} cabin · {item.laptop} laptop</p>
+                  <p>{item.assets} thiết bị đang ghi nhận</p>
                 </div>
-                <strong>{item.completion}%</strong>
               </header>
-              <div className="floor-breakdown-metrics">
-                <span><b>{item.assets}</b><small>Tài sản</small></span>
+
+              <div className="floor-breakdown-summary" aria-label={`Tóm tắt ${item.name}`}>
+                <span><b>{item.cabins}</b><small>Tổng cabin</small></span>
                 <span><b>{item.checked}</b><small>Cabin đã kiểm</small></span>
-                <span><b>{Math.max(item.cabins - item.checked, 0)}</b><small>Còn lại</small></span>
+                <span><b>{item.remaining}</b><small>Cabin còn lại</small></span>
+                <span><b>{item.assets}</b><small>Tổng tài sản</small></span>
               </div>
-              <div className="floor-breakdown-track" aria-label={`Tiến độ ${item.name} ${item.completion}%`}><span style={{ width: `${item.completion}%` }} /></div>
+
+              <div className="floor-breakdown-progress">
+                <div className="floor-breakdown-progress-head">
+                  <span>Tiến độ kiểm kê cabin</span>
+                  <strong>{item.checked}/{item.cabins}</strong>
+                </div>
+                <div className="floor-breakdown-track" role="progressbar" aria-label={`Tiến độ kiểm kê ${item.name}`} aria-valuemin="0" aria-valuemax={item.cabins} aria-valuenow={item.checked}>
+                  <span style={{ width: `${item.progress}%` }} />
+                </div>
+              </div>
+
+              <section className="floor-device-report" aria-labelledby={`device-report-${item.name.replace(/\s+/g, "-")}`}>
+                <h4 id={`device-report-${item.name.replace(/\s+/g, "-")}`}>Chi tiết thiết bị</h4>
+                <dl className="floor-device-grid">
+                  <div><dt>PC / Thùng máy</dt><dd>{item.devices.pc}</dd></div>
+                  <div><dt>Màn 20&quot;</dt><dd>{item.devices.man20}</dd></div>
+                  <div><dt>Màn 24&quot;</dt><dd>{item.devices.man24}</dd></div>
+                  <div><dt>Phím</dt><dd>{item.devices.phim}</dd></div>
+                  <div><dt>Chuột</dt><dd>{item.devices.chuot}</dd></div>
+                  <div><dt>Tai USB</dt><dd>{item.devices.tai}</dd></div>
+                  <div><dt>Laptop</dt><dd>{item.devices.laptop}</dd></div>
+                </dl>
+              </section>
             </article>
           ))}
         </div>
@@ -1708,12 +1813,7 @@ export default function App() {
                     <span className="section-kicker">Sàn</span>
                     <h2>{floor?.floorName || "Sàn chưa đặt tên"}</h2>
                   </div>
-                  <span className="floor-total">
-                    {(floor?.lanes || []).reduce(
-                      (sum, lane) => sum + (lane?.leads?.length || 0) + (lane?.agents?.length || 0),
-                      0,
-                    )} cabin
-                  </span>
+
                 </div>
 
                 {(Array.isArray(floor?.lanes) ? floor.lanes : []).map((lane, lIdx) => {
@@ -1734,29 +1834,23 @@ export default function App() {
                     return (
                       <article
                         key={seat?.id || `${type}-${currentIndex}`}
-                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass} ${draggedItem?.fIdx === fIdx && draggedItem?.lIdx === lIdx && draggedItem?.type === type && draggedItem?.sIdx === currentIndex ? "is-dragging" : ""}`}
+                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass} ${draggedItem?.fIdx === fIdx && draggedItem?.lIdx === lIdx && draggedItem?.type === type && draggedItem?.sIdx === currentIndex ? "is-dragging" : ""} ${dragOverTarget?.fIdx === fIdx && dragOverTarget?.lIdx === lIdx && dragOverTarget?.type === type && dragOverTarget?.sIdx === currentIndex ? "is-drop-target" : ""}`}
                         style={teamCardStyle(team?.dotColor)}
-                        onDragOver={(e) => {
-                          if (draggedItem) e.preventDefault();
-                        }}
+                        data-seat-id={seat?.id || ""}
+                        data-floor-index={fIdx}
+                        data-lane-index={lIdx}
+                        data-seat-type={type}
+                        data-seat-index={currentIndex}
+                        draggable={isAdmin}
+                        onPointerDown={(e) => handleSeatPointerDown(e, { fIdx, lIdx, type, sIdx: currentIndex })}
+                        onDragStart={(e) => onDragStart(e, fIdx, lIdx, type, currentIndex)}
+                        onDragOver={(e) => onDragOverSeat(e, fIdx, lIdx, type, currentIndex)}
                         onDrop={(e) => onDropOnSeat(e, fIdx, lIdx, type, currentIndex)}
+                        onDragEnd={() => finishPointerDrag(true)}
                       >
                         <div className="seat-card-accent" aria-hidden="true" />
 
                         <div className="seat-topline">
-                          <button
-                            type="button"
-                            className="drag-handle"
-                            draggable={isAdmin}
-                            data-drag-handle="true"
-                            onDragStart={(e) => onDragStart(e, fIdx, lIdx, type, currentIndex)}
-                            onDragEnd={() => setDraggedItem(null)}
-                            title="Kéo để đổi vị trí cabin"
-                            aria-label={`Kéo cabin ${seat?.name || "chưa đặt tên"} để đổi vị trí`}
-                          >
-                            <i className="pi pi-arrows-alt" aria-hidden="true" />
-                          </button>
-
                           <span className={`seat-type ${isLead ? "lead" : "agent"}`}>
                             {isLead ? "LEAD" : "AGENT"}
                           </span>
@@ -2106,7 +2200,7 @@ export default function App() {
             <h2 id="auth-title">Mở chế độ chỉnh sửa</h2>
             <p>Ứng dụng mặc định ở chế độ Xem. Nhập email công ty để mở quyền thêm, sửa, xoá và đồng bộ dữ liệu.</p>
             <label htmlFor="admin-email">Email công ty</label>
-            <input id="admin-email" className="auth-input" type="email" autoFocus value={loginEmail} onChange={(e) => { setLoginEmail(e.target.value); setLoginError(""); }} onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()} placeholder="ten@vietmyssu.com" autoComplete="email" />
+            <input id="admin-email" className="auth-input" type="email" autoFocus value={loginEmail} onChange={(e) => { setLoginEmail(e.target.value); setLoginError(""); }} onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()} placeholder="Email công ty" autoComplete="email" />
             {loginError && <p className="auth-error" role="alert">{loginError}</p>}
             <button type="button" className="auth-submit" onClick={handleAdminLogin}><HeroIcon name="login" size={17} /> Xác nhận quyền Admin</button>
             <small>Không yêu cầu mật khẩu · Chỉ chấp nhận @vietmyssu.com</small>
