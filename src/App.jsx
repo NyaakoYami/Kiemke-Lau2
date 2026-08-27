@@ -1220,13 +1220,9 @@ export default function App() {
   const getChecklistItems = (isLead) =>
     isLead
       ? [
-          { key: "thung", label: "Thùng máy" },
-          { key: "man20", label: 'Màn 20"' },
-          { key: "man24", label: 'Màn 24"' },
-          { key: "chuot", label: "Chuột" },
-          { key: "phim", label: "Phím" },
-          { key: "tai", label: "Tai USB" },
-          { key: "laptop", label: "Laptop" },
+          // Lead sử dụng 1 gói thiết bị laptop; package bên dưới quyết định
+          // bộ Laptop + Sạc + Chuột hoặc bộ có thêm Túi chống sốc.
+          { key: "laptop", label: "Laptop + Sạc + Chuột" },
         ]
       : [
           { key: "thung", label: "Thùng máy" },
@@ -1949,12 +1945,49 @@ export default function App() {
                           aria-label={`Mở chi tiết cabin ${seat?.name || "chưa đặt tên"}`}
                         >
                           <div className="compact-cabin-head">
-                            <span className={`seat-type ${isLead ? "lead" : "agent"}`}>{isLead ? "LEAD" : "AGENT"}</span>
-                            <span className="compact-cabin-pos">{isLead ? `Dãy ${lane?.laneLetter || "—"}` : `#${seat?.stt ?? "—"}`}</span>
+                            <span className={`seat-type ${isLead ? "lead" : "agent"}`}>
+                              <i className={isLead ? "pi pi-star-fill" : "pi pi-user"} aria-hidden="true" />
+                              {isLead ? "LEAD" : "AGENT"}
+                            </span>
+                            <span className={`compact-cabin-pos ${!isLead ? "stt-badge" : ""}`}>
+                              {isLead ? `Dãy ${lane?.laneLetter || "—"}` : `STT #${seat?.stt ?? "—"}`}
+                            </span>
                           </div>
                           <strong className="compact-cabin-name">{seat?.name || (isLead ? "Chưa có Lead" : "Chưa có nhân sự")}</strong>
+                          <span className="compact-cabin-team">
+                            <span className="compact-team-dot" style={{ backgroundColor: team?.dotColor || "#9ca3af" }} aria-hidden="true" />
+                            {team?.name || "Trống"}
+                          </span>
+
+                          <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Thiết bị ${seat?.name || ""}`}>
+                            {(isLead
+                              ? [
+                                  { key: "laptop", label: "Laptop", icon: "pi pi-mobile", checked: Boolean(inv?.laptop) },
+                                  { key: "charger", label: "Sạc", icon: "pi pi-bolt", checked: Boolean(inv?.laptop) },
+                                  { key: "mouse", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.laptop) },
+                                  ...(inv?.laptop && String(inv?.laptop_package || LAPTOP_PACKAGES[0].value).includes("Túi")
+                                    ? [{ key: "bag", label: "Túi", icon: "pi pi-briefcase", checked: true }]
+                                    : []),
+                                ]
+                              : [
+                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", checked: Boolean(inv?.man20), qty: inv?.man20_qty },
+                                  { key: "thung", label: "Thùng", icon: "pi pi-box", checked: Boolean(inv?.thung), qty: inv?.thung_qty },
+                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.chuot), qty: inv?.chuot_qty },
+                                  { key: "phim", label: "Phím", icon: "pi pi-table", checked: Boolean(inv?.phim), qty: inv?.phim_qty },
+                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", checked: Boolean(inv?.tai), qty: inv?.tai_qty },
+                                ]
+                            ).map((item) => (
+                              <span key={item.key} className={`equipment-chip ${item.checked ? "is-present" : "is-missing"}`} title={item.checked ? `${item.label}${item.qty ? ` · SL ${Number(item.qty) || 1}` : ""}` : `${item.label} · Chưa có`}>
+                                <i className={item.icon} aria-hidden="true" />
+                                <span>{item.label}</span>
+                                {item.checked && item.qty && !isLead ? <b>×{Number(item.qty) || 1}</b> : null}
+                              </span>
+                            ))}
+                          </div>
+
                           <div className="compact-cabin-footer">
                             <span className={`status-badge ${statusClass}`}>
+                              <i className={progress.complete ? "pi pi-check-circle" : progress.checked > 0 ? "pi pi-exclamation-circle" : "pi pi-clock"} aria-hidden="true" />
                               {progress.complete ? "ĐỦ BỘ" : progress.checked > 0 ? "THIẾU THIẾT BỊ" : "CHƯA KIỂM"}
                             </span>
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
