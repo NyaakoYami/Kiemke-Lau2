@@ -938,12 +938,39 @@ export default function App() {
       }
     });
 
-  const updateLaptopPackage = (id, value) =>
+  // Laptop packages are mutually exclusive, but each checkbox must also be
+  // independently toggleable. Never use includes()/startsWith() here because
+  // the standard package is a prefix of the bag package.
+  const updateLaptopPackage = (id, packageValue, nextChecked) =>
     updateState((st) => {
       if (!id) return;
-      if (!st.inventory[id] || typeof st.inventory[id] !== "object") st.inventory[id] = initChecklist(true);
-      st.inventory[id].laptop = Boolean(value);
-      st.inventory[id].laptop_package = value ? (st.inventory[id].laptop_package || LAPTOP_PACKAGES[0].value) : "";
+      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
+        st.inventory[id] = initChecklist(true);
+      }
+
+      const inv = st.inventory[id];
+      const isSamePackage = inv.laptop_package === packageValue;
+
+      // Clicking the currently selected package again must uncheck Laptop.
+      if (isSamePackage && nextChecked === false) {
+        inv.laptop = false;
+        inv.laptop_package = "";
+        return;
+      }
+
+      // Selecting either package activates Laptop and replaces the previous
+      // package atomically. This guarantees the two options never overlap.
+      if (nextChecked === true) {
+        inv.laptop = true;
+        inv.laptop_package = packageValue;
+        return;
+      }
+
+      // Defensive fallback for controlled Checkbox events.
+      if (isSamePackage) {
+        inv.laptop = false;
+        inv.laptop_package = "";
+      }
     });
 
   const updateInventoryQuantity = (id, key, value) =>
@@ -2212,7 +2239,7 @@ export default function App() {
                             inputId={`drawer_${seat?.id}_${key}`}
                             checked={checked}
                             disabled={!isAdmin}
-                            onChange={() => updateLaptopPackage(seat?.id, packageValue)}
+                            onChange={(e) => updateLaptopPackage(seat?.id, packageValue, e.checked === true)}
                           />
                           <i className={icon} aria-hidden="true" />
                           <span>{label}</span>
