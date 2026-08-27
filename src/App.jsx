@@ -1217,23 +1217,43 @@ export default function App() {
   });
   stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop_standard + stats.laptop_bag;
 
+  // Danh mục chuẩn: Lead có đủ 8 loại tài sản.
+  // Hai mục laptop cuối là 2 lựa chọn package loại trừ nhau, không phải 2 checkbox độc lập.
   const getChecklistItems = (isLead) =>
     isLead
       ? [
-          // Lead sử dụng 1 gói thiết bị laptop; package bên dưới quyết định
-          // bộ Laptop + Sạc + Chuột hoặc bộ có thêm Túi chống sốc.
-          { key: "laptop", label: "Laptop + Sạc + Chuột" },
+          { key: "thung", label: "Thùng máy", icon: "pi pi-box", kind: "asset" },
+          { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", kind: "asset" },
+          { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop", kind: "asset" },
+          { key: "chuot", label: "Chuột", icon: "pi pi-circle", kind: "asset" },
+          { key: "phim", label: "Phím", icon: "pi pi-table", kind: "asset" },
+          { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", kind: "asset" },
+          { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", kind: "laptop-package", packageValue: LAPTOP_PACKAGES[0].value },
+          { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", kind: "laptop-package", packageValue: LAPTOP_PACKAGES[1].value },
         ]
       : [
-          { key: "thung", label: "Thùng máy" },
-          { key: "man20", label: 'Màn 20"' },
-          { key: "chuot", label: "Chuột" },
-          { key: "phim", label: "Phím" },
-          { key: "tai", label: "Tai USB" },
+          { key: "thung", label: "Thùng máy", icon: "pi pi-box", kind: "asset" },
+          { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", kind: "asset" },
+          { key: "chuot", label: "Chuột", icon: "pi pi-circle", kind: "asset" },
+          { key: "phim", label: "Phím", icon: "pi pi-table", kind: "asset" },
+          { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", kind: "asset" },
         ];
 
   const getSeatProgress = (inv, isLead) => {
     const items = getChecklistItems(isLead);
+    if (isLead) {
+      const fixedItems = items.filter((item) => item.kind === "asset");
+      const fixedChecked = fixedItems.filter((item) => Boolean(inv?.[item.key])).length;
+      const laptopChecked = Boolean(inv?.laptop);
+      const total = fixedItems.length + 1;
+      const checked = fixedChecked + (laptopChecked ? 1 : 0);
+      return {
+        checked,
+        total,
+        percent: Math.round((checked / total) * 100),
+        complete: checked === total,
+      };
+    }
     const checked = items.filter((item) => Boolean(inv?.[item.key])).length;
     return {
       checked,
@@ -1962,12 +1982,14 @@ export default function App() {
                           <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Thiết bị ${seat?.name || ""}`}>
                             {(isLead
                               ? [
-                                  { key: "laptop", label: "Laptop", icon: "pi pi-mobile", checked: Boolean(inv?.laptop) },
-                                  { key: "charger", label: "Sạc", icon: "pi pi-bolt", checked: Boolean(inv?.laptop) },
-                                  { key: "mouse", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.laptop) },
-                                  ...(inv?.laptop && String(inv?.laptop_package || LAPTOP_PACKAGES[0].value).includes("Túi")
-                                    ? [{ key: "bag", label: "Túi", icon: "pi pi-briefcase", checked: true }]
-                                    : []),
+                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box", checked: Boolean(inv?.thung), qty: inv?.thung_qty },
+                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", checked: Boolean(inv?.man20), qty: inv?.man20_qty },
+                                  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop", checked: Boolean(inv?.man24), qty: inv?.man24_qty },
+                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.chuot), qty: inv?.chuot_qty },
+                                  { key: "phim", label: "Phím", icon: "pi pi-table", checked: Boolean(inv?.phim), qty: inv?.phim_qty },
+                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", checked: Boolean(inv?.tai), qty: inv?.tai_qty },
+                                  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", checked: Boolean(inv?.laptop) && (inv?.laptop_package || LAPTOP_PACKAGES[0].value) === LAPTOP_PACKAGES[0].value },
+                                  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", checked: Boolean(inv?.laptop) && inv?.laptop_package === LAPTOP_PACKAGES[1].value },
                                 ]
                               : [
                                   { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", checked: Boolean(inv?.man20), qty: inv?.man20_qty },
@@ -2180,12 +2202,42 @@ export default function App() {
               </div>
               <div className="drawer-inventory">
                 <h4>Kiểm kê thiết bị</h4>
-                {getChecklistItems(isLead).map(({ key, label }) => {
-                  const checked = Boolean(inv?.[key]); const qtyKey = `${key}_qty`; const quantity = Number(inv?.[qtyKey]) > 0 ? Number(inv[qtyKey]) : 1;
-                  return <div className={`drawer-item ${checked ? "checked" : ""}`} key={key}>
-                    <label className="drawer-check"><Checkbox inputId={`drawer_${seat?.id}_${key}`} checked={checked} disabled={!isAdmin} onChange={(e) => updateInventory(seat?.id, key, e.checked)} /><span>{label}</span></label>
-                    {key === "laptop" ? checked && <select value={inv?.laptop_package || LAPTOP_PACKAGES[0].value} disabled={!isAdmin} onChange={(e) => updateLaptopPackage(seat?.id, e.target.value)}>{LAPTOP_PACKAGES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : <div className="drawer-qty"><button type="button" disabled={!isAdmin || !checked || quantity <= 1} onClick={() => updateInventoryQuantity(seat?.id, key, quantity - 1)} aria-label={`Giảm số lượng ${label}`}>−</button><span>SL {quantity}</span><button type="button" disabled={!isAdmin || !checked} onClick={() => updateInventoryQuantity(seat?.id, key, quantity + 1)} aria-label={`Tăng số lượng ${label}`}>+</button></div>}
-                  </div>;
+                {getChecklistItems(isLead).map(({ key, label, kind, packageValue, icon }) => {
+                  if (kind === "laptop-package") {
+                    const checked = Boolean(inv?.laptop) && inv?.laptop_package === packageValue;
+                    return (
+                      <div className={`drawer-item drawer-package-item ${checked ? "checked" : ""}`} key={key}>
+                        <label className="drawer-check">
+                          <Checkbox
+                            inputId={`drawer_${seat?.id}_${key}`}
+                            checked={checked}
+                            disabled={!isAdmin}
+                            onChange={() => updateLaptopPackage(seat?.id, packageValue)}
+                          />
+                          <i className={icon} aria-hidden="true" />
+                          <span>{label}</span>
+                        </label>
+                        {checked ? <span className="drawer-package-state">Đang chọn</span> : <span className="drawer-package-state muted">Lựa chọn</span>}
+                      </div>
+                    );
+                  }
+                  const checked = Boolean(inv?.[key]);
+                  const qtyKey = `${key}_qty`;
+                  const quantity = Number(inv?.[qtyKey]) > 0 ? Number(inv[qtyKey]) : 1;
+                  return (
+                    <div className={`drawer-item ${checked ? "checked" : ""}`} key={key}>
+                      <label className="drawer-check">
+                        <Checkbox inputId={`drawer_${seat?.id}_${key}`} checked={checked} disabled={!isAdmin} onChange={(e) => updateInventory(seat?.id, key, e.checked)} />
+                        <i className={icon} aria-hidden="true" />
+                        <span>{label}</span>
+                      </label>
+                      <div className="drawer-qty">
+                        <button type="button" disabled={!isAdmin || !checked || quantity <= 1} onClick={() => updateInventoryQuantity(seat?.id, key, quantity - 1)} aria-label={`Giảm số lượng ${label}`}>−</button>
+                        <span>SL {quantity}</span>
+                        <button type="button" disabled={!isAdmin || !checked} onClick={() => updateInventoryQuantity(seat?.id, key, quantity + 1)} aria-label={`Tăng số lượng ${label}`}>+</button>
+                      </div>
+                    </div>
+                  );
                 })}
               </div>
               <div className="drawer-nav"><Button icon="pi pi-chevron-left" label="Cabin trước" outlined onClick={() => goCabin(-1)} /><Button label="Cabin tiếp" icon="pi pi-chevron-right" iconPos="right" onClick={() => goCabin(1)} /></div>
