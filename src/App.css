@@ -3946,7 +3946,7 @@ textarea,
   border-radius: 10px;
   background: var(--color-surface, #fff);
   color: var(--color-ink, #172033);
-  font: 600 11px/1.2 "Poppins", system-ui, sans-serif;
+  font: 600 9px/1.2 "Poppins", system-ui, sans-serif;
   text-align: left;
   cursor: pointer;
   appearance: none;
