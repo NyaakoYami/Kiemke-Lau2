@@ -1044,8 +1044,23 @@ export default function App() {
         st.inventory[id] = initChecklist(false);
       }
       const qty = Number.parseInt(value, 10);
-      st.inventory[id][`${key}_qty`] = Number.isFinite(qty) && qty > 0 ? qty : 1;
+      const nextQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+      st.inventory[id][`${key}_qty`] = nextQty;
+      st.inventory[id][key] = nextQty > 0;
     });
+
+  const setEquipmentQuantity = (id, key, value) => {
+    if (!isAdmin || !id) return;
+    const nextQty = Math.max(0, Number.parseInt(value, 10) || 0);
+    updateInventoryQuantity(id, key, nextQty);
+  };
+
+  const adjustEquipmentQuantity = (id, key, delta) => {
+    if (!isAdmin || !id) return;
+    const inv = appState?.inventory?.[id] || {};
+    const currentQty = Math.max(0, Number.parseInt(inv?.[`${key}_qty`], 10) || 0);
+    setEquipmentQuantity(id, key, currentQty + delta);
+  };
 
   const updateSttGlobal = (fIdx, lIdx, val) =>
     updateState((st) => {
@@ -2066,6 +2081,45 @@ export default function App() {
                             {team?.name || "Trống"}
                           </span>
 
+                          {isAdmin && (
+                            <div className="compact-cabin-quickactions" aria-label={`Thao tác ${isLead ? "Lead" : "Agent"}`}>
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-full"
+                                title={`Đủ bộ · ${progress.checked}/${progress.total}`}
+                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || (isLead ? "Lead" : "Agent")}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); markFull(seat?.id, isLead); }}
+                              >
+                                <i className="pi pi-check-circle" aria-hidden="true" />
+                                <b>{progress.checked}/{progress.total}</b>
+                              </button>
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-reset"
+                                title="Reset kiểm kê thiết bị"
+                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || (isLead ? "Lead" : "Agent")}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); markReset(seat?.id); }}
+                              >
+                                <i className="pi pi-refresh" aria-hidden="true" />
+                              </button>
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-delete"
+                                title={`Xoá ${isLead ? "Lead" : "Agent"}`}
+                                aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); removeSeat(fIdx, lIdx, type, currentIndex); }}
+                              >
+                                <i className="pi pi-trash" aria-hidden="true" />
+                              </button>
+                            </div>
+                          )}
+
                           <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Danh sách thiết bị ${seat?.name || ""}`}>
                             {(isLead
                               ? [
@@ -2089,33 +2143,51 @@ export default function App() {
                               const isLaptopPackage = Boolean(item.packageValue);
                               const checked = isLaptopPackage
                                 ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
-                                : Boolean(inv?.[item.key]);
-                              const qty = isLaptopPackage ? (checked ? 1 : 0) : (checked ? Math.max(1, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 1) : 0);
+                                : Boolean(inv?.[item.key]) || Number(inv?.[`${item.key}_qty`]) > 0;
+                              const qty = isLaptopPackage
+                                ? (checked ? 1 : 0)
+                                : Math.max(0, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 0);
                               const packageValue = item.packageValue || null;
 
                               return (
-                                <button
-                                  key={item.key}
-                                  type="button"
-                                  className={`device-card-btn ${checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
-                                  title={checked
-                                    ? `${item.label} · SL ${qty}${isAdmin && !isLaptopPackage ? " · Click để tăng · Shift-click/chuột phải để giảm" : isAdmin ? " · Click để bật/tắt" : ""}`
-                                    : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
-                                  aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa chọn`}
-                                  onPointerDown={(e) => e.stopPropagation()}
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    quickToggleEquipment(seat?.id, item.key, e, packageValue);
-                                  }}
-                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, packageValue)}
-                                >
-                                  <div className="device-info">
-                                    <i className={item.icon} aria-hidden="true" />
-                                    <span className="device-name">{item.label}</span>
-                                  </div>
-                                  <b className="device-qty">×{qty}</b>
-                                </button>
+                                <div key={item.key} className="device-row">
+                                  <button
+                                    type="button"
+                                    className={`device-card-btn ${checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
+                                    title={checked
+                                      ? `${item.label} · SL ${qty}${isAdmin && !isLaptopPackage ? " · Click tăng · Shift-click/chuột phải giảm" : isAdmin ? " · Click để bật/tắt" : ""}`
+                                      : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
+                                    aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa chọn`}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onClick={(e) => { e.stopPropagation(); quickToggleEquipment(seat?.id, item.key, e, packageValue); }}
+                                    onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, packageValue)}
+                                  >
+                                    <div className="device-info">
+                                      <i className={item.icon} aria-hidden="true" />
+                                      <span className="device-name">{item.label}</span>
+                                    </div>
+                                    <b className="device-qty">×{qty}</b>
+                                  </button>
+
+                                  {isAdmin && !isLaptopPackage && (
+                                    <div className="device-qty-controls" role="group" aria-label={`Điều chỉnh số lượng ${item.label}`}>
+                                      <button type="button" className="device-qty-btn" title="Giảm 1" aria-label={`Giảm ${item.label}`} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, -1); }}>−</button>
+                                      <input
+                                        className="device-qty-input"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        value={qty}
+                                        aria-label={`Số lượng ${item.label}`}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setEquipmentQuantity(seat?.id, item.key, e.target.value)}
+                                      />
+                                      <button type="button" className="device-qty-btn" title="Tăng 1" aria-label={`Tăng ${item.label}`} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, 1); }}>+</button>
+                                    </div>
+                                  )}
+                                </div>
                               );
                             })}
                           </div>
@@ -2128,56 +2200,6 @@ export default function App() {
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
                           </div>
 
-                          {isAdmin && (
-                            <div className="compact-cabin-quickactions" aria-label="Thao tác Agent">
-                              <button
-                                type="button"
-                                className="quickaction-btn quickaction-full"
-                                title="Đánh dấu đủ bộ thiết bị"
-                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || "Agent"}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markFull(seat?.id, isLead);
-                                }}
-                              >
-                                <i className="pi pi-check-circle" aria-hidden="true" />
-                                <span>Đủ bộ</span>
-                                <b>{progress.complete ? `${progress.checked}/${progress.total}` : `${progress.checked}/${progress.total}`}</b>
-                              </button>
-                              <button
-                                type="button"
-                                className="quickaction-btn quickaction-reset"
-                                title="Reset kiểm kê thiết bị"
-                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || "Agent"}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markReset(seat?.id);
-                                }}
-                              >
-                                <i className="pi pi-refresh" aria-hidden="true" />
-                                <span>Reset</span>
-                              </button>
-                              <button
-                                type="button"
-                                className="quickaction-btn quickaction-delete"
-                                title={`Xoá ${isLead ? "Lead" : "Agent"}`}
-                                aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeSeat(fIdx, lIdx, type, currentIndex);
-                                }}
-                              >
-                                <i className="pi pi-trash" aria-hidden="true" />
-                                <span>Xoá</span>
-                              </button>
-                            </div>
-                          )}
                         </div>                      </article>
                     );
                   };

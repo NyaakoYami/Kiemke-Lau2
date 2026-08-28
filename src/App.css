@@ -4084,3 +4084,193 @@ textarea,
   .compact-cabin-quickactions { gap: 5px; }
   .quickaction-btn { flex: 1 1 0; padding-inline: 6px; }
 }
+
+/* =============================================================
+   V13 — CABIN / DEVICE INVENTORY FINAL OVERRIDES
+   ============================================================= */
+.compact-cabin-open { position: relative; }
+
+/* Exactly 5 Agent cabins per row on desktop. */
+.seat-grid.agent-grid,
+.compact-agent-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+/* Keep Lead as a single full-width card. */
+.seat-grid.lead-grid { grid-template-columns: minmax(0, 1fr) !important; }
+
+/* Device list: every device occupies its own full-width row. */
+.equipment-preview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.device-row {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+.device-card-btn {
+  width: 100% !important;
+  min-width: 0;
+  min-height: 38px;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: 9px;
+}
+.device-info {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.device-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 700;
+}
+.device-info > i { flex: 0 0 17px; width: 17px; font-size: 13px; }
+.device-qty {
+  flex: 0 0 auto;
+  min-width: 25px;
+  font-size: 10px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Direct quantity editor lives beside the card, not inside the <button>. */
+.device-qty-controls {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.device-qty-btn {
+  width: 22px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #475569;
+  font: 800 14px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+.device-qty-btn:hover { background: #e2e8f0; color: #0f172a; }
+.device-qty-input {
+  width: 30px;
+  height: 24px;
+  padding: 0 2px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #172033;
+  text-align: center;
+  font: 800 10px/1 var(--font-mono, monospace);
+}
+.device-qty-input::-webkit-inner-spin-button,
+.device-qty-input::-webkit-outer-spin-button { margin: 0; }
+
+/* Three cabin actions are icon-only and stay in the top-right. */
+.compact-cabin-quickactions {
+  width: auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin: 0 0 2px auto !important;
+}
+.quickaction-btn {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+}
+.quickaction-btn i { font-size: 12px; }
+.quickaction-btn b { font-size: 8px; }
+.quickaction-full { width: auto; min-width: 45px; padding-inline: 5px !important; gap: 3px; }
+
+/* Header + actions share one row. */
+.compact-cabin-head { min-width: 0; }
+
+@media (max-width: 1200px) {
+  .seat-grid.agent-grid,
+  .compact-agent-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 900px) {
+  .seat-grid.agent-grid,
+  .compact-agent-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 680px) {
+  .seat-grid.agent-grid,
+  .compact-agent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .device-row { grid-template-columns: minmax(0, 1fr); }
+  .device-qty-controls { justify-self: end; }
+}
+@media (max-width: 440px) {
+  .seat-grid.agent-grid,
+  .compact-agent-grid { grid-template-columns: 1fr !important; }
+}
+
+/* =============================================================
+   V13 — CABIN / DEVICE INVENTORY FINAL OVERRIDES
+   ============================================================= */
+.compact-cabin-open { position: relative; }
+.seat-grid.agent-grid,
+.compact-agent-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 10px !important; }
+.seat-grid.lead-grid { grid-template-columns: minmax(0, 1fr) !important; }
+.equipment-preview { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.device-row { width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px; }
+.device-card-btn { width: 100% !important; min-width: 0; min-height: 38px; display: flex !important; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 9px; border-radius: 9px; }
+.device-info { min-width: 0; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.device-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 1.15; font-weight: 700; }
+.device-info > i { flex: 0 0 17px; width: 17px; font-size: 13px; }
+.device-qty { flex: 0 0 auto; min-width: 25px; font-size: 10px; white-space: nowrap; text-align: right; }
+.device-qty-controls { height: 30px; display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid #dbe3ee; border-radius: 8px; background: #f8fafc; }
+.device-qty-btn { width: 22px; height: 24px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #475569; font: 800 14px/1 system-ui, sans-serif; cursor: pointer; }
+.device-qty-btn:hover { background: #e2e8f0; color: #0f172a; }
+.device-qty-input { width: 30px; height: 24px; padding: 0 2px; border: 0; outline: 0; background: transparent; color: #172033; text-align: center; font: 800 10px/1 var(--font-mono, monospace); }
+.device-qty-input::-webkit-inner-spin-button,
+.device-qty-input::-webkit-outer-spin-button { margin: 0; }
+.compact-cabin-quickactions { width: auto !important; display: flex !important; align-items: center; justify-content: flex-end; gap: 4px; margin: 0 0 2px auto !important; }
+.quickaction-btn { width: 28px; min-width: 28px; height: 28px; min-height: 28px; padding: 0 !important; display: inline-flex !important; align-items: center; justify-content: center; border-radius: 7px; }
+.quickaction-btn i { font-size: 12px; }
+.quickaction-btn b { font-size: 8px; }
+.quickaction-full { width: auto; min-width: 45px; padding-inline: 5px !important; gap: 3px; }
+@media (max-width: 1200px) { .seat-grid.agent-grid,.compact-agent-grid { grid-template-columns: repeat(4,minmax(0,1fr)) !important; } }
+@media (max-width: 900px) { .seat-grid.agent-grid,.compact-agent-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; } }
+@media (max-width: 680px) { .seat-grid.agent-grid,.compact-agent-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; } .device-row { grid-template-columns: minmax(0,1fr); } .device-qty-controls { justify-self: end; } }
+@media (max-width: 440px) { .seat-grid.agent-grid,.compact-agent-grid { grid-template-columns: 1fr !important; } }
+
+/* Keep cabin actions pinned to the top-right corner. */
+.compact-cabin-open { position: relative; }
+.compact-cabin-quickactions {
+  position: absolute !important;
+  top: 9px;
+  right: 10px;
+  z-index: 3;
+  margin: 0 !important;
+}
+.compact-cabin-head { padding-right: 102px; }
