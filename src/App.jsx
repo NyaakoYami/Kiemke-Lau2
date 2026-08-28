@@ -84,7 +84,17 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
         value={val}
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleSave}
-        onKeyDown={(e) => e.key === "Enter" && handleSave()}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") {
+            setVal(value);
+            setIsEdit(false);
+          }
+        }}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        aria-label={isName ? "Tên Agent" : placeholder || "Giá trị"}
         className={`p-1 text-xs font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
       />
     );
@@ -93,10 +103,23 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
   return (
     <div
       className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
-      onClick={() => !readOnly && setIsEdit(true)}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!readOnly) setIsEdit(true);
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       title={readOnly ? "Chế độ xem" : "Click để sửa"}
       aria-readonly={readOnly}
+      role={readOnly ? undefined : "button"}
+      tabIndex={readOnly ? undefined : 0}
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (!readOnly && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          setIsEdit(true);
+        }
+      }}
     >
       {value || placeholder}
     </div>
@@ -1985,10 +2008,18 @@ export default function App() {
                         onDragEnd={() => finishPointerDrag(true)}
                       >
                         <div className="seat-card-accent" aria-hidden="true" />
-                        <button
-                          type="button"
+                        <div
                           className="compact-cabin-open"
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setSelectedCabinId(seat?.id || null)}
+                          onKeyDown={(e) => {
+                            if (e.target !== e.currentTarget) return;
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedCabinId(seat?.id || null);
+                            }
+                          }}
                           aria-label={`Mở chi tiết cabin ${seat?.name || "chưa đặt tên"}`}
                         >
                           <div className="compact-cabin-head">
@@ -2000,7 +2031,16 @@ export default function App() {
                               {isLead ? `Dãy ${lane?.laneLetter || "—"}` : `STT #${seat?.stt ?? "—"}`}
                             </span>
                           </div>
-                          <strong className="compact-cabin-name">{seat?.name || (isLead ? "Chưa có Lead" : "Chưa có nhân sự")}</strong>
+                          <InlineEdit
+                            value={seat?.name || ""}
+                            placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
+                            isName
+                            readOnly={!isAdmin}
+                            className="compact-cabin-name"
+                            onChange={(value) =>
+                              updateProp(fIdx, lIdx, type, currentIndex, "name", value.trim())
+                            }
+                          />
                           <span className="compact-cabin-team">
                             <span className="compact-team-dot" style={{ backgroundColor: team?.dotColor || "#9ca3af" }} aria-hidden="true" />
                             {team?.name || "Trống"}
@@ -2041,7 +2081,8 @@ export default function App() {
                             </span>
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
                           </div>
-                        </button>                      </article>
+                        </div>
+                      </article>
                     );
                   };
 
