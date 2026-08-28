@@ -4274,3 +4274,63 @@ textarea,
   margin: 0 !important;
 }
 .compact-cabin-head { padding-right: 102px; }
+
+
+/* =============================================================
+   V14 — INVENTORY TOGGLE / RESET / RESPONSIVE QUANTITY
+   ============================================================= */
+.device-row { min-width: 0; }
+.device-card-btn {
+  min-width: 0;
+  overflow: hidden;
+}
+.device-info {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.device-name {
+  font-size: clamp(9px, 0.62vw, 12px) !important;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.device-qty {
+  flex: 0 0 auto;
+  font-size: clamp(9px, 0.6vw, 12px) !important;
+  line-height: 1;
+  white-space: nowrap;
+}
+.device-qty-controls {
+  flex: 0 0 auto;
+  width: 86px;
+  max-width: 86px;
+}
+.device-qty-input {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  font-size: clamp(9px, 0.58vw, 12px) !important;
+}
+.device-qty-btn { width: 20px; min-width: 20px; }
+
+/* 5 Agent/Cabin mỗi hàng trên desktop. */
+.seat-grid.agent-grid,
+.compact-agent-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+/* Không để action hoặc quantity editor làm vỡ tên thiết bị. */
+.device-row .device-card-btn {
+  min-height: 36px;
+  padding: 6px 8px;
+}
+
+@media (max-width: 900px) {
+  .device-name { font-size: clamp(9px, 1.35vw, 11px) !important; }
+  .device-qty { font-size: clamp(9px, 1.25vw, 11px) !important; }
+}
+@media (max-width: 680px) {
+  .device-qty-controls { width: 82px; max-width: 82px; }
+  .device-qty-input { width: 26px !important; min-width: 26px !important; max-width: 26px !important; }
+}

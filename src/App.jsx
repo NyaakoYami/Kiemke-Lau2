@@ -1010,26 +1010,18 @@ export default function App() {
     }
 
     const inv = appState?.inventory?.[id] || {};
-    const checked = Boolean(inv[key]);
-    const currentQty = Math.max(1, Number.parseInt(inv[`${key}_qty`], 10) || 1);
+    const checked = Boolean(inv[key]) || Number(inv[`${key}_qty`]) > 0;
+    const currentQty = Math.max(0, Number.parseInt(inv[`${key}_qty`], 10) || 0);
     const decrease = Boolean(event?.shiftKey || event?.button === 2);
 
-    if (!checked) {
-      updateInventory(id, key, true);
-      updateInventoryQuantity(id, key, 1);
-      return;
-    }
-
+    // Click thường = TOGGLE: 0 → 1, đang chọn → 0.
+    // Shift-click / chuột phải vẫn hỗ trợ giảm nhanh số lượng.
     if (decrease) {
-      if (currentQty <= 1) {
-        updateInventory(id, key, false);
-      } else {
-        updateInventoryQuantity(id, key, currentQty - 1);
-      }
+      updateInventoryQuantity(id, key, Math.max(0, currentQty - 1));
       return;
     }
 
-    updateInventoryQuantity(id, key, currentQty + 1);
+    updateInventoryQuantity(id, key, checked ? 0 : 1);
   };
 
   const handleEquipmentContextMenu = (id, key, event, packageValue = null) => {
@@ -1133,8 +1125,17 @@ export default function App() {
     updateState((st) => {
       if (!st.inventory[id]) return;
       const inv = st.inventory[id];
+
+      // Reset phải đưa toàn bộ checklist về trạng thái CHƯA KIỂM:
+      // boolean = false, quantity = 0, package = rỗng.
       Object.keys(inv).forEach((k) => {
-        if (typeof inv[k] === "boolean") inv[k] = false;
+        if (k.endsWith("_qty")) {
+          inv[k] = 0;
+        } else if (typeof inv[k] === "boolean") {
+          inv[k] = false;
+        } else if (k === "laptop_package") {
+          inv[k] = "";
+        }
       });
     });
   };
