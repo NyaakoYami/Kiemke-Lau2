@@ -84,17 +84,7 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
         value={val}
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleSave}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === "Enter") handleSave();
-          if (e.key === "Escape") {
-            setVal(value);
-            setIsEdit(false);
-          }
-        }}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-        aria-label={isName ? "Tên Agent" : placeholder || "Giá trị"}
+        onKeyDown={(e) => e.key === "Enter" && handleSave()}
         className={`p-1 text-xs font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
       />
     );
@@ -103,23 +93,10 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
   return (
     <div
       className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (!readOnly) setIsEdit(true);
-      }}
-      onPointerDown={(e) => e.stopPropagation()}
+      onClick={() => !readOnly && setIsEdit(true)}
       onMouseDown={(e) => e.stopPropagation()}
       title={readOnly ? "Chế độ xem" : "Click để sửa"}
       aria-readonly={readOnly}
-      role={readOnly ? undefined : "button"}
-      tabIndex={readOnly ? undefined : 0}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (!readOnly && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          setIsEdit(true);
-        }
-      }}
     >
       {value || placeholder}
     </div>
@@ -995,6 +972,51 @@ export default function App() {
         inv.laptop_package = "";
       }
     });
+
+  // Thao tác nhanh ngay trên chip thiết bị của Cabin.
+  // Click thường: bật thiết bị / tăng SL. Shift-click hoặc chuột phải: giảm SL.
+  // Event luôn được chặn để không mở panel chi tiết Cabin.
+  const quickToggleEquipment = (id, key, event, packageValue = null) => {
+    if (!isAdmin || !id) return;
+
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+
+    if (key === "laptop_standard" || key === "laptop_bag") {
+      const value = packageValue || (key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : LAPTOP_PACKAGES[0].value);
+      const inv = appState?.inventory?.[id] || {};
+      const active = Boolean(inv.laptop) && inv.laptop_package === value;
+      updateLaptopPackage(id, value, !active);
+      return;
+    }
+
+    const inv = appState?.inventory?.[id] || {};
+    const checked = Boolean(inv[key]);
+    const currentQty = Math.max(1, Number.parseInt(inv[`${key}_qty`], 10) || 1);
+    const decrease = Boolean(event?.shiftKey || event?.button === 2);
+
+    if (!checked) {
+      updateInventory(id, key, true);
+      updateInventoryQuantity(id, key, 1);
+      return;
+    }
+
+    if (decrease) {
+      if (currentQty <= 1) {
+        updateInventory(id, key, false);
+      } else {
+        updateInventoryQuantity(id, key, currentQty - 1);
+      }
+      return;
+    }
+
+    updateInventoryQuantity(id, key, currentQty + 1);
+  };
+
+  const handleEquipmentContextMenu = (id, key, event, packageValue = null) => {
+    event.preventDefault();
+    quickToggleEquipment(id, key, event, packageValue);
+  };
 
   const updateInventoryQuantity = (id, key, value) =>
     updateState((st) => {
@@ -2031,16 +2053,7 @@ export default function App() {
                               {isLead ? `Dãy ${lane?.laneLetter || "—"}` : `STT #${seat?.stt ?? "—"}`}
                             </span>
                           </div>
-                          <InlineEdit
-                            value={seat?.name || ""}
-                            placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
-                            isName
-                            readOnly={!isAdmin}
-                            className="compact-cabin-name"
-                            onChange={(value) =>
-                              updateProp(fIdx, lIdx, type, currentIndex, "name", value.trim())
-                            }
-                          />
+                          <strong className="compact-cabin-name">{seat?.name || (isLead ? "Chưa có Lead" : "Chưa có nhân sự")}</strong>
                           <span className="compact-cabin-team">
                             <span className="compact-team-dot" style={{ backgroundColor: team?.dotColor || "#9ca3af" }} aria-hidden="true" />
                             {team?.name || "Trống"}
@@ -2065,13 +2078,27 @@ export default function App() {
                                   { key: "phim", label: "Phím", icon: "pi pi-table", checked: Boolean(inv?.phim), qty: inv?.phim_qty },
                                   { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", checked: Boolean(inv?.tai), qty: inv?.tai_qty },
                                 ]
-                            ).map((item) => (
-                              <span key={item.key} className={`equipment-chip ${item.checked ? "is-present" : "is-missing"}`} title={item.checked ? `${item.label}${item.qty ? ` · SL ${Number(item.qty) || 1}` : ""}` : `${item.label} · Chưa có`}>
-                                <i className={item.icon} aria-hidden="true" />
-                                <span>{item.label}</span>
-                                {item.checked && item.qty && !isLead ? <b>×{Number(item.qty) || 1}</b> : null}
-                              </span>
-                            ))}
+                            ).map((item) => {
+                              const isLaptopPackage = item.key === "laptop_standard" || item.key === "laptop_bag";
+                              const itemQty = isLaptopPackage ? (item.checked ? 1 : 0) : (Number(item.qty) || 1);
+                              return (
+                                <button
+                                  key={item.key}
+                                  type="button"
+                                  className={`equipment-chip ${item.checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
+                                  title={item.checked
+                                    ? `${item.label} · SL ${itemQty}${isAdmin && !isLaptopPackage ? " · Click để tăng, Shift-click/chuột phải để giảm" : ""}`
+                                    : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
+                                  aria-label={item.checked ? `${item.label}, số lượng ${itemQty}` : `${item.label}, chưa có`}
+                                  onClick={(e) => quickToggleEquipment(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
+                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
+                                >
+                                  <i className={item.icon} aria-hidden="true" />
+                                  <span>{item.label}</span>
+                                  {item.checked ? <b>×{itemQty}</b> : null}
+                                </button>
+                              );
+                            })}
                           </div>
 
                           <div className="compact-cabin-footer">
@@ -2081,8 +2108,7 @@ export default function App() {
                             </span>
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
                           </div>
-                        </div>
-                      </article>
+                        </div>                      </article>
                     );
                   };
 

@@ -3737,120 +3737,65 @@ textarea,
   }
 }
 
-
-/* =============================================================
-   V11 — Cabin color-first hover + reliable inline Agent rename
-   ============================================================= */
-
-/* Cabin starts with its Team/status tint. Hover intentionally reverses
-   the surface to white while preserving the Team accent/border. */
-.seat-card {
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--team-color) 15%, #ffffff) 0%,
-      color-mix(in srgb, var(--team-color) 27%, #ffffff) 100%
-    ) !important;
-  border-color: color-mix(in srgb, var(--team-color) 48%, #dbe3ee) !important;
-  box-shadow:
-    0 5px 16px color-mix(in srgb, var(--team-color) 13%, transparent);
-  transition:
-    background .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease,
-    transform .18s ease,
-    filter .18s ease;
-}
-
-.seat-card-lead,
-.seat-card-agent {
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--team-color) 15%, #ffffff) 0%,
-      color-mix(in srgb, var(--team-color) 27%, #ffffff) 100%
-    ) !important;
-}
-
-/* The cabin surface becomes white only on hover. */
-@media (hover: hover) and (pointer: fine) {
-  .seat-card:hover {
-    background: #ffffff !important;
-    border-color: color-mix(in srgb, var(--team-color) 60%, #cbd5e1) !important;
-    box-shadow:
-      0 12px 28px color-mix(in srgb, var(--team-color) 18%, rgba(15,23,42,.10));
-    transform: translateY(-2px);
-    z-index: 3;
-  }
-}
-
-.compact-cabin-open {
-  background: transparent !important;
-  color: inherit;
+/* V12 — quick inventory controls on Lead + Agent cabin chips */
+.equipment-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
   min-width: 0;
+}
+
+.equipment-chip {
   width: 100%;
-  overflow: visible;
+  min-width: 0;
+  min-height: 28px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  white-space: normal;
+  text-align: left;
+  cursor: default;
+}
+
+.equipment-chip.is-interactive {
   cursor: pointer;
-  outline: none;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
 }
 
-.compact-cabin-open:focus-visible {
-  outline: 2px solid var(--team-color);
-  outline-offset: -2px;
-  border-radius: 10px;
+.equipment-chip.is-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .10);
 }
 
-/* Editable Agent/Lead name: never clip the text or allow the editor
-   to trigger the cabin click/drag handlers. */
-.compact-cabin-name.inline-edit-name {
-  display: block;
-  width: 100%;
+.equipment-chip.is-interactive:active {
+  transform: translateY(0) scale(.98);
+}
+
+.equipment-chip > span {
   min-width: 0;
-  min-height: 32px;
-  margin: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
-  white-space: normal;
   overflow: visible;
   text-overflow: clip;
-  line-height: 1.38;
 }
 
-.inline-edit-name[role="button"] {
-  cursor: text;
+.equipment-chip > b {
+  flex: 0 0 auto;
+  min-width: 24px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.72);
+  text-align: center;
+  white-space: nowrap;
+  font-size: 9px;
+  line-height: 1.1;
 }
 
-.inline-edit-name[role="button"]:hover {
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--team-color) 60%, transparent);
-  text-underline-offset: 3px;
-}
-
-.compact-cabin-name .p-inputtext {
-  width: 100%;
-  min-width: 0;
-  min-height: 34px;
-  padding: 7px 9px !important;
-  border: 1px solid color-mix(in srgb, var(--team-color) 55%, #cbd5e1) !important;
-  border-radius: 8px !important;
-  background: #ffffff !important;
-  color: var(--color-ink) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--team-color) 12%, transparent);
-}
-
-.compact-cabin-name .p-inputtext:focus {
-  border-color: var(--team-color) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--team-color) 16%, transparent) !important;
-}
-
-@media (max-width: 560px) {
-  .compact-cabin-name.inline-edit-name {
-    min-height: 34px;
-    font-size: 11px;
-  }
-
-  .compact-cabin-name .p-inputtext {
-    min-height: 36px;
-    font-size: 12px;
+@media (max-width: 760px) {
+  .equipment-preview {
+    grid-template-columns: 1fr;
   }
 }
