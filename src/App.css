@@ -4303,8 +4303,8 @@ textarea,
 }
 .device-qty-controls {
   flex: 0 0 auto;
-  width: 60px;
-  max-width: 60px;
+  width: 40px;
+  max-width: 40px;
 }
 .device-qty-input {
   width: 28px !important;
@@ -4331,6 +4331,6 @@ textarea,
   .device-qty { font-size: clamp(9px, 1.25vw, 11px) !important; }
 }
 @media (max-width: 680px) {
-  .device-qty-controls { width: 60px; max-width: 60px; }
+  .device-qty-controls { width: 40px; max-width: 40px; }
   .device-qty-input { width: 26px !important; min-width: 26px !important; max-width: 26px !important; }
 }
