@@ -351,11 +351,17 @@ const TeamTag = ({ team, onOpen, readOnly = false }) => {
     <button
       type="button"
       className="team-tag"
-      onClick={readOnly ? undefined : onOpen}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!readOnly && onOpen) {
+          onOpen(e);
+        }
+      }}
       onMouseDown={(e) => e.stopPropagation()}
       aria-label={`Đổi Team cho cabin. Team hiện tại: ${safeTeam.name}`}
       title={readOnly ? "Chế độ xem" : "Click để đổi Team cho cabin"}
       aria-disabled={readOnly}
+      disabled={readOnly}
     >
       <span
         className="team-tag-dot"
@@ -427,7 +433,7 @@ export default function App() {
   useEffect(() => {
     if (!openMenu) return undefined;
     const handlePointerDown = (event) => {
-      if (!event.target.closest(".dropdown-portal")) closeMenu();
+      if (!event.target.closest(".dropdown-portal") && !event.target.closest(".team-tag")) closeMenu();
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
@@ -1984,10 +1990,20 @@ export default function App() {
                             isName
                             readOnly={!isAdmin}
                           />
-                          <span className="compact-cabin-team">
-                            <span className="compact-team-dot" style={{ backgroundColor: team?.dotColor || "#9ca3af" }} aria-hidden="true" />
-                            {team?.name || "Trống"}
-                          </span>
+                          
+                          <TeamTag
+                            team={team}
+                            readOnly={!isAdmin}
+                            onOpen={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setOpenMenu({
+                                type: "seat",
+                                seatId: seat.id,
+                                x: rect.left,
+                                y: rect.bottom + 4,
+                              });
+                            }}
+                          />
 
                           {isAdmin && (
                             <div className="compact-cabin-quickactions" aria-label={`Thao tác ${isLead ? "Lead" : "Agent"}`}>
