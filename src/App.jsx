@@ -55,12 +55,6 @@ function HeroIcon({ name, size = 18, className = '', title }) {
   );
 }
 
-
-
-// -------------------------------------------------------------
-// COMPONENT NHẬP LIỆU INLINE (Click để sửa)
-// Hiển thị dạng chữ đậm chìm, gọn - chỉ hiện khung InputText khi click
-// -------------------------------------------------------------
 function InlineEdit({ value, onChange, placeholder, className, isStt = false, isName = false, readOnly = false }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
@@ -123,13 +117,6 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
   );
 }
 
-// -------------------------------------------------------------
-// CHẤM TRẠNG THÁI KẾT NỐI & ĐỒNG BỘ SUPABASE
-// 🔵 xanh dương chớp: đang kiểm tra kết nối, hoặc đã kết nối nhưng có thay đổi chưa lưu lên cloud
-// 🟡 vàng chớp: đang trong lúc bấm "Lưu Cloud"
-// 🟢 xanh lá: vừa đồng bộ thành công
-// 🔴 đỏ: mất kết nối / lỗi khi gọi Supabase
-// -------------------------------------------------------------
 function StatusDot({ connectionStatus, syncStatus }) {
   let statusClass = "error";
   let label = "Mất kết nối Cloud";
@@ -168,9 +155,6 @@ function StatusDot({ connectionStatus, syncStatus }) {
   );
 }
 
-// -------------------------------------------------------------
-// CẤU HÌNH SUPABASE & DỮ LIỆU GỐC
-// -------------------------------------------------------------
 const SYNC_ENDPOINT = "/api/sync";
 
 async function syncRequest(options = {}) {
@@ -198,7 +182,6 @@ async function syncRequest(options = {}) {
 
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
 
-// Danh sách Team mặc định (có thể thêm mới / đổi màu trong bảng quản lý Team)
 const DEFAULT_TEAMS = [
   { id: "fill-lead", name: "Lead", dotColor: "#2563eb" },
   { id: "fill-pink", name: "User", dotColor: "#ec4899" },
@@ -209,8 +192,6 @@ const DEFAULT_TEAMS = [
   { id: "fill-grey", name: "Trống", dotColor: "#6b7280" },
 ];
 
-// Bảng màu theo nhóm màu sắc: mỗi hàng là 1 tông màu, mỗi cột là 1 độ đậm nhạt
-// (Nhạt → Vừa nhạt → Đậm → Rất đậm)
 const COLOR_PALETTE_GROUPS = [
   { label: "Xanh dương",  shades: ["#93c5fd", "#3b82f6", "#2563eb", "#1e40af"] },
   { label: "Tím",         shades: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#6d28d9"] },
@@ -223,7 +204,6 @@ const COLOR_PALETTE_GROUPS = [
   { label: "Trung tính", shades: ["#e2e8f0", "#94a3b8", "#64748b", "#334155"] },
 ];
 
-// Mảng phẳng dùng cho addTeam default & legacy
 const COLOR_PALETTE = COLOR_PALETTE_GROUPS.flatMap((g) => g.shades);
 
 const defaultData = [
@@ -321,8 +301,6 @@ const defaultData = [
   },
 ];
 
-
-// Tìm thông tin Team theo id, trả về Team ẩn danh nếu không tìm thấy
 const getTeam = (teams, colorId) => {
   const safeTeams = Array.isArray(teams) ? teams : DEFAULT_TEAMS;
   return (
@@ -338,8 +316,6 @@ const teamCardStyle = (hex) => ({
   "--team-color": hex || "#9ca3af",
 });
 
-// Menu chọn Team dùng chung cho cabin và thao tác bulk.
-// Đặt ở module scope để không thể gặp lỗi TeamGridMenu is not defined khi render portal.
 const TeamGridMenu = ({ teams, activeColorId, onClick, readOnly = false }) => {
   const safeTeams = Array.isArray(teams) ? teams.filter((team) => team?.id) : [];
   return (
@@ -369,8 +345,6 @@ const TeamGridMenu = ({ teams, activeColorId, onClick, readOnly = false }) => {
   );
 };
 
-// Nhãn Team nhỏ trên đầu mỗi cabin — click để mở popover đổi Team (đã bỏ
-// trigger hover trước đây để tránh mở nhầm khi chỉ rê chuột ngang qua).
 const TeamTag = ({ team, onOpen, readOnly = false }) => {
   const safeTeam = team || getTeam([], "unknown");
   return (
@@ -394,8 +368,6 @@ const TeamTag = ({ team, onOpen, readOnly = false }) => {
   );
 };
 
-// Chuẩn hóa state ở module scope để initializer của useState không truy cập
-// một const chưa được khởi tạo (Temporal Dead Zone).
 const normalizeState = (state) => {
   const source = state && typeof state === "object" ? state : {};
   const floors = Array.isArray(source.floors) ? source.floors : [];
@@ -422,7 +394,8 @@ const normalizeState = (state) => {
         ["thung", "man20", "man24", "chuot", "phim", "tai"].forEach((key) => {
           const qtyKey = `${key}_qty`;
           const qty = Number(normalized[qtyKey]);
-          normalized[qtyKey] = Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1;
+          normalized[qtyKey] = Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 0;
+          normalized[key] = normalized[qtyKey] > 0;
         });
         if (normalized.laptop_package && !LAPTOP_PACKAGES.some((item) => item.value === normalized.laptop_package)) {
           normalized.laptop_package = LAPTOP_PACKAGES[0].value;
@@ -444,16 +417,13 @@ const normalizeState = (state) => {
   };
 };
 
-  
 export default function App() {
   const toast = useRef(null);
   const fileInputRef = useRef(null);
 
-  // openMenu: { type: 'seat'|'bulk'|'team', seatId, laneKey, event }
   const [openMenu, setOpenMenu] = useState(null);
   const closeMenu = useCallback(() => setOpenMenu(null), []);
 
-  // Portal menus live under document.body, so close them with a document-level outside-click listener.
   useEffect(() => {
     if (!openMenu) return undefined;
     const handlePointerDown = (event) => {
@@ -463,7 +433,6 @@ export default function App() {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [openMenu, closeMenu]);
 
-  // Khoá lưu bản nháp local (chống mất dữ liệu khi F5 / mất mạng / quên bấm "Lưu Cloud")
   const LOCAL_STORAGE_KEY = "kiemke-lau2:appState";
 
   const readLocalState = () => {
@@ -486,9 +455,6 @@ export default function App() {
     }
   };
 
-  // Khi mở app: ưu tiên bản nháp local đã lưu trước đó (nếu có) thay vì luôn
-  // reset về dữ liệu mẫu mặc định. loadOnline() sẽ chạy sau và ghi đè bằng
-  // bản trên Cloud nếu tải thành công.
   const [appState, setAppState] = useState(() => {
     const local = readLocalState();
     return normalizeState(
@@ -502,9 +468,6 @@ export default function App() {
     );
   });
 
-// Tự động lưu MỌI thay đổi vào localStorage ngay lập tức, độc lập với việc
-  // đồng bộ Cloud. Đây là lưới an toàn: dù mất mạng hay quên bấm "Lưu Cloud",
-  // F5 vẫn khôi phục đúng dữ liệu vừa chỉnh sửa.
   useEffect(() => {
     writeLocalState(appState);
   }, [appState]);
@@ -516,24 +479,22 @@ export default function App() {
   const pressTimerRef = useRef(null);
   const pointerDragRef = useRef(null);
   const [activeLane, setActiveLane] = useState(null);
-  const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn Lầu
-  const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
-  const [editingTeamId, setEditingTeamId] = useState(null); // Team đang đổi màu
-  const [showAddTeam, setShowAddTeam] = useState(false); // Hiện form thêm Team mới
-  const [showTeamSheet, setShowTeamSheet] = useState(false); // Mobile: mở Team Management dạng bottom sheet
+  const [selectedFloor, setSelectedFloor] = useState("Tất cả");
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [editingTeamId, setEditingTeamId] = useState(null);
+  const [showAddTeam, setShowAddTeam] = useState(false);
+  const [showTeamSheet, setShowTeamSheet] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamColor, setNewTeamColor] = useState(COLOR_PALETTE[0]);
 
-  // Mỗi lần mở ứng dụng đều bắt đầu ở Read-only; quyền Admin chỉ tồn tại trong phiên React hiện tại.
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginError, setLoginError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  // Trạng thái kết nối / đồng bộ Supabase
-  const [connectionStatus, setConnectionStatus] = useState("checking"); // checking | connected | error
-  const [syncStatus, setSyncStatus] = useState("synced"); // synced | dirty | syncing | error
+  const [connectionStatus, setConnectionStatus] = useState("checking");
+  const [syncStatus, setSyncStatus] = useState("synced");
   const hasHydratedRef = useRef(false);
   const autoSyncTimerRef = useRef(null);
   const isAutoSyncingRef = useRef(false);
@@ -612,8 +573,6 @@ export default function App() {
       setConnectionStatus("error");
       ensureInventoryValid(appState);
     } finally {
-      // Chỉ bật auto-save sau lần load/khởi tạo đầu tiên để không ghi đè Cloud
-      // bằng local state cũ ngay khi ứng dụng vừa mount.
       hasHydratedRef.current = true;
     }
   };
@@ -657,8 +616,6 @@ export default function App() {
     }
   };
 
-  // Auto-save Supabase: debounce 750ms sau mỗi thay đổi state.
-  // Nút "Lưu Cloud" thủ công vẫn dùng syncOnline() như cũ.
   useEffect(() => {
     if (!hasHydratedRef.current || !isAdmin) return undefined;
     if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current);
@@ -715,7 +672,6 @@ export default function App() {
     setAppState(newState);
   };
 
-  // Đánh dấu dữ liệu đã thay đổi (chưa lưu) -> chuyển chấm trạng thái sang Xanh Dương chớp
   const markDirty = () => {
     setSyncStatus("dirty");
   };
@@ -756,7 +712,6 @@ export default function App() {
     });
   };
 
-  // XUẤT VÀ NHẬP JSON
   const exportToJson = () => {
     try {
       const dataStr =
@@ -821,7 +776,6 @@ export default function App() {
     e.target.value = "";
   };
 
-  // Thêm Team mới (tên + màu chọn từ bảng màu)
   const addTeam = (name, dotColor) => {
     const trimmed = (name || "").trim();
     if (!trimmed) {
@@ -849,7 +803,6 @@ export default function App() {
     });
   };
 
-  // Đổi màu của một Team (áp dụng ngay cho mọi cabin thuộc Team đó)
   const updateTeamColor = (teamId, dotColor) => {
     updateState((st) => {
       const t = st.teams.find((x) => x.id === teamId);
@@ -858,7 +811,6 @@ export default function App() {
     setEditingTeamId(null);
   };
 
-  // Xoá Team: các cabin đang dùng Team bị xoá sẽ chuyển về Team Trống.
   const deleteTeam = (teamId) => {
     const team = getTeam(appState.teams, teamId);
     if (!team || teamId === "fill-grey") {
@@ -887,7 +839,6 @@ export default function App() {
     });
   };
 
-  // Đổi tên Team
   const renameTeam = (teamId, name) => {
     if (!name || !name.trim()) return;
     updateState((st) => {
@@ -896,7 +847,6 @@ export default function App() {
     });
   };
 
-  // Thống kê số lượng theo từng Team
   const getTeamCounts = () => {
     const counts = { total: 0 };
     const teams = Array.isArray(appState?.teams) ? appState.teams : DEFAULT_TEAMS;
@@ -925,7 +875,6 @@ export default function App() {
   };
   const teamCounts = getTeamCounts();
 
-  // Thao tác chỉnh sửa
   const updateProp = (fIdx, lIdx, type, sIdx, prop, val) => {
     updateState((st) => {
       const floor = st.floors?.[fIdx];
@@ -961,9 +910,6 @@ export default function App() {
       }
     });
 
-  // Laptop packages are mutually exclusive, but each checkbox must also be
-  // independently toggleable. Never use includes()/startsWith() here because
-  // the standard package is a prefix of the bag package.
   const updateLaptopPackage = (id, packageValue, nextChecked) =>
     updateState((st) => {
       if (!id) return;
@@ -974,31 +920,36 @@ export default function App() {
       const inv = st.inventory[id];
       const isSamePackage = inv.laptop_package === packageValue;
 
-      // Clicking the currently selected package again must uncheck Laptop.
       if (isSamePackage && nextChecked === false) {
         inv.laptop = false;
         inv.laptop_package = "";
         return;
       }
 
-      // Selecting either package activates Laptop and replaces the previous
-      // package atomically. This guarantees the two options never overlap.
       if (nextChecked === true) {
         inv.laptop = true;
         inv.laptop_package = packageValue;
         return;
       }
 
-      // Defensive fallback for controlled Checkbox events.
       if (isSamePackage) {
         inv.laptop = false;
         inv.laptop_package = "";
       }
     });
 
-  // Thao tác nhanh ngay trên chip thiết bị của Cabin.
-  // Click thường: bật thiết bị / tăng SL. Shift-click hoặc chuột phải: giảm SL.
-  // Event luôn được chặn để không mở panel chi tiết Cabin.
+  const updateInventoryQuantity = (id, key, value) =>
+    updateState((st) => {
+      if (!id) return;
+      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
+        st.inventory[id] = initChecklist(false);
+      }
+      const qty = Number.parseInt(value, 10);
+      const nextQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+      st.inventory[id][`${key}_qty`] = nextQty;
+      st.inventory[id][key] = nextQty > 0;
+    });
+
   const quickToggleEquipment = (id, key, event, packageValue = null) => {
     if (!isAdmin || !id) return;
 
@@ -1023,41 +974,14 @@ export default function App() {
       return;
     }
 
-    // Click thường: Nếu đang > 0 thì về 0, nếu đang 0 thì lên 1
     const nextQty = currentQty > 0 ? 0 : 1;
     updateInventoryQuantity(id, key, nextQty);
   };
-
-  const updateInventoryQuantity = (id, key, value) =>
-    updateState((st) => {
-      if (!id) return;
-      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
-        st.inventory[id] = initChecklist(false);
-      }
-      const qty = Number.parseInt(value, 10);
-      const nextQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
-      
-      // Đồng bộ cả số lượng (_qty) và cờ trạng thái boolean (key) để tính tổng chính xác
-      st.inventory[id][`${key}_qty`] = nextQty;
-      st.inventory[id][key] = nextQty > 0;
-    });
 
   const handleEquipmentContextMenu = (id, key, event, packageValue = null) => {
     event.preventDefault();
     quickToggleEquipment(id, key, event, packageValue);
   };
-
-  const updateInventoryQuantity = (id, key, value) =>
-    updateState((st) => {
-      if (!id) return;
-      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
-        st.inventory[id] = initChecklist(false);
-      }
-      const qty = Number.parseInt(value, 10);
-      const nextQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
-      st.inventory[id][`${key}_qty`] = nextQty;
-      st.inventory[id][key] = nextQty > 0;
-    });
 
   const setEquipmentQuantity = (id, key, value) => {
     if (!isAdmin || !id) return;
@@ -1114,38 +1038,33 @@ export default function App() {
     });
   };
 
-  // Nút Nhanh ✔️ (Đủ bộ)
   const markFull = (id, isLead) => {
     updateState((st) => {
       if (!st.inventory[id]) st.inventory[id] = initChecklist(isLead);
       const inv = st.inventory[id];
       inv.thung = true;
-      inv.thung_qty = Number.isFinite(Number(inv.thung_qty)) && Number(inv.thung_qty) > 0 ? Math.floor(Number(inv.thung_qty)) : 1;
+      inv.thung_qty = 1;
       inv.man20 = true;
-      inv.man20_qty = Number.isFinite(Number(inv.man20_qty)) && Number(inv.man20_qty) > 0 ? Math.floor(Number(inv.man20_qty)) : 1;
+      inv.man20_qty = 1;
       inv.chuot = true;
-      inv.chuot_qty = Number.isFinite(Number(inv.chuot_qty)) && Number(inv.chuot_qty) > 0 ? Math.floor(Number(inv.chuot_qty)) : 1;
+      inv.chuot_qty = 1;
       inv.phim = true;
-      inv.phim_qty = Number.isFinite(Number(inv.phim_qty)) && Number(inv.phim_qty) > 0 ? Math.floor(Number(inv.phim_qty)) : 1;
+      inv.phim_qty = 1;
       inv.tai = true;
-      inv.tai_qty = Number.isFinite(Number(inv.tai_qty)) && Number(inv.tai_qty) > 0 ? Math.floor(Number(inv.tai_qty)) : 1;
+      inv.tai_qty = 1;
       if (isLead) {
         inv.man24 = true;
-        inv.man24_qty = Number.isFinite(Number(inv.man24_qty)) && Number(inv.man24_qty) > 0 ? Math.floor(Number(inv.man24_qty)) : 1;
+        inv.man24_qty = 1;
         inv.laptop = true;
         inv.laptop_package = inv.laptop_package || LAPTOP_PACKAGES[0].value;
       }
     });
   };
 
-  // Nút Nhanh 🔄 (Reset)
   const markReset = (id) => {
     updateState((st) => {
       if (!st.inventory[id]) return;
       const inv = st.inventory[id];
-
-      // Reset phải đưa toàn bộ checklist về trạng thái CHƯA KIỂM:
-      // boolean = false, quantity = 0, package = rỗng.
       Object.keys(inv).forEach((k) => {
         if (k.endsWith("_qty")) {
           inv[k] = 0;
@@ -1175,8 +1094,6 @@ export default function App() {
     });
   };
 
-  // Drag & Drop — Press & Hold trực tiếp trên Cabin, không cần icon handle.
-  // Hỗ trợ cả mouse và touch; chỉ kích hoạt sau một khoảng giữ ngắn để không phá click/input.
   const clearPressTimer = () => {
     if (pressTimerRef.current) {
       window.clearTimeout(pressTimerRef.current);
@@ -1273,7 +1190,6 @@ export default function App() {
     };
   });
 
-  // Native HTML5 DnD fallback cho desktop; không còn hiển thị drag handle.
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
     if (!isAdmin) return;
     const source = { fIdx, lIdx, type, sIdx };
@@ -1314,7 +1230,6 @@ export default function App() {
     setDragOverTarget(null);
   };
 
-  // Thống kê tài sản theo đúng 8 danh mục hiển thị mới.
   const stats = {
     thung: 0,
     man20: 0,
@@ -1329,12 +1244,12 @@ export default function App() {
 
   Object.values(appState?.inventory || {}).forEach((rawInv) => {
     const inv = rawInv && typeof rawInv === "object" ? rawInv : {};
-    if (inv.thung) stats.thung += parseInt(inv.thung_qty, 10) || 1;
-    if (inv.man20) stats.man20 += parseInt(inv.man20_qty, 10) || 1;
-    if (inv.man24) stats.man24 += parseInt(inv.man24_qty, 10) || 1;
-    if (inv.chuot) stats.chuot += parseInt(inv.chuot_qty, 10) || 1;
-    if (inv.phim) stats.phim += parseInt(inv.phim_qty, 10) || 1;
-    if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 1;
+    if (inv.thung) stats.thung += parseInt(inv.thung_qty, 10) || 0;
+    if (inv.man20) stats.man20 += parseInt(inv.man20_qty, 10) || 0;
+    if (inv.man24) stats.man24 += parseInt(inv.man24_qty, 10) || 0;
+    if (inv.chuot) stats.chuot += parseInt(inv.chuot_qty, 10) || 0;
+    if (inv.phim) stats.phim += parseInt(inv.phim_qty, 10) || 0;
+    if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 0;
     if (inv.laptop) {
       if (inv.laptop_package === LAPTOP_PACKAGES[1].value) stats.laptop_bag += 1;
       else stats.laptop_standard += 1;
@@ -1342,35 +1257,12 @@ export default function App() {
   });
   stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop_standard + stats.laptop_bag;
 
-  // Danh mục chuẩn: Lead có đủ 8 loại tài sản.
-  // Hai mục laptop cuối là 2 lựa chọn package loại trừ nhau, không phải 2 checkbox độc lập.
-  const getChecklistItems = (isLead) =>
-    isLead
-      ? [
-          { key: "thung", label: "Thùng máy", icon: "pi pi-box", kind: "asset" },
-          { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", kind: "asset" },
-          { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop", kind: "asset" },
-          { key: "chuot", label: "Chuột", icon: "pi pi-circle", kind: "asset" },
-          { key: "phim", label: "Phím", icon: "pi pi-table", kind: "asset" },
-          { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", kind: "asset" },
-          { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", kind: "laptop-package", packageValue: LAPTOP_PACKAGES[0].value },
-          { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", kind: "laptop-package", packageValue: LAPTOP_PACKAGES[1].value },
-        ]
-      : [
-          { key: "thung", label: "Thùng máy", icon: "pi pi-box", kind: "asset" },
-          { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", kind: "asset" },
-          { key: "chuot", label: "Chuột", icon: "pi pi-circle", kind: "asset" },
-          { key: "phim", label: "Phím", icon: "pi pi-table", kind: "asset" },
-          { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", kind: "asset" },
-        ];
-
   const getSeatProgress = (inv, isLead) => {
-    const items = getChecklistItems(isLead);
     if (isLead) {
-      const fixedItems = items.filter((item) => item.kind === "asset");
-      const fixedChecked = fixedItems.filter((item) => Boolean(inv?.[item.key])).length;
+      const fixedKeys = ["thung", "man20", "man24", "chuot", "phim", "tai"];
+      const fixedChecked = fixedKeys.filter((k) => Boolean(inv?.[k])).length;
       const laptopChecked = Boolean(inv?.laptop);
-      const total = fixedItems.length + 1;
+      const total = fixedKeys.length + 1;
       const checked = fixedChecked + (laptopChecked ? 1 : 0);
       return {
         checked,
@@ -1379,12 +1271,13 @@ export default function App() {
         complete: checked === total,
       };
     }
-    const checked = items.filter((item) => Boolean(inv?.[item.key])).length;
+    const keys = ["thung", "man20", "chuot", "phim", "tai"];
+    const checked = keys.filter((k) => Boolean(inv?.[k])).length;
     return {
       checked,
-      total: items.length,
-      percent: items.length ? Math.round((checked / items.length) * 100) : 0,
-      complete: checked === items.length,
+      total: keys.length,
+      percent: Math.round((checked / keys.length) * 100),
+      complete: checked === keys.length,
     };
   };
 
@@ -1424,7 +1317,6 @@ export default function App() {
   };
 
   const floorBreakdown = safeFloors.map((floor) => {
-    // Floor Breakdown quản lý cabin Agent; Lead không được tính vào 3 nhóm cabin này.
     const agents = (floor?.lanes || []).flatMap((lane) => Array.isArray(lane?.agents) ? lane.agents : []);
     const fullCabins = agents.filter((seat) => {
       const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
@@ -1447,25 +1339,23 @@ export default function App() {
     };
     agents.forEach((seat) => {
       const inv = appState?.inventory?.[seat?.id] || {};
-      if (inv.thung) devices.thung += Number(inv.thung_qty) || 1;
-      if (inv.man20) devices.man20 += Number(inv.man20_qty) || 1;
-      if (inv.man24) devices.man24 += Number(inv.man24_qty) || 1;
-      if (inv.phim) devices.phim += Number(inv.phim_qty) || 1;
-      if (inv.chuot) devices.chuot += Number(inv.chuot_qty) || 1;
-      if (inv.tai) devices.tai += Number(inv.tai_qty) || 1;
+      if (inv.thung) devices.thung += Number(inv.thung_qty) || 0;
+      if (inv.man20) devices.man20 += Number(inv.man20_qty) || 0;
+      if (inv.man24) devices.man24 += Number(inv.man24_qty) || 0;
+      if (inv.phim) devices.phim += Number(inv.phim_qty) || 0;
+      if (inv.chuot) devices.chuot += Number(inv.chuot_qty) || 0;
+      if (inv.tai) devices.tai += Number(inv.tai_qty) || 0;
       if (inv.laptop) {
         if (inv.laptop_package === LAPTOP_PACKAGES[1].value) devices.laptop_bag += 1;
         else devices.laptop_standard += 1;
       }
     });
-    const assets = Object.values(devices).reduce((sum, value) => sum + value, 0);
     return {
       name: floor?.floorName || "Sàn chưa đặt tên",
       cabins: agents.length,
       agentCabins,
       fullCabins,
       emptyCabins,
-      assets,
       devices,
     };
   });
@@ -1922,50 +1812,50 @@ export default function App() {
                   </button>
                 )}
               </header>
-            <div className="control-primary">
-              <div className="search-field">
-                <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
-                <i className="pi pi-search" aria-hidden="true" />
-                <InputText
-                  id="asset-search"
-                  placeholder="Tìm tên Agent hoặc STT..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Tìm tên Agent hoặc STT"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    className="search-clear"
-                    onClick={() => setSearch("")}
-                    aria-label="Xoá tìm kiếm"
-                    title="Xoá tìm kiếm"
-                  >
-                    <i className="pi pi-times" aria-hidden="true" />
-                  </button>
-                )}
-              </div>
+              <div className="control-primary">
+                <div className="search-field">
+                  <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
+                  <i className="pi pi-search" aria-hidden="true" />
+                  <InputText
+                    id="asset-search"
+                    placeholder="Tìm tên Agent hoặc STT..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    aria-label="Tìm tên Agent hoặc STT"
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      className="search-clear"
+                      onClick={() => setSearch("")}
+                      aria-label="Xoá tìm kiếm"
+                      title="Xoá tìm kiếm"
+                    >
+                      <i className="pi pi-times" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
 
-              <div className="floor-filter" role="tablist" aria-label="Lọc sàn">
-                {[
-                  { label: "Tất cả", icon: "pi pi-th-large" },
-                  { label: "Sàn Lầu 2", icon: "pi pi-building" },
-                  { label: "Sàn Lầu 3", icon: "pi pi-building" },
-                ].map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    className={`floor-filter-btn ${selectedFloor === option.label ? "active" : ""}`}
-                    onClick={() => setSelectedFloor(option.label)}
-                    role="tab"
-                    aria-selected={selectedFloor === option.label}
-                  >
-                    <i className={option.icon} aria-hidden="true" />
-                    <span>{option.label.replace("Sàn ", "")}</span>
-                  </button>
-                ))}
+                <div className="floor-filter" role="tablist" aria-label="Lọc sàn">
+                  {[
+                    { label: "Tất cả", icon: "pi pi-th-large" },
+                    { label: "Sàn Lầu 2", icon: "pi pi-building" },
+                    { label: "Sàn Lầu 3", icon: "pi pi-building" },
+                  ].map((option) => (
+                    <button
+                      key={option.label}
+                      type="button"
+                      className={`floor-filter-btn ${selectedFloor === option.label ? "active" : ""}`}
+                      onClick={() => setSelectedFloor(option.label)}
+                      role="tab"
+                      aria-selected={selectedFloor === option.label}
+                    >
+                      <i className={option.icon} aria-hidden="true" />
+                      <span>{option.label.replace("Sàn ", "")}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
             </section>
 
             <aside className="control-actions" aria-label="Hành động hệ thống">
@@ -2038,7 +1928,6 @@ export default function App() {
                     <span className="section-kicker">Sàn</span>
                     <h2>{floor?.floorName || "Sàn chưa đặt tên"}</h2>
                   </div>
-
                 </div>
 
                 {(Array.isArray(floor?.lanes) ? floor.lanes : []).map((lane, lIdx) => {
@@ -2219,7 +2108,8 @@ export default function App() {
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
                           </div>
 
-                        </div>                      </article>
+                        </div>
+                      </article>
                     );
                   };
 
