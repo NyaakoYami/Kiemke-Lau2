@@ -84,8 +84,20 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
         value={val}
         onChange={(e) => setVal(e.target.value)}
         onBlur={handleSave}
-        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        className={`p-1 text-xs font-bold w-full ${isStt ? "w-4rem text-center" : ""}`}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === "Enter") handleSave();
+          if (e.key === "Escape") {
+            setVal(value);
+            setIsEdit(false);
+          }
+        }}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        draggable={false}
+        className={`p-1 text-xs font-bold w-full ${isName ? "compact-cabin-name-input" : ""} ${isStt ? "w-4rem text-center" : ""}`}
+        aria-label={placeholder || "Chỉnh sửa tên"}
       />
     );
   }
@@ -93,8 +105,17 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
   return (
     <div
       className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
-      onClick={() => !readOnly && setIsEdit(true)}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (!readOnly) {
+          setVal(value);
+          setIsEdit(true);
+        }
+      }}
+      onDoubleClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
+      onDragStart={(e) => e.preventDefault()}
       title={readOnly ? "Chế độ xem" : "Click để sửa"}
       aria-readonly={readOnly}
     >
@@ -2053,7 +2074,14 @@ export default function App() {
                               {isLead ? `Dãy ${lane?.laneLetter || "—"}` : `STT #${seat?.stt ?? "—"}`}
                             </span>
                           </div>
-                          <strong className="compact-cabin-name">{seat?.name || (isLead ? "Chưa có Lead" : "Chưa có nhân sự")}</strong>
+                          <InlineEdit
+                            value={seat?.name || ""}
+                            placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
+                            onChange={(val) => updateProp(fIdx, lIdx, type, currentIndex, "name", val.trim())}
+                            className="compact-cabin-name"
+                            isName
+                            readOnly={!isAdmin}
+                          />
                           <span className="compact-cabin-team">
                             <span className="compact-team-dot" style={{ backgroundColor: team?.dotColor || "#9ca3af" }} aria-hidden="true" />
                             {team?.name || "Trống"}
@@ -2090,6 +2118,11 @@ export default function App() {
                                     ? `${item.label} · SL ${itemQty}${isAdmin && !isLaptopPackage ? " · Click để tăng, Shift-click/chuột phải để giảm" : ""}`
                                     : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
                                   aria-label={item.checked ? `${item.label}, số lượng ${itemQty}` : `${item.label}, chưa có`}
+                                  onPointerDown={(e) => {
+                                    // Isolate from the parent Cabin drag/click handlers.
+                                    e.stopPropagation();
+                                  }}
+                                  onMouseDown={(e) => e.stopPropagation()}
                                   onClick={(e) => quickToggleEquipment(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
                                   onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
                                 >
