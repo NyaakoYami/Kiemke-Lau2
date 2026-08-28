@@ -1014,19 +1014,33 @@ export default function App() {
     }
 
     const inv = appState?.inventory?.[id] || {};
-    const checked = Boolean(inv[key]) || Number(inv[`${key}_qty`]) > 0;
     const currentQty = Math.max(0, Number.parseInt(inv[`${key}_qty`], 10) || 0);
     const decrease = Boolean(event?.shiftKey || event?.button === 2);
 
-    // Click thường = TOGGLE: 0 → 1, đang chọn → 0.
-    // Shift-click / chuột phải vẫn hỗ trợ giảm nhanh số lượng.
     if (decrease) {
-      updateInventoryQuantity(id, key, Math.max(0, currentQty - 1));
+      const nextQty = Math.max(0, currentQty - 1);
+      updateInventoryQuantity(id, key, nextQty);
       return;
     }
 
-    updateInventoryQuantity(id, key, checked ? 0 : 1);
+    // Click thường: Nếu đang > 0 thì về 0, nếu đang 0 thì lên 1
+    const nextQty = currentQty > 0 ? 0 : 1;
+    updateInventoryQuantity(id, key, nextQty);
   };
+
+  const updateInventoryQuantity = (id, key, value) =>
+    updateState((st) => {
+      if (!id) return;
+      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
+        st.inventory[id] = initChecklist(false);
+      }
+      const qty = Number.parseInt(value, 10);
+      const nextQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+      
+      // Đồng bộ cả số lượng (_qty) và cờ trạng thái boolean (key) để tính tổng chính xác
+      st.inventory[id][`${key}_qty`] = nextQty;
+      st.inventory[id][key] = nextQty > 0;
+    });
 
   const handleEquipmentContextMenu = (id, key, event, packageValue = null) => {
     event.preventDefault();
