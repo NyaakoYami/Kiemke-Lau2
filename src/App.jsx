@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Checkbox } from "primereact/checkbox";
 import { Toast } from "primereact/toast";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
@@ -519,7 +518,6 @@ export default function App() {
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả"); // Lọc Sàn Lầu
   const [selectedTeamId, setSelectedTeamId] = useState(null); // Lọc Team
-  const [selectedCabinId, setSelectedCabinId] = useState(null); // Cabin đang mở chi tiết
   const [editingTeamId, setEditingTeamId] = useState(null); // Team đang đổi màu
   const [showAddTeam, setShowAddTeam] = useState(false); // Hiện form thêm Team mới
   const [showTeamSheet, setShowTeamSheet] = useState(false); // Mobile: mở Team Management dạng bottom sheet
@@ -1438,15 +1436,6 @@ export default function App() {
     };
   });
 
-  const allCabins = safeFloors.flatMap((floor, fIdx) =>
-    (Array.isArray(floor?.lanes) ? floor.lanes : []).flatMap((lane, lIdx) => [
-      ...(Array.isArray(lane?.leads) ? lane.leads : []).map((seat, sIdx) => ({ seat, floor, lane, fIdx, lIdx, sIdx, type: "lead" })),
-      ...(Array.isArray(lane?.agents) ? lane.agents : []).map((seat, sIdx) => ({ seat, floor, lane, fIdx, lIdx, sIdx, type: "agent" })),
-    ])
-  );
-  const selectedCabin = allCabins.find((item) => item.seat?.id === selectedCabinId) || null;
-  const selectedCabinIndex = selectedCabin ? allCabins.findIndex((item) => item.seat?.id === selectedCabinId) : -1;
-
   return (
     <div className="app-shell" onClick={closeMenu}>
       <Toast ref={toast} />
@@ -2053,17 +2042,7 @@ export default function App() {
                         <div className="seat-card-accent" aria-hidden="true" />
                         <div
                           className="compact-cabin-open"
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setSelectedCabinId(seat?.id || null)}
-                          onKeyDown={(e) => {
-                            if (e.target !== e.currentTarget) return;
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setSelectedCabinId(seat?.id || null);
-                            }
-                          }}
-                          aria-label={`Mở chi tiết cabin ${seat?.name || "chưa đặt tên"}`}
+                          aria-label={`Cabin ${seat?.name || "chưa đặt tên"}`}
                         >
                           <div className="compact-cabin-head">
                             <span className={`seat-type ${isLead ? "lead" : "agent"}`}>
@@ -2141,6 +2120,41 @@ export default function App() {
                             </span>
                             <span className="progress-count">{progress.checked}/{progress.total}</span>
                           </div>
+
+                          {isAdmin && (
+                            <div className="compact-cabin-quickactions">
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-full"
+                                title="Đánh dấu đủ bộ thiết bị"
+                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || "cabin"}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markFull(seat?.id, isLead);
+                                }}
+                              >
+                                <i className="pi pi-check" aria-hidden="true" />
+                                Đủ bộ
+                              </button>
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-reset"
+                                title="Reset kiểm kê thiết bị"
+                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || "cabin"}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markReset(seat?.id);
+                                }}
+                              >
+                                <i className="pi pi-refresh" aria-hidden="true" />
+                                Reset
+                              </button>
+                            </div>
+                          )}
                         </div>                      </article>
                     );
                   };
@@ -2303,75 +2317,6 @@ export default function App() {
           })}
         </main>
       </div>
-
-      {selectedCabin && (() => {
-        const { seat, floor, lane, fIdx, lIdx, sIdx, type } = selectedCabin;
-        const isLead = type === "lead";
-        const inv = appState?.inventory?.[seat?.id] || {};
-        const progress = getSeatProgress(inv, isLead);
-        const goCabin = (delta) => setSelectedCabinId(allCabins[(selectedCabinIndex + delta + allCabins.length) % allCabins.length]?.seat?.id || null);
-        return (
-          <div className="cabin-drawer-backdrop" onMouseDown={() => setSelectedCabinId(null)}>
-            <aside className="cabin-drawer" role="dialog" aria-modal="true" aria-label="Chi tiết cabin" onMouseDown={(e) => e.stopPropagation()}>
-              <div className="drawer-header">
-                <div><span className="section-kicker">{isLead ? "QUẢN LÝ" : "NHÂN VIÊN"}</span><h3>{seat?.name || "Cabin chưa đặt tên"}</h3></div>
-                <Button icon="pi pi-times" rounded text severity="secondary" onClick={() => setSelectedCabinId(null)} aria-label="Đóng chi tiết cabin" />
-              </div>
-              <div className="drawer-meta">
-                <span><b>Vị trí</b>{isLead ? `Lead · Dãy ${lane?.laneLetter || "—"}` : `#${seat?.stt ?? "—"}`}</span>
-                <span><b>Dãy / Lầu</b>{lane?.laneLetter || "—"} · {floor?.floorName || "—"}</span>
-                <span><b>Team</b>{getTeam(safeTeams, appState?.colors?.[seat?.id] || (isLead ? "fill-lead" : autoColor(seat?.name)))?.name || "Trống"}</span>
-              </div>
-              <div className="drawer-progress"><span className={`status-badge ${progress.complete ? "complete" : progress.checked ? "partial" : "empty"}`}>{progress.complete ? "ĐỦ BỘ" : progress.checked ? "THIẾU THIẾT BỊ" : "CHƯA KIỂM"}</span><strong>{progress.checked}/{progress.total}</strong></div>
-              <div className="drawer-actions">
-                <Button icon="pi pi-check" label="Đánh dấu đủ bộ" size="small" severity="success" disabled={!isAdmin} onClick={() => markFull(seat?.id, isLead)} />
-                <Button icon="pi pi-refresh" label="Reset" size="small" outlined disabled={!isAdmin} onClick={() => markReset(seat?.id)} />
-              </div>
-              <div className="drawer-inventory">
-                <h4>Kiểm kê thiết bị</h4>
-                {getChecklistItems(isLead).map(({ key, label, kind, packageValue, icon }) => {
-                  if (kind === "laptop-package") {
-                    const checked = Boolean(inv?.laptop) && inv?.laptop_package === packageValue;
-                    return (
-                      <div className={`drawer-item drawer-package-item ${checked ? "checked" : ""}`} key={key}>
-                        <label className="drawer-check">
-                          <Checkbox
-                            inputId={`drawer_${seat?.id}_${key}`}
-                            checked={checked}
-                            disabled={!isAdmin}
-                            onChange={(e) => updateLaptopPackage(seat?.id, packageValue, e.checked === true)}
-                          />
-                          <i className={icon} aria-hidden="true" />
-                          <span>{label}</span>
-                        </label>
-                        {checked ? <span className="drawer-package-state">Đang chọn</span> : <span className="drawer-package-state muted">Lựa chọn</span>}
-                      </div>
-                    );
-                  }
-                  const checked = Boolean(inv?.[key]);
-                  const qtyKey = `${key}_qty`;
-                  const quantity = Number(inv?.[qtyKey]) > 0 ? Number(inv[qtyKey]) : 1;
-                  return (
-                    <div className={`drawer-item ${checked ? "checked" : ""}`} key={key}>
-                      <label className="drawer-check">
-                        <Checkbox inputId={`drawer_${seat?.id}_${key}`} checked={checked} disabled={!isAdmin} onChange={(e) => updateInventory(seat?.id, key, e.checked)} />
-                        <i className={icon} aria-hidden="true" />
-                        <span>{label}</span>
-                      </label>
-                      <div className="drawer-qty">
-                        <button type="button" disabled={!isAdmin || !checked || quantity <= 1} onClick={() => updateInventoryQuantity(seat?.id, key, quantity - 1)} aria-label={`Giảm số lượng ${label}`}>−</button>
-                        <span>SL {quantity}</span>
-                        <button type="button" disabled={!isAdmin || !checked} onClick={() => updateInventoryQuantity(seat?.id, key, quantity + 1)} aria-label={`Tăng số lượng ${label}`}>+</button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="drawer-nav"><Button icon="pi pi-chevron-left" label="Cabin trước" outlined onClick={() => goCabin(-1)} /><Button label="Cabin tiếp" icon="pi pi-chevron-right" iconPos="right" onClick={() => goCabin(1)} /></div>
-            </aside>
-          </div>
-        );
-      })()}
 
       {showLogin && (
         <div className="auth-overlay" role="presentation" onMouseDown={() => setShowLogin(false)}>
