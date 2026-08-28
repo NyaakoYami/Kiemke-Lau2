@@ -4334,3 +4334,12 @@ textarea,
   .device-qty-controls { width: 40px; max-width: 40px; }
   .device-qty-input { width: 26px !important; min-width: 26px !important; max-width: 26px !important; }
 }
+
+/* Hiển thị toàn bộ nội dung trên 1 dòng, không xuống hàng, không ngắt từ */
+.item-label {
+  white-space: nowrap !important;     /* Không cho phép xuống dòng */
+  word-break: normal !important;      /* Không ngắt từ */
+  overflow: visible !important;       /* Không ẩn nội dung thừa */
+  text-overflow: clip !important;     /* Bỏ dấu ba chấm (...) */
+  font-size: clamp(9px, 0.75vw, 13px); /* Tự động thu nhỏ chữ theo kích thước màn hình */
+}
