@@ -541,32 +541,36 @@ export default function App() {
   const initChecklist = (isLead) =>
     isLead
       ? {
+          checked: false,
+          status: "CHƯA KIỂM",
           thung: false,
-          thung_qty: 1,
+          thung_qty: 0,
           man20: false,
-          man20_qty: 1,
+          man20_qty: 0,
           man24: false,
-          man24_qty: 1,
+          man24_qty: 0,
           chuot: false,
-          chuot_qty: 1,
+          chuot_qty: 0,
           phim: false,
-          phim_qty: 1,
+          phim_qty: 0,
           tai: false,
-          tai_qty: 1,
+          tai_qty: 0,
           laptop: false,
           laptop_package: "",
         }
       : {
+          checked: false,
+          status: "CHƯA KIỂM",
           thung: false,
-          thung_qty: 1,
+          thung_qty: 0,
           man20: false,
-          man20_qty: 1,
+          man20_qty: 0,
           chuot: false,
-          chuot_qty: 1,
+          chuot_qty: 0,
           phim: false,
-          phim_qty: 1,
+          phim_qty: 0,
           tai: false,
-          tai_qty: 1,
+          tai_qty: 0,
         };
 
   const autoColor = (name) => {
