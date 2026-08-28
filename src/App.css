@@ -2486,7 +2486,7 @@ textarea,
   border-radius: 9px;
   background: var(--color-surface);
   color: var(--color-ink);
-  font: 600 9px/1.3 "Poppins", system-ui, sans-serif;
+  font: 600 9px/1.0 "Poppins", system-ui, sans-serif;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3946,7 +3946,7 @@ textarea,
   border-radius: 10px;
   background: var(--color-surface, #fff);
   color: var(--color-ink, #172033);
-  font: 600 9px/1.2 "Poppins", system-ui, sans-serif;
+  font: 600 9px/1.0 "Poppins", system-ui, sans-serif;
   text-align: left;
   cursor: pointer;
   appearance: none;
@@ -4005,7 +4005,7 @@ textarea,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 8px;
   line-height: 1.2;
   font-weight: 700;
 }
