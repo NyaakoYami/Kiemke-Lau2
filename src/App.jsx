@@ -2066,48 +2066,55 @@ export default function App() {
                             {team?.name || "Trống"}
                           </span>
 
-                          <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Thiết bị ${seat?.name || ""}`}>
+                          <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Danh sách thiết bị ${seat?.name || ""}`}>
                             {(isLead
                               ? [
-                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box", checked: Boolean(inv?.thung), qty: inv?.thung_qty },
-                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", checked: Boolean(inv?.man20), qty: inv?.man20_qty },
-                                  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop", checked: Boolean(inv?.man24), qty: inv?.man24_qty },
-                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.chuot), qty: inv?.chuot_qty },
-                                  { key: "phim", label: "Phím", icon: "pi pi-table", checked: Boolean(inv?.phim), qty: inv?.phim_qty },
-                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", checked: Boolean(inv?.tai), qty: inv?.tai_qty },
-                                  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", checked: Boolean(inv?.laptop) && (inv?.laptop_package || LAPTOP_PACKAGES[0].value) === LAPTOP_PACKAGES[0].value },
-                                  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", checked: Boolean(inv?.laptop) && inv?.laptop_package === LAPTOP_PACKAGES[1].value },
+                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
+                                  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop" },
+                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
+                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
+                                  { key: "phim", label: "Phím", icon: "pi pi-table" },
+                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
+                                  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", packageValue: LAPTOP_PACKAGES[0].value },
+                                  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", packageValue: LAPTOP_PACKAGES[1].value },
                                 ]
                               : [
-                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop", checked: Boolean(inv?.man20), qty: inv?.man20_qty },
-                                  { key: "thung", label: "Thùng", icon: "pi pi-box", checked: Boolean(inv?.thung), qty: inv?.thung_qty },
-                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle", checked: Boolean(inv?.chuot), qty: inv?.chuot_qty },
-                                  { key: "phim", label: "Phím", icon: "pi pi-table", checked: Boolean(inv?.phim), qty: inv?.phim_qty },
-                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up", checked: Boolean(inv?.tai), qty: inv?.tai_qty },
+                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
+                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
+                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
+                                  { key: "phim", label: "Phím", icon: "pi pi-table" },
+                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
                                 ]
                             ).map((item) => {
-                              const isLaptopPackage = item.key === "laptop_standard" || item.key === "laptop_bag";
-                              const itemQty = isLaptopPackage ? (item.checked ? 1 : 0) : (Number(item.qty) || 1);
+                              const isLaptopPackage = Boolean(item.packageValue);
+                              const checked = isLaptopPackage
+                                ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
+                                : Boolean(inv?.[item.key]);
+                              const qty = isLaptopPackage ? (checked ? 1 : 0) : (checked ? Math.max(1, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 1) : 0);
+                              const packageValue = item.packageValue || null;
+
                               return (
                                 <button
                                   key={item.key}
                                   type="button"
-                                  className={`equipment-chip ${item.checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
-                                  title={item.checked
-                                    ? `${item.label} · SL ${itemQty}${isAdmin && !isLaptopPackage ? " · Click để tăng, Shift-click/chuột phải để giảm" : ""}`
+                                  className={`device-card-btn ${checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
+                                  title={checked
+                                    ? `${item.label} · SL ${qty}${isAdmin && !isLaptopPackage ? " · Click để tăng · Shift-click/chuột phải để giảm" : isAdmin ? " · Click để bật/tắt" : ""}`
                                     : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
-                                  aria-label={item.checked ? `${item.label}, số lượng ${itemQty}` : `${item.label}, chưa có`}
-                                  onPointerDown={(e) => {
-                                    // Isolate from the parent Cabin drag/click handlers.
-                                    e.stopPropagation();
-                                  }}
+                                  aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa chọn`}
+                                  onPointerDown={(e) => e.stopPropagation()}
                                   onMouseDown={(e) => e.stopPropagation()}
-                                  onClick={(e) => quickToggleEquipment(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
-                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.key === "laptop_bag" ? LAPTOP_PACKAGES[1].value : item.key === "laptop_standard" ? LAPTOP_PACKAGES[0].value : null)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    quickToggleEquipment(seat?.id, item.key, e, packageValue);
+                                  }}
+                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, packageValue)}
                                 >
-                                  <i className={item.icon} aria-hidden="true" />
-                                  <span>{item.label}</span>
-                                  {item.checked ? <b>×{itemQty}</b> : null}
+                                  <div className="device-info">
+                                    <i className={item.icon} aria-hidden="true" />
+                                    <span className="device-name">{item.label}</span>
+                                  </div>
+                                  <b className="device-qty">×{qty}</b>
                                 </button>
                               );
                             })}
@@ -2122,12 +2129,12 @@ export default function App() {
                           </div>
 
                           {isAdmin && (
-                            <div className="compact-cabin-quickactions">
+                            <div className="compact-cabin-quickactions" aria-label="Thao tác Agent">
                               <button
                                 type="button"
                                 className="quickaction-btn quickaction-full"
                                 title="Đánh dấu đủ bộ thiết bị"
-                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || "cabin"}`}
+                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || "Agent"}`}
                                 onPointerDown={(e) => e.stopPropagation()}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => {
@@ -2135,14 +2142,15 @@ export default function App() {
                                   markFull(seat?.id, isLead);
                                 }}
                               >
-                                <i className="pi pi-check" aria-hidden="true" />
-                                Đủ bộ
+                                <i className="pi pi-check-circle" aria-hidden="true" />
+                                <span>Đủ bộ</span>
+                                <b>{progress.complete ? `${progress.checked}/${progress.total}` : `${progress.checked}/${progress.total}`}</b>
                               </button>
                               <button
                                 type="button"
                                 className="quickaction-btn quickaction-reset"
                                 title="Reset kiểm kê thiết bị"
-                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || "cabin"}`}
+                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || "Agent"}`}
                                 onPointerDown={(e) => e.stopPropagation()}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => {
@@ -2151,7 +2159,22 @@ export default function App() {
                                 }}
                               >
                                 <i className="pi pi-refresh" aria-hidden="true" />
-                                Reset
+                                <span>Reset</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="quickaction-btn quickaction-delete"
+                                title={`Xoá ${isLead ? "Lead" : "Agent"}`}
+                                aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeSeat(fIdx, lIdx, type, currentIndex);
+                                }}
+                              >
+                                <i className="pi pi-trash" aria-hidden="true" />
+                                <span>Xoá</span>
                               </button>
                             </div>
                           )}

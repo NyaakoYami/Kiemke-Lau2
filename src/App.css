@@ -3915,3 +3915,172 @@ textarea,
   .equipment-chip { padding: 4px 5px; gap: 4px; font-size: 9px; }
   .equipment-chip > b { font-size: 8px; min-width: 20px; }
 }
+
+/* =============================================================
+   DEVICE LIST / DEVICE CARDS — FINAL UI
+   Each asset occupies exactly one full-width row.
+   Left click = add/increment; Shift-click/right click = decrement.
+   ============================================================= */
+.equipment-preview {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(23, 32, 51, .08);
+}
+
+.device-card-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 10px;
+  background: var(--color-surface, #fff);
+  color: var(--color-ink, #172033);
+  font: 600 11px/1.2 "Poppins", system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease, transform .12s ease;
+}
+
+.device-card-btn.is-interactive:hover {
+  border-color: var(--color-primary, #315efb);
+  background: var(--color-primary-subtle, #eef3ff);
+  box-shadow: 0 2px 8px rgba(49, 94, 251, .10);
+}
+
+.device-card-btn.is-interactive:active {
+  transform: translateY(1px);
+}
+
+.device-card-btn.is-present {
+  border-color: color-mix(in srgb, var(--color-success, #16a34a) 35%, var(--color-border, #e2e8f0));
+  background: var(--color-success-subtle, #ecfdf3);
+  color: var(--color-success, #15803d);
+}
+
+.device-card-btn.is-present:hover {
+  border-color: var(--color-success, #16a34a);
+  background: color-mix(in srgb, var(--color-success, #16a34a) 8%, #fff);
+}
+
+.device-card-btn.is-missing {
+  color: var(--color-ink-2, #475569);
+  background: rgba(255, 255, 255, .82);
+}
+
+.device-info {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.device-info > i {
+  width: 18px;
+  min-width: 18px;
+  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.device-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.device-qty {
+  flex: 0 0 auto;
+  min-width: 30px;
+  padding-left: 8px;
+  text-align: right;
+  white-space: nowrap;
+  font-family: var(--font-mono, "JetBrains Mono", monospace);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.device-card-btn.is-missing .device-qty {
+  color: var(--color-ink-3, #94a3b8);
+}
+
+/* Quick actions live together at the top-right of the Agent/Cabin controls. */
+.compact-cabin-quickactions {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.quickaction-btn {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  font: 700 10px/1 "Poppins", system-ui, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .16s ease, border-color .16s ease, transform .12s ease;
+}
+
+.quickaction-btn:active { transform: translateY(1px); }
+.quickaction-btn i { font-size: 11px; }
+.quickaction-btn b { font-family: var(--font-mono, monospace); font-size: 9px; }
+
+.quickaction-full {
+  color: var(--color-success, #15803d);
+  border-color: color-mix(in srgb, var(--color-success, #16a34a) 28%, #dbe5df);
+  background: var(--color-success-subtle, #ecfdf3);
+}
+.quickaction-full:hover { border-color: var(--color-success, #16a34a); }
+
+.quickaction-reset {
+  color: var(--color-ink-2, #475569);
+  border-color: var(--color-border, #e2e8f0);
+  background: #f8fafc;
+}
+.quickaction-reset:hover { border-color: #94a3b8; background: #f1f5f9; }
+
+.quickaction-delete {
+  color: #b42318;
+  border-color: #f1c1bd;
+  background: #fff7f6;
+}
+.quickaction-delete:hover { border-color: #dc3545; background: #fff0ee; }
+
+@media (max-width: 640px) {
+  .device-card-btn { min-height: 42px; padding: 9px 10px; }
+  .device-name { font-size: 10.5px; }
+  .device-qty { font-size: 11px; }
+  .compact-cabin-quickactions { gap: 5px; }
+  .quickaction-btn { flex: 1 1 0; padding-inline: 6px; }
+}
