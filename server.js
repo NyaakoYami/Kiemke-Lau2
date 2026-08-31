@@ -1,6 +1,11 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { getAdminAuthFromRequest } from "./shared/admin.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT || 3000);
 const DIST_DIR = path.resolve(__dirname, "dist");
@@ -84,6 +89,10 @@ function handleSync(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "GET, POST, OPTIONS");
     return sendJson(res, 405, { success: false, error: "Method not allowed" });
+  }
+
+  if (!getAdminAuthFromRequest(req).isAdmin) {
+    return sendJson(res, 403, { success: false, error: "Admin authorization required" });
   }
 
   let body = "";

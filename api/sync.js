@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { getAdminAuthFromRequest } from "../shared/admin.js";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
@@ -49,6 +50,14 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
+      const { isAdmin } = getAdminAuthFromRequest(req);
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: "Admin authorization required",
+        });
+      }
+
       let payload = req.body;
 
       if (typeof payload === "string") {

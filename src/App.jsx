@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { isAdminEmail, normalizeAdminEmail } from "../shared/admin.js";
+import { moveItemBetweenArrays } from "../shared/reorder.js";
 import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -374,6 +376,63 @@ const TeamTag = ({ team, onOpen, readOnly = false }) => {
   );
 };
 
+const initChecklist = (isLead) =>
+  isLead
+    ? {
+        checked: false,
+        status: "CHƯA KIỂM",
+        thung: false,
+        thung_qty: 0,
+        man20: false,
+        man20_qty: 0,
+        man24: false,
+        man24_qty: 0,
+        chuot: false,
+        chuot_qty: 0,
+        phim: false,
+        phim_qty: 0,
+        tai: false,
+        tai_qty: 0,
+        laptop: false,
+        laptop_package: "",
+      }
+    : {
+        checked: false,
+        status: "CHƯA KIỂM",
+        thung: false,
+        thung_qty: 0,
+        man20: false,
+        man20_qty: 0,
+        chuot: false,
+        chuot_qty: 0,
+        phim: false,
+        phim_qty: 0,
+        tai: false,
+        tai_qty: 0,
+      };
+
+const ensureInventoryState = (state) => {
+  const source = normalizeState(state);
+  const next = JSON.parse(JSON.stringify(source));
+
+  next.floors.forEach((floor) =>
+    floor.lanes.forEach((lane) => {
+      lane.leads.forEach((lead) => {
+        if (lead?.id && (!next.inventory[lead.id] || typeof next.inventory[lead.id] !== "object")) {
+          next.inventory[lead.id] = initChecklist(true);
+        }
+      });
+      lane.agents.forEach((agent) => {
+        if (agent?.id && (!next.inventory[agent.id] || typeof next.inventory[agent.id] !== "object")) {
+          next.inventory[agent.id] = initChecklist(false);
+        }
+      });
+    }),
+  );
+
+  return next;
+};
+
 const normalizeState = (state) => {
   const source = state && typeof state === "object" ? state : {};
   const floors = Array.isArray(source.floors) ? source.floors : [];
@@ -493,52 +552,35 @@ export default function App() {
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamColor, setNewTeamColor] = useState(COLOR_PALETTE[0]);
 
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminEmail, setAdminEmail] = useState("");
+  const [authState, setAuthState] = useState({
+    status: "loading",
+    role: "non-admin",
+    email: "",
+  });
+  const isAdmin = authState.status === "authenticated" && authState.role === "admin";
+  const adminEmail = authState.email;
   const [loginEmail, setLoginEmail] = useState("");
   const [loginError, setLoginError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
+  useEffect(() => {
+    // Session state is deliberately revalidated against the single whitelist.
+    // No role is trusted from appState/localStorage.
+    const savedEmail = normalizeAdminEmail(sessionStorage.getItem("kiemke-lau2:adminEmail"));
+    if (isAdminEmail(savedEmail)) {
+      setAuthState({ status: "authenticated", role: "admin", email: savedEmail });
+    } else {
+      sessionStorage.removeItem("kiemke-lau2:adminEmail");
+      setAuthState({ status: "unauthenticated", role: "non-admin", email: "" });
+    }
+  }, []);
+
   const [connectionStatus, setConnectionStatus] = useState("checking");
   const [syncStatus, setSyncStatus] = useState("synced");
   const hasHydratedRef = useRef(false);
+  const localRevisionRef = useRef(0);
   const autoSyncTimerRef = useRef(null);
   const isAutoSyncingRef = useRef(false);
-
-  const initChecklist = (isLead) =>
-    isLead
-      ? {
-          checked: false,
-          status: "CHƯA KIỂM",
-          thung: false,
-          thung_qty: 0,
-          man20: false,
-          man20_qty: 0,
-          man24: false,
-          man24_qty: 0,
-          chuot: false,
-          chuot_qty: 0,
-          phim: false,
-          phim_qty: 0,
-          tai: false,
-          tai_qty: 0,
-          laptop: false,
-          laptop_package: "",
-        }
-      : {
-          checked: false,
-          status: "CHƯA KIỂM",
-          thung: false,
-          thung_qty: 0,
-          man20: false,
-          man20_qty: 0,
-          chuot: false,
-          chuot_qty: 0,
-          phim: false,
-          phim_qty: 0,
-          tai: false,
-          tai_qty: 0,
-        };
 
   const autoColor = (name) => {
     const n = (name || "").toUpperCase();
@@ -550,38 +592,45 @@ export default function App() {
     return "fill-pink";
   };
 
-  useEffect(() => {
-    loadOnline();
-  }, []);
-
-  const loadOnline = async () => {
+  const loadOnline = useCallback(async () => {
     setConnectionStatus("checking");
+    const revisionAtStart = localRevisionRef.current;
     try {
       const payload = await syncRequest({ method: "GET" });
       const data = payload?.data;
 
       setConnectionStatus("connected");
       if (data && data.floors) {
-        setAppState(normalizeState(data));
-        setSyncStatus("synced");
-        toast.current?.show({
-          severity: "success",
-          summary: "Thành công",
-          detail: "Đã tải dữ liệu mới nhất từ Cloud",
-          life: 3000,
-        });
+        if (localRevisionRef.current !== revisionAtStart) {
+          // A local edit happened while the cloud request was in flight.
+          // Do not overwrite the user's newer state with a stale response.
+          setSyncStatus("dirty");
+        } else {
+          setAppState(normalizeState(data));
+          setSyncStatus("synced");
+          toast.current?.show({
+            severity: "success",
+            summary: "Thành công",
+            detail: "Đã tải dữ liệu mới nhất từ Cloud",
+            life: 3000,
+          });
+        }
       } else {
-        ensureInventoryValid(appState);
+        setAppState((prev) => ensureInventoryState(prev));
         setSyncStatus("synced");
       }
     } catch (err) {
       console.error("Supabase load error:", err);
       setConnectionStatus("error");
-      ensureInventoryValid(appState);
+      setAppState((prev) => ensureInventoryState(prev));
     } finally {
       hasHydratedRef.current = true;
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadOnline();
+  }, [loadOnline]);
 
   const syncOnline = async () => {
     if (!isAdmin) { setShowLogin(true); return; }
@@ -595,6 +644,7 @@ export default function App() {
     try {
       await syncRequest({
         method: "POST",
+        headers: { "X-Admin-Email": adminEmail },
         body: JSON.stringify({ data: appState }),
       });
 
@@ -633,6 +683,7 @@ export default function App() {
       try {
         await syncRequest({
           method: "POST",
+          headers: { "X-Admin-Email": adminEmail },
           body: JSON.stringify({ data: appState }),
         });
         setConnectionStatus("connected");
@@ -652,31 +703,7 @@ export default function App() {
         autoSyncTimerRef.current = null;
       }
     };
-  }, [appState, isSyncing, isAdmin]);
-
-  const ensureInventoryValid = (state) => {
-    const source = normalizeState(state);
-    const newState = JSON.parse(JSON.stringify(source));
-
-    newState.floors.forEach((floor) =>
-      floor.lanes.forEach((lane) => {
-        lane.leads.forEach((lead) => {
-          if (!lead?.id) return;
-          if (!newState.inventory[lead.id] || typeof newState.inventory[lead.id] !== "object") {
-            newState.inventory[lead.id] = initChecklist(true);
-          }
-        });
-        lane.agents.forEach((agent) => {
-          if (!agent?.id) return;
-          if (!newState.inventory[agent.id] || typeof newState.inventory[agent.id] !== "object") {
-            newState.inventory[agent.id] = initChecklist(false);
-          }
-        });
-      }),
-    );
-
-    setAppState(newState);
-  };
+  }, [appState, isSyncing, isAdmin, adminEmail]);
 
   const markDirty = () => {
     setSyncStatus("dirty");
@@ -684,6 +711,7 @@ export default function App() {
 
   const updateState = (updater) => {
     if (!isAdmin) { setShowLogin(true); return; }
+    localRevisionRef.current += 1;
     setAppState((prev) => {
       const next = normalizeState(prev);
       updater(next);
@@ -1123,16 +1151,12 @@ export default function App() {
       const targetArr = target.type === "lead" ? targetLane?.leads : targetLane?.agents;
       if (!Array.isArray(sourceArr) || !Array.isArray(targetArr)) return;
 
-      const [item] = sourceArr.splice(source.sIdx, 1);
+      const item = sourceArr[source.sIdx];
       if (!item) return;
+      if (!moveItemBetweenArrays(sourceArr, targetArr, source.sIdx, target.sIdx)) return;
       if (source.type !== target.type) {
         st.inventory[item.id] = initChecklist(target.type === "lead");
       }
-
-      let insertAt = Number.isInteger(target.sIdx) ? target.sIdx : targetArr.length;
-      if (sourceArr === targetArr && source.sIdx < insertAt) insertAt -= 1;
-      insertAt = Math.max(0, Math.min(insertAt, targetArr.length));
-      targetArr.splice(insertAt, 0, item);
     });
   };
 
@@ -1198,8 +1222,9 @@ export default function App() {
 
   const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
     if (!isAdmin) return;
+    clearPressTimer();
     const source = { fIdx, lIdx, type, sIdx };
-    pointerDragRef.current = { source, target: source, pointerId: null };
+    pointerDragRef.current = { source, target: source, pointerId: null, native: true };
     setDraggedItem(source);
     setDragOverTarget(source);
     e.dataTransfer.effectAllowed = "move";
@@ -1207,7 +1232,9 @@ export default function App() {
   };
 
   const onDragOverSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
-    if (!isAdmin || !draggedItem) return;
+    if (!isAdmin) return;
+    const source = pointerDragRef.current?.source || draggedItem;
+    if (!source) return;
     e.preventDefault();
     const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx };
     setDragOverTarget(target);
@@ -1218,7 +1245,7 @@ export default function App() {
     if (!isAdmin) return;
     e.preventDefault();
     e.stopPropagation();
-    const source = draggedItem;
+    const source = pointerDragRef.current?.source || draggedItem;
     if (source) commitSeatMove(source, { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx });
     pointerDragRef.current = null;
     setDraggedItem(null);
@@ -1228,9 +1255,10 @@ export default function App() {
   const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
     if (!isAdmin) return;
     e.preventDefault();
-    if (!draggedItem) return;
+    const source = pointerDragRef.current?.source || draggedItem;
+    if (!source) return;
     const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: Number.MAX_SAFE_INTEGER };
-    commitSeatMove(draggedItem, target);
+    commitSeatMove(source, target);
     pointerDragRef.current = null;
     setDraggedItem(null);
     setDragOverTarget(null);
@@ -1288,24 +1316,31 @@ export default function App() {
   };
 
   const handleAdminLogin = () => {
-    const email = loginEmail.trim().toLowerCase();
-    if (!/^[^\s@]+@vietmyssu\.com$/.test(email)) {
-      setLoginError("Vui lòng nhập email hợp lệ có đuôi @vietmyssu.com.");
+    const email = normalizeAdminEmail(loginEmail);
+    if (!isAdminEmail(email)) {
+      setLoginError("Email này không nằm trong danh sách Admin được phép.");
+      setAuthState({ status: "unauthenticated", role: "non-admin", email: "" });
       return;
     }
-    setIsAdmin(true);
-    setAdminEmail(email);
+
+    sessionStorage.setItem("kiemke-lau2:adminEmail", email);
+    setAuthState({ status: "authenticated", role: "admin", email });
     setLoginError("");
     setShowLogin(false);
-    toast.current?.show({ severity: "success", summary: "Đã mở quyền chỉnh sửa", detail: "Bạn đang ở chế độ Admin / Write mode.", life: 2500 });
+    toast.current?.show({
+      severity: "success",
+      summary: "Đã mở quyền chỉnh sửa",
+      detail: "Bạn đang ở chế độ Admin / Write mode.",
+      life: 2500,
+    });
   };
 
   const handleAdminLogout = () => {
-    setIsAdmin(false);
+    sessionStorage.removeItem("kiemke-lau2:adminEmail");
+    setAuthState({ status: "unauthenticated", role: "non-admin", email: "" });
     setEditingTeamId(null);
     setShowAddTeam(false);
     setShowTeamSheet(false);
-    setAdminEmail("");
     setShowLogin(false);
     setOpenMenu(null);
   };
