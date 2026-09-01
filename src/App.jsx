@@ -1167,6 +1167,9 @@ export default function App() {
       setDragOverTarget(null);
       return;
     }
+    // Native HTML drag/drop commits in onDrop. A pointer-up event can arrive
+    // first, so it must leave native drag state intact until drop/dragend.
+    if (!cancelled && drag.native) return;
     if (!cancelled && drag.target) commitSeatMove(drag.source, drag.target);
     pointerDragRef.current = null;
     setDraggedItem(null);

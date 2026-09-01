@@ -3617,13 +3617,13 @@ textarea,
 }
 
 .seat-card-lead {
-  background: color-mix(in srgb, #3b82f6 9%, var(--color-surface)) !important;
-  border-top-color: #3b82f6 !important;
+  /* Keep the selected Team color; role is already shown by the Lead badge. */
+  border-top-color: var(--team-color) !important;
 }
 
 .seat-card-agent {
-  background: color-mix(in srgb, #10b981 9%, var(--color-surface)) !important;
-  border-top-color: #10b981 !important;
+  /* Do not overwrite the per-cabin Team color with a role-wide green. */
+  border-top-color: var(--team-color) !important;
 }
 
 .compact-cabin-open {
