@@ -73,16 +73,6 @@ const DASH_ROW_GROUPS = Object.freeze([
       { label: LAPTOP_BAG, get: (f) => f.devices.laptop_bag },
     ],
   },
-  {
-    title: "Cabin",
-    rows: [
-      { label: "Cabin Lead", get: (f) => f.leadCabins },
-      { label: "Cabin Agent", get: (f) => f.cabins },
-      { label: "· Có người", get: (f) => f.agentCabins },
-      { label: "· Full", get: (f) => f.fullCabins },
-      { label: "· Trống", get: (f) => f.emptyCabins },
-    ],
-  },
 ]);
 
 function GripIcon() {
@@ -1676,18 +1666,9 @@ export default function App() {
     // Đếm thiết bị trên cả cabin Lead lẫn Agent (Laptop / Màn 24" chỉ có ở Lead).
     const { devices, leadCabins } = summarizeFloor(floor, appState?.inventory || {});
     const leads = (floor?.lanes || []).flatMap((lane) => Array.isArray(lane?.leads) ? lane.leads : []);
-    let completeSeats = 0;
-    let checkedSeats = 0;
-    [...leads.map((seat) => [seat, true]), ...agents.map((seat) => [seat, false])].forEach(([seat, isLead]) => {
-      const progress = getSeatProgress(appState?.inventory?.[seat?.id], isLead);
-      if (progress.complete) completeSeats += 1;
-      if (progress.checked > 0) checkedSeats += 1;
-    });
-    const teams = {};
-    agents.forEach((seat) => {
-      const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
-      teams[colorId] = (teams[colorId] || 0) + 1;
-    });
+    const completeSeats =
+      leads.filter((seat) => getSeatProgress(appState?.inventory?.[seat?.id], true).complete).length +
+      agents.filter((seat) => getSeatProgress(appState?.inventory?.[seat?.id], false).complete).length;
     return {
       name: floor?.floorName || "Sàn chưa đặt tên",
       cabins: agents.length,
@@ -1697,9 +1678,6 @@ export default function App() {
       leadCabins,
       totalSeats: leads.length + agents.length,
       completeSeats,
-      checkedSeats,
-      leadsWithLaptop: devices.laptop_standard + devices.laptop_bag,
-      teams,
       devices,
     };
   });
@@ -1719,17 +1697,9 @@ export default function App() {
     fullCabins: sumBy("fullCabins"),
     emptyCabins: sumBy("emptyCabins"),
     totalSeats: sumBy("totalSeats"),
-    completeSeats: sumBy("completeSeats"),
-    checkedSeats: sumBy("checkedSeats"),
-    leadsWithLaptop: sumBy("leadsWithLaptop"),
   };
   const scopeLabel = selectedFloor === "Tất cả" ? "Tất cả các lầu" : selectedFloor;
   const pct = (num, den) => (den > 0 ? Math.round((num / den) * 100) : 0);
-  const scopeTeams = safeTeams
-    .map((team) => ({ team, count: scopeFloors.reduce((sum, item) => sum + (item.teams[team.id] || 0), 0) }))
-    .filter((row) => row.count > 0)
-    .sort((a, b) => b.count - a.count);
-  const maxTeamCount = Math.max(1, ...scopeTeams.map((row) => row.count));
 
   return (
     <div className="app-shell" onClick={closeMenu}>
@@ -1812,7 +1782,8 @@ export default function App() {
           <div className="sidebar-section">
             <span className="sidebar-label">Menu</span>
             <a className="sidebar-link" href="#overview" onClick={() => setShowTeamSheet(false)}><HeroIcon name="chart" size={17} /><span>Tổng quan</span></a>
-            <a className="sidebar-link" href="#floor-table" onClick={() => setShowTeamSheet(false)}><HeroIcon name="filter" size={17} /><span>Bảng theo lầu</span></a>
+            <a className="sidebar-link" href="#device-total" onClick={() => setShowTeamSheet(false)}><HeroIcon name="filter" size={17} /><span>Tổng thiết bị</span></a>
+            <a className="sidebar-link" href="#floor-tables" onClick={() => setShowTeamSheet(false)}><HeroIcon name="building" size={17} /><span>Thiết bị theo lầu</span></a>
             <a className="sidebar-link" href="#cabin-map" onClick={() => setShowTeamSheet(false)}><HeroIcon name="users" size={17} /><span>Sơ đồ cabin</span></a>
           </div>
           <div className="sidebar-section">
@@ -2101,40 +2072,6 @@ export default function App() {
           <section className="dash-grid" id="overview" aria-labelledby="overview-heading">
             <h2 id="overview-heading" className="sr-only">Tổng quan · {scopeLabel}</h2>
 
-            <article className="card card-progress">
-              <header className="card-head">
-                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-check-square" /></span>
-                <h3>Tiến độ kiểm kê</h3>
-                <span className="card-head-note">{scopeLabel}</span>
-              </header>
-              <div className="progress-grid">
-                {[
-                  { label: "Cabin đủ bộ", num: scope.completeSeats, den: scope.totalSeats, unit: "cabin", tone: "red" },
-                  { label: "Cabin đã kiểm", num: scope.checkedSeats, den: scope.totalSeats, unit: "cabin", tone: "green" },
-                  { label: "Lead có Laptop", num: scope.leadsWithLaptop, den: scope.leadCabins, unit: "Lead", tone: "blue" },
-                  { label: "Cabin Agent có người", num: scope.agentCabins, den: scope.cabins, unit: "cabin", tone: "orange" },
-                ].map((item) => {
-                  const value = pct(item.num, item.den);
-                  return (
-                    <div className={`progress-item tone-${item.tone}`} key={item.label}>
-                      <div className="progress-top">
-                        <strong>{value}%</strong>
-                        <span>{item.label}</span>
-                      </div>
-                      <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value} aria-label={item.label}>
-                        <span style={{ width: `${value}%` }} />
-                      </div>
-                      <small>{item.num} / {item.den} {item.unit}</small>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="progress-foot">
-                <i className="pi pi-info-circle" aria-hidden="true" />
-                Còn <b>{Math.max(scope.totalSeats - scope.completeSeats, 0)}</b> cabin chưa đủ bộ thiết bị
-              </p>
-            </article>
-
             <div className="kpi-tiles">
               {[
                 { label: "Tổng thiết bị", value: scope.fixed + scope.laptop, sub: `${scope.totalSeats} cabin`, icon: "pi pi-box", tone: "cyan" },
@@ -2151,115 +2088,93 @@ export default function App() {
               ))}
             </div>
 
-            {floorBreakdown.map((item) => {
-              const bars = [
-                ["Thùng", item.devices.thung],
-                ["M20", item.devices.man20],
-                ["M24", item.devices.man24],
-                ["Chuột", item.devices.chuot],
-                ["Phím", item.devices.phim],
-                ["Tai", item.devices.tai],
-                ["LT", item.devices.laptop_standard],
-                ["LT+T", item.devices.laptop_bag],
-              ];
-              const total = bars.reduce((sum, [, v]) => sum + v, 0);
-              const max = Math.max(1, ...bars.map(([, v]) => v));
-              const done = pct(item.completeSeats, item.totalSeats);
-              return (
-                <button
-                  type="button"
-                  key={item.name}
-                  className={`card card-floor ${selectedFloor === item.name ? "is-selected" : ""}`}
-                  onClick={() => setSelectedFloor(selectedFloor === item.name ? "Tất cả" : item.name)}
-                  aria-pressed={selectedFloor === item.name}
-                  title={`Xem số liệu ${item.name}`}
-                >
-                  <span className="floor-icon" aria-hidden="true"><HeroIcon name="building" size={20} /></span>
-                  <strong className="floor-value">{total}</strong>
-                  <span className="floor-name">Thiết bị · {item.name}</span>
-                  <span className={`floor-delta ${done >= 100 ? "is-good" : "is-warn"}`}>
-                    <i className={done >= 100 ? "pi pi-check" : "pi pi-chart-line"} aria-hidden="true" /> {done}% cabin đủ bộ
-                  </span>
-                  <span className="mini-bars" aria-hidden="true">
-                    {bars.map(([label, v]) => (
-                      <span className="mini-bar" key={label} title={`${label}: ${v}`}>
-                        <span className="mini-bar-track">
-                          <span className="mini-bar-fill" style={{ height: `${v > 0 ? Math.max((v / max) * 100, 6) : 2}%` }} />
-                        </span>
-                        <span className="mini-bar-label">{label}</span>
-                      </span>
-                    ))}
-                  </span>
-                </button>
-              );
-            })}
-
-            <article className="card card-teams">
+            <article className="card card-total" id="device-total">
               <header className="card-head">
-                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-users" /></span>
-                <h3>Cabin Agent theo Team</h3>
+                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-box" /></span>
+                <h3>Tổng số lượng thiết bị</h3>
                 <span className="card-head-note">{scopeLabel}</span>
               </header>
-              {scopeTeams.length === 0 ? (
-                <p className="card-empty">Chưa có cabin Agent.</p>
-              ) : (
-                <ul className="team-bars">
-                  {scopeTeams.map(({ team, count }) => (
-                    <li key={team.id}>
-                      <span className="team-bars-name"><span className="team-tag-dot" style={{ backgroundColor: team.dotColor }} aria-hidden="true" />{team.name}</span>
-                      <span className="team-bars-track"><span style={{ width: `${(count / maxTeamCount) * 100}%`, backgroundColor: team.dotColor }} /></span>
-                      <b>{count}</b>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </article>
-
-            <article className="card card-table" id="floor-table">
-              <header className="card-head">
-                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-table" /></span>
-                <h3>Phân rã theo từng lầu</h3>
-                <span className="card-head-note">Đếm trên cả cabin Lead và Agent</span>
-              </header>
-              <div className="dash-table-wrap">
-                <table className="dash-table">
-                  <caption className="sr-only">Số lượng thiết bị và cabin theo từng lầu</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Hạng mục</th>
-                      {floorBreakdown.map((item) => (
-                        <th scope="col" key={item.name} className={`num ${selectedFloor === item.name ? "is-selected" : ""}`}>
-                          {item.name.replace("Sàn ", "")}
-                        </th>
-                      ))}
-                      <th scope="col" className={`num is-total ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>Tổng</th>
-                    </tr>
-                  </thead>
-                  {DASH_ROW_GROUPS.map((group) => (
-                    <tbody key={group.title}>
-                      <tr className="group-row">
-                        <th scope="rowgroup" colSpan={floorBreakdown.length + 2}>{group.title}</th>
-                      </tr>
-                      {group.rows.map((row) => {
-                        const total = floorBreakdown.reduce((sum, item) => sum + row.get(item), 0);
-                        return (
-                          <tr key={row.label}>
-                            <th scope="row">{row.label}</th>
-                            {floorBreakdown.map((item) => {
-                              const val = row.get(item);
-                              return (
-                                <td key={item.name} className={`num ${val === 0 ? "is-zero" : ""} ${selectedFloor === item.name ? "is-selected" : ""}`}>{val}</td>
-                              );
-                            })}
-                            <td className={`num is-total ${total === 0 ? "is-zero" : ""} ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>{total}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  ))}
-                </table>
+              <div className="total-groups">
+                {DASH_ROW_GROUPS.map((group) => {
+                  const groupTotal = group.rows.reduce((sum, row) => sum + row.get(scope), 0);
+                  return (
+                    <section className="total-group" key={group.title} aria-label={group.title}>
+                      <header className="total-group-head">
+                        <span>{group.title}</span>
+                        <b>{groupTotal} thiết bị</b>
+                      </header>
+                      <dl className="total-cells">
+                        {group.rows.map((row) => {
+                          const val = row.get(scope);
+                          return (
+                            <div className={`total-cell ${val === 0 ? "is-zero" : ""}`} key={row.label}>
+                              <dt>{row.label}</dt>
+                              <dd>{val}</dd>
+                            </div>
+                          );
+                        })}
+                      </dl>
+                    </section>
+                  );
+                })}
               </div>
             </article>
+
+            {floorBreakdown
+              .filter((item) => selectedFloor === "Tất cả" || selectedFloor === item.name)
+              .map((item, index) => {
+                const deviceRows = DASH_ROW_GROUPS[0].rows.concat(DASH_ROW_GROUPS[1].rows);
+                const total = deviceRows.reduce((sum, row) => sum + row.get(item), 0);
+                const tableId = `floor-table-${item.name.replace(/\s+/g, "-")}`;
+                return (
+                  <article className={`card card-floor-table ${selectedFloor !== "Tất cả" ? "is-wide" : ""}`} key={item.name} id={index === 0 ? "floor-tables" : undefined} aria-labelledby={tableId}>
+                    <header className="card-head">
+                      <span className="card-head-icon" aria-hidden="true"><HeroIcon name="building" size={16} /></span>
+                      <h3 id={tableId}>{item.name}</h3>
+                      <span className="card-head-note">{pct(item.completeSeats, item.totalSeats)}% cabin đủ bộ</span>
+                    </header>
+
+                    <div className="floor-cabins" aria-label={`Tóm tắt cabin ${item.name}`}>
+                      <span><b>{item.cabins}</b><small>Cabin Agent</small></span>
+                      <span className="is-agent"><b>{item.agentCabins}</b><small>Có người</small></span>
+                      <span className="is-full"><b>{item.fullCabins}</b><small>Full</small></span>
+                      <span className="is-empty"><b>{item.emptyCabins}</b><small>Trống</small></span>
+                    </div>
+
+                    <table className="floor-table">
+                      <caption className="sr-only">Thiết bị {item.name}</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Thiết bị</th>
+                          <th scope="col" className="num">Số lượng</th>
+                        </tr>
+                      </thead>
+                      {DASH_ROW_GROUPS.map((group) => (
+                        <tbody key={group.title}>
+                          <tr className="group-row">
+                            <th scope="rowgroup" colSpan={2}>{group.title}</th>
+                          </tr>
+                          {group.rows.map((row) => {
+                            const val = row.get(item);
+                            return (
+                              <tr key={row.label}>
+                                <th scope="row">{row.label}</th>
+                                <td className={`num ${val === 0 ? "is-zero" : ""}`}>{val}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      ))}
+                      <tfoot>
+                        <tr>
+                          <th scope="row">Tổng thiết bị · {item.leadCabins} cabin Lead + {item.cabins} cabin Agent</th>
+                          <td className="num">{total}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </article>
+                );
+              })}
           </section>
 
           <div className="workspace-main" id="cabin-map">
