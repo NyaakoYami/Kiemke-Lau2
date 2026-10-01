@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { isAdminEmail, normalizeAdminEmail } from "../shared/admin.js";
 import { moveItemBetweenArrays, resolveInsertIndex } from "../shared/reorder.js";
+import { LAPTOP_BAG, LAPTOP_STANDARD, summarizeFloor, sumDeviceTotals } from "../shared/inventory.js";
 import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -30,8 +31,8 @@ const HERO_PATHS = {
 };
 
 const LAPTOP_PACKAGES = Object.freeze([
-  { value: "Laptop + Sạc + Chuột", label: "Laptop + Sạc + Chuột" },
-  { value: "Laptop + Sạc + Chuột + Túi chống sốc", label: "Laptop + Sạc + Chuột + Túi chống sốc" },
+  { value: LAPTOP_STANDARD, label: LAPTOP_STANDARD },
+  { value: LAPTOP_BAG, label: LAPTOP_BAG },
 ]);
 
 const AGENT_DEVICE_ITEMS = Object.freeze([
@@ -51,6 +52,37 @@ const LEAD_DEVICE_ITEMS = Object.freeze([
   { key: "tai", label: "Tai USB", icon: "pi pi-headphones" },
   { key: "laptop_standard", label: LAPTOP_PACKAGES[0].label, short: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", packageValue: LAPTOP_PACKAGES[0].value },
   { key: "laptop_bag", label: LAPTOP_PACKAGES[1].label, short: "Laptop + Túi chống sốc", icon: "pi pi-briefcase", packageValue: LAPTOP_PACKAGES[1].value },
+]);
+
+const DASH_ROW_GROUPS = Object.freeze([
+  {
+    title: "Thiết bị bàn làm việc",
+    rows: [
+      { label: "Thùng máy", get: (f) => f.devices.thung },
+      { label: 'Màn 20"', get: (f) => f.devices.man20 },
+      { label: 'Màn 24"', get: (f) => f.devices.man24 },
+      { label: "Chuột", get: (f) => f.devices.chuot },
+      { label: "Phím", get: (f) => f.devices.phim },
+      { label: "Tai USB", get: (f) => f.devices.tai },
+    ],
+  },
+  {
+    title: "Laptop · cabin Lead",
+    rows: [
+      { label: LAPTOP_STANDARD, get: (f) => f.devices.laptop_standard },
+      { label: LAPTOP_BAG, get: (f) => f.devices.laptop_bag },
+    ],
+  },
+  {
+    title: "Cabin",
+    rows: [
+      { label: "Cabin Lead", get: (f) => f.leadCabins },
+      { label: "Cabin Agent", get: (f) => f.cabins },
+      { label: "· Có người", get: (f) => f.agentCabins },
+      { label: "· Full", get: (f) => f.fullCabins },
+      { label: "· Trống", get: (f) => f.emptyCabins },
+    ],
+  },
 ]);
 
 function GripIcon() {
@@ -1563,33 +1595,6 @@ export default function App() {
     });
   });
 
-  const stats = {
-    thung: 0,
-    man20: 0,
-    man24: 0,
-    chuot: 0,
-    phim: 0,
-    tai: 0,
-    laptop_standard: 0,
-    laptop_bag: 0,
-    totalAssets: 0,
-  };
-
-  Object.values(appState?.inventory || {}).forEach((rawInv) => {
-    const inv = rawInv && typeof rawInv === "object" ? rawInv : {};
-    if (inv.thung) stats.thung += parseInt(inv.thung_qty, 10) || 0;
-    if (inv.man20) stats.man20 += parseInt(inv.man20_qty, 10) || 0;
-    if (inv.man24) stats.man24 += parseInt(inv.man24_qty, 10) || 0;
-    if (inv.chuot) stats.chuot += parseInt(inv.chuot_qty, 10) || 0;
-    if (inv.phim) stats.phim += parseInt(inv.phim_qty, 10) || 0;
-    if (inv.tai) stats.tai += parseInt(inv.tai_qty, 10) || 0;
-    if (inv.laptop) {
-      if (inv.laptop_package === LAPTOP_PACKAGES[1].value) stats.laptop_bag += 1;
-      else stats.laptop_standard += 1;
-    }
-  });
-  stats.totalAssets = stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai + stats.laptop_standard + stats.laptop_bag;
-
   const getSeatProgress = (inv, isLead) => {
     if (isLead) {
       const fixedKeys = ["thung", "man20", "man24", "chuot", "phim", "tai"];
@@ -1668,38 +1673,34 @@ export default function App() {
       return isSpecialTeam(getTeam(safeTeams, colorId), "empty");
     }).length;
     const agentCabins = Math.max(agents.length - fullCabins - emptyCabins, 0);
-    const devices = {
-      thung: 0,
-      man20: 0,
-      man24: 0,
-      phim: 0,
-      chuot: 0,
-      tai: 0,
-      laptop_standard: 0,
-      laptop_bag: 0,
-    };
-    agents.forEach((seat) => {
-      const inv = appState?.inventory?.[seat?.id] || {};
-      if (inv.thung) devices.thung += Number(inv.thung_qty) || 0;
-      if (inv.man20) devices.man20 += Number(inv.man20_qty) || 0;
-      if (inv.man24) devices.man24 += Number(inv.man24_qty) || 0;
-      if (inv.phim) devices.phim += Number(inv.phim_qty) || 0;
-      if (inv.chuot) devices.chuot += Number(inv.chuot_qty) || 0;
-      if (inv.tai) devices.tai += Number(inv.tai_qty) || 0;
-      if (inv.laptop) {
-        if (inv.laptop_package === LAPTOP_PACKAGES[1].value) devices.laptop_bag += 1;
-        else devices.laptop_standard += 1;
-      }
-    });
+    // Đếm thiết bị trên cả cabin Lead lẫn Agent (Laptop / Màn 24" chỉ có ở Lead).
+    const { devices, leadCabins } = summarizeFloor(floor, appState?.inventory || {});
     return {
       name: floor?.floorName || "Sàn chưa đặt tên",
       cabins: agents.length,
       agentCabins,
       fullCabins,
       emptyCabins,
+      leadCabins,
       devices,
     };
   });
+
+  // Số liệu KPI theo phạm vi đang chọn. "Tất cả" = cộng dồn từng lầu, nên tổng
+  // luôn khớp với bảng phân rã theo lầu.
+  const scopeFloors = floorBreakdown.filter((item) => selectedFloor === "Tất cả" || item.name === selectedFloor);
+  const scopeDevices = sumDeviceTotals(scopeFloors.map((item) => item.devices));
+  const sumBy = (key) => scopeFloors.reduce((sum, item) => sum + item[key], 0);
+  const scope = {
+    devices: scopeDevices,
+    fixed: scopeDevices.thung + scopeDevices.man20 + scopeDevices.man24 + scopeDevices.chuot + scopeDevices.phim + scopeDevices.tai,
+    laptop: scopeDevices.laptop_standard + scopeDevices.laptop_bag,
+    cabins: sumBy("cabins"),
+    leadCabins: sumBy("leadCabins"),
+    agentCabins: sumBy("agentCabins"),
+    fullCabins: sumBy("fullCabins"),
+    emptyCabins: sumBy("emptyCabins"),
+  };
 
   return (
     <div className="app-shell" onClick={closeMenu}>
@@ -1811,126 +1812,88 @@ export default function App() {
         )}
       </header>
 
-      <section className="overview-section" aria-labelledby="overview-heading">
-        <div className="section-head">
+      <section className="dash" aria-labelledby="overview-heading">
+        <header className="dash-head">
           <div>
             <span className="section-kicker">Tổng quan</span>
-            <h2 id="overview-heading">Tài sản đang được kiểm soát</h2>
+            <h2 id="overview-heading">Tài sản đang kiểm soát</h2>
           </div>
-          <span className="section-note">Cập nhật theo dữ liệu hiện tại</span>
+          <nav className="seg" role="tablist" aria-label="Phạm vi số liệu">
+            {["Tất cả", ...floorBreakdown.map((item) => item.name)].map((name) => (
+              <button
+                key={name}
+                type="button"
+                role="tab"
+                className={`seg-btn ${selectedFloor === name ? "active" : ""}`}
+                aria-selected={selectedFloor === name}
+                onClick={() => setSelectedFloor(name)}
+              >
+                {name.replace("Sàn ", "")}
+              </button>
+            ))}
+          </nav>
+        </header>
+
+        <div className="kpi-row">
+          <article className="kpi kpi-hero">
+            <span className="kpi-label">Tổng thiết bị</span>
+            <strong className="kpi-value">{scope.fixed + scope.laptop}</strong>
+            <span className="kpi-sub">{scope.leadCabins} cabin Lead · {scope.cabins} cabin Agent</span>
+          </article>
+          <article className="kpi">
+            <span className="kpi-label">Thiết bị bàn làm việc</span>
+            <strong className="kpi-value">{scope.fixed}</strong>
+            <span className="kpi-sub">Thùng · Màn · Chuột · Phím · Tai</span>
+          </article>
+          <article className="kpi">
+            <span className="kpi-label">Laptop</span>
+            <strong className="kpi-value">{scope.laptop}</strong>
+            <span className="kpi-sub">{scope.devices.laptop_standard} bộ chuẩn · {scope.devices.laptop_bag} kèm túi</span>
+          </article>
+          <article className="kpi">
+            <span className="kpi-label">Cabin Agent</span>
+            <strong className="kpi-value">{scope.cabins}</strong>
+            <span className="kpi-sub">{scope.agentCabins} có người · {scope.fullCabins} Full · {scope.emptyCabins} Trống</span>
+          </article>
         </div>
 
-        <div className="overview-groups">
-          <section className="overview-group fixed-assets" aria-labelledby="fixed-assets-heading">
-            <header className="overview-group-head">
-              <div>
-                <span className="group-kicker">01 · Thiết bị cố định</span>
-                <h3 id="fixed-assets-heading">Bàn làm việc</h3>
-              </div>
-              <span className="group-total">{stats.thung + stats.man20 + stats.man24 + stats.chuot + stats.phim + stats.tai} thiết bị</span>
-            </header>
-            <div className="stat-grid stat-grid-fixed">
-              {[
-                { label: "Thùng máy", val: stats.thung, icon: "pi pi-box" },
-                { label: 'Màn 20"', val: stats.man20, icon: "pi pi-desktop" },
-                { label: 'Màn 24"', val: stats.man24, icon: "pi pi-desktop" },
-                { label: "Chuột", val: stats.chuot, icon: "pi pi-circle" },
-                { label: "Phím", val: stats.phim, icon: "pi pi-table" },
-                { label: "Tai USB", val: stats.tai, icon: "pi pi-volume-up" },
-              ].map((item) => (
-                <article className="stat-card" key={item.label}>
-                  <div className="stat-card-top">
-                    <span className="stat-icon" aria-hidden="true"><i className={item.icon} /></span>
-                    <span className="stat-label">{item.label}</span>
-                  </div>
-                  <strong className="stat-value">{item.val}</strong>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="overview-group mobile-assets" aria-labelledby="mobile-assets-heading">
-            <header className="overview-group-head">
-              <div>
-                <span className="group-kicker">02 · Thiết bị di động</span>
-                <h3 id="mobile-assets-heading">Laptop</h3>
-              </div>
-              <span className="group-total">{stats.laptop_standard + stats.laptop_bag} thiết bị</span>
-            </header>
-            <div className="stat-grid stat-grid-mobile">
-              {[
-                { label: "Laptop + Sạc + Chuột", val: stats.laptop_standard, icon: "pi pi-mobile" },
-                { label: "Laptop + Sạc + Chuột + Túi chống sốc", val: stats.laptop_bag, icon: "pi pi-mobile" },
-              ].map((item) => (
-                <article className="stat-card stat-card-laptop" key={item.label}>
-                  <div className="stat-card-top">
-                    <span className="stat-icon" aria-hidden="true"><i className={item.icon} /></span>
-                    <span className="stat-label">{item.label}</span>
-                  </div>
-                  <strong className="stat-value">{item.val}</strong>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section className="floor-breakdown-section" aria-labelledby="floor-breakdown-heading">
-        <div className="section-head">
-          <div>
-            <span className="section-kicker">Floor breakdown</span>
-            <h2 id="floor-breakdown-heading">Phân rã tài sản theo từng lầu</h2>
-          </div>
-          <span className="section-note">Theo dõi cabin và chi tiết thiết bị theo từng lầu</span>
-        </div>
-        <nav className="floor-quick-tabs" role="tablist" aria-label="Chuyển nhanh giữa các lầu">
-          <button type="button" role="tab" className={`floor-quick-tab ${selectedFloor === "Tất cả" ? "active" : ""}`} onClick={() => setSelectedFloor("Tất cả")} aria-selected={selectedFloor === "Tất cả"}>
-            <HeroIcon name="building" size={16} />
-            <span>Tất cả</span>
-            <b>{floorBreakdown.reduce((sum, item) => sum + item.cabins, 0)}</b>
-          </button>
-          {floorBreakdown.map((item) => (
-            <button type="button" role="tab" className={`floor-quick-tab ${selectedFloor === item.name ? "active" : ""}`} key={item.name} onClick={() => setSelectedFloor(item.name)} aria-selected={selectedFloor === item.name}>
-              <HeroIcon name="building" size={16} />
-              <span>{item.name.replace("Sàn ", "")}</span>
-              <b>{item.cabins}</b>
-            </button>
-          ))}
-        </nav>
-
-        <div className="floor-breakdown-grid">
-          {floorBreakdown.filter((item) => selectedFloor === "Tất cả" || selectedFloor === item.name).map((item) => (
-            <article className="floor-breakdown-card" key={item.name}>
-              <header className="floor-breakdown-card-head">
-                <span className="floor-breakdown-icon"><HeroIcon name="building" size={18} /></span>
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>Chi tiết thiết bị được cập nhật theo cabin Agent</p>
-                </div>
-              </header>
-
-              <div className="floor-breakdown-summary cabin-summary" aria-label={`Tóm tắt cabin ${item.name}`}>
-                <span className="summary-total"><b>{item.cabins}</b><small>Tổng cabin</small></span>
-                <span className="summary-agent"><b>{item.agentCabins}</b><small>Cabin Agent</small></span>
-                <span className="summary-full"><b>{item.fullCabins}</b><small>Cabin còn lại · Full</small></span>
-                <span className="summary-empty"><b>{item.emptyCabins}</b><small>Cabin trống · Trống</small></span>
-              </div>
-
-              <section className="floor-device-report" aria-labelledby={`device-report-${item.name.replace(/\s+/g, "-")}`}>
-                <h4 id={`device-report-${item.name.replace(/\s+/g, "-")}`}>Chi tiết thiết bị</h4>
-                <dl className="floor-device-grid">
-                  <div><dt>Thùng máy</dt><dd>{item.devices.thung}</dd></div>
-                  <div><dt>Màn 20&quot;</dt><dd>{item.devices.man20}</dd></div>
-                  <div><dt>Màn 24&quot;</dt><dd>{item.devices.man24}</dd></div>
-                  <div><dt>Chuột</dt><dd>{item.devices.chuot}</dd></div>
-                  <div><dt>Phím</dt><dd>{item.devices.phim}</dd></div>
-                  <div><dt>Tai USB</dt><dd>{item.devices.tai}</dd></div>
-                  <div className="is-wide"><dt>Laptop + Sạc + Chuột</dt><dd>{item.devices.laptop_standard}</dd></div>
-                  <div className="is-wide"><dt>Laptop + Sạc + Chuột + Túi chống sốc</dt><dd>{item.devices.laptop_bag}</dd></div>
-                </dl>
-              </section>
-            </article>
-          ))}
+        <div className="dash-table-wrap">
+          <table className="dash-table">
+            <caption className="sr-only">Số lượng thiết bị và cabin theo từng lầu</caption>
+            <thead>
+              <tr>
+                <th scope="col">Hạng mục</th>
+                {floorBreakdown.map((item) => (
+                  <th scope="col" key={item.name} className={`num ${selectedFloor === item.name ? "is-selected" : ""}`}>
+                    {item.name.replace("Sàn ", "")}
+                  </th>
+                ))}
+                <th scope="col" className={`num is-total ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>Tổng</th>
+              </tr>
+            </thead>
+            {DASH_ROW_GROUPS.map((group) => (
+              <tbody key={group.title}>
+                <tr className="group-row">
+                  <th scope="rowgroup" colSpan={floorBreakdown.length + 2}>{group.title}</th>
+                </tr>
+                {group.rows.map((row) => {
+                  const total = floorBreakdown.reduce((sum, item) => sum + row.get(item), 0);
+                  return (
+                    <tr key={row.label}>
+                      <th scope="row">{row.label}</th>
+                      {floorBreakdown.map((item) => {
+                        const val = row.get(item);
+                        return (
+                          <td key={item.name} className={`num ${val === 0 ? "is-zero" : ""} ${selectedFloor === item.name ? "is-selected" : ""}`}>{val}</td>
+                        );
+                      })}
+                      <td className={`num is-total ${total === 0 ? "is-zero" : ""} ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>{total}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            ))}
+          </table>
         </div>
       </section>
 
