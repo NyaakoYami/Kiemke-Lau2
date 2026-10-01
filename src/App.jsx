@@ -54,23 +54,87 @@ const LEAD_DEVICE_ITEMS = Object.freeze([
   { key: "laptop_bag", label: LAPTOP_PACKAGES[1].label, short: "Laptop + Túi chống sốc", icon: "pi pi-briefcase", packageValue: LAPTOP_PACKAGES[1].value },
 ]);
 
-const DASH_ROW_GROUPS = Object.freeze([
+// Icon vẽ theo hình dáng từng thiết bị (stroke 24×24, ăn màu theo currentColor).
+const DEVICE_SHAPES = {
+  thung: (
+    <>
+      <rect x="7" y="2.5" width="10" height="19" rx="2" />
+      <path d="M10 6.5h4M10 9.5h4" />
+      <circle cx="12" cy="17" r="1.2" />
+    </>
+  ),
+  man20: (
+    <>
+      <rect x="3.5" y="4" width="17" height="12" rx="2" />
+      <path d="M12 16v4M8.5 20h7" />
+    </>
+  ),
+  man24: (
+    <>
+      <rect x="1.5" y="3" width="21" height="13.5" rx="2" />
+      <path d="M12 16.5v4M7 20.5h10M5 13h14" />
+    </>
+  ),
+  chuot: (
+    <>
+      <rect x="6.5" y="2.5" width="11" height="19" rx="5.5" />
+      <path d="M12 2.5v6M6.5 9.5h11" />
+    </>
+  ),
+  phim: (
+    <>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01M9.33 10h.01M12.66 10h.01M16 10h.01M6 14h.01M18 14h.01M9 14h6" />
+    </>
+  ),
+  tai: (
+    <>
+      <path d="M4 15v-3a8 8 0 0 1 16 0v3" />
+      <rect x="3" y="14" width="4.5" height="6.5" rx="1.5" />
+      <rect x="16.5" y="14" width="4.5" height="6.5" rx="1.5" />
+    </>
+  ),
+  laptop_standard: (
+    <>
+      <rect x="4" y="4.5" width="16" height="11" rx="1.5" />
+      <path d="M2 19.5h20l-2-4H4z" />
+    </>
+  ),
+  laptop_bag: (
+    <>
+      <rect x="2.5" y="7" width="19" height="13.5" rx="2" />
+      <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M2.5 12.5h19M10.5 12.5v2h3v-2" />
+    </>
+  ),
+};
+
+function DeviceIcon({ name, size = 24 }) {
+  const shape = DEVICE_SHAPES[name];
+  if (!shape) return null;
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {shape}
+    </svg>
+  );
+}
+
+const DEVICE_GROUPS = Object.freeze([
   {
     title: "Thiết bị bàn làm việc",
-    rows: [
-      { label: "Thùng máy", get: (f) => f.devices.thung },
-      { label: 'Màn 20"', get: (f) => f.devices.man20 },
-      { label: 'Màn 24"', get: (f) => f.devices.man24 },
-      { label: "Chuột", get: (f) => f.devices.chuot },
-      { label: "Phím", get: (f) => f.devices.phim },
-      { label: "Tai USB", get: (f) => f.devices.tai },
+    items: [
+      { key: "thung", label: "Thùng máy", tone: "#3f6ad8" },
+      { key: "man20", label: 'Màn 20"', tone: "#16aaff" },
+      { key: "man24", label: 'Màn 24"', tone: "#6f42c1" },
+      { key: "chuot", label: "Chuột", tone: "#f7854a" },
+      { key: "phim", label: "Phím", tone: "#3ac47d" },
+      { key: "tai", label: "Tai USB", tone: "#d92550" },
     ],
   },
   {
     title: "Laptop · cabin Lead",
-    rows: [
-      { label: LAPTOP_STANDARD, get: (f) => f.devices.laptop_standard },
-      { label: LAPTOP_BAG, get: (f) => f.devices.laptop_bag },
+    items: [
+      { key: "laptop_standard", label: LAPTOP_STANDARD, tone: "#e5484d" },
+      { key: "laptop_bag", label: LAPTOP_BAG, tone: "#b0306a" },
     ],
   },
 ]);
@@ -1781,8 +1845,7 @@ export default function App() {
         <aside className={`sidebar team-manager-panel ${showTeamSheet ? "team-sheet-open" : ""}`}>
           <div className="sidebar-section">
             <span className="sidebar-label">Menu</span>
-            <a className="sidebar-link" href="#overview" onClick={() => setShowTeamSheet(false)}><HeroIcon name="chart" size={17} /><span>Tổng quan</span></a>
-            <a className="sidebar-link" href="#device-total" onClick={() => setShowTeamSheet(false)}><HeroIcon name="filter" size={17} /><span>Tổng thiết bị</span></a>
+            <a className="sidebar-link" href="#device-total" onClick={() => setShowTeamSheet(false)}><HeroIcon name="chart" size={17} /><span>Tổng thiết bị</span></a>
             <a className="sidebar-link" href="#floor-tables" onClick={() => setShowTeamSheet(false)}><HeroIcon name="building" size={17} /><span>Thiết bị theo lầu</span></a>
             <a className="sidebar-link" href="#cabin-map" onClick={() => setShowTeamSheet(false)}><HeroIcon name="users" size={17} /><span>Sơ đồ cabin</span></a>
           </div>
@@ -2069,69 +2132,52 @@ export default function App() {
             </div>
           )}
 
-          <section className="dash-grid" id="overview" aria-labelledby="overview-heading">
-            <h2 id="overview-heading" className="sr-only">Tổng quan · {scopeLabel}</h2>
+          <section className="dash-grid" id="device-total" aria-labelledby="device-total-heading">
+            <header className="dash-section-head">
+              <span className="card-head-icon" aria-hidden="true"><DeviceIcon name="thung" size={16} /></span>
+              <h2 id="device-total-heading">Tổng thiết bị</h2>
+              <span className="card-head-note">{scopeLabel} · {scope.fixed + scope.laptop} thiết bị</span>
+            </header>
+            {DEVICE_GROUPS.map((group) => {
+              const groupTotal = group.items.reduce((sum, item) => sum + scope.devices[item.key], 0);
+              return (
+                <section className="device-group" key={group.title} aria-label={group.title}>
+                  <header className="device-group-head">
+                    <span>{group.title}</span>
+                    <b>{groupTotal} thiết bị</b>
+                  </header>
+                  <div className={`device-cards ${group.items.length <= 2 ? "is-pair" : ""}`}>
+                    {group.items.map((item) => {
+                      const val = scope.devices[item.key];
+                      return (
+                        <article className={`device-card ${val === 0 ? "is-zero" : ""}`} key={item.key} style={{ "--tone": item.tone }}>
+                          <span className="device-card-icon"><DeviceIcon name={item.key} size={28} /></span>
+                          <span className="device-card-body">
+                            <strong className="device-card-value">{val}</strong>
+                            <span className="device-card-label">{item.label}</span>
+                          </span>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </section>
 
-            <div className="kpi-tiles">
-              {[
-                { label: "Tổng thiết bị", value: scope.fixed + scope.laptop, sub: `${scope.totalSeats} cabin`, icon: "pi pi-box", tone: "cyan" },
-                { label: "Thiết bị bàn làm việc", value: scope.fixed, sub: "Thùng · Màn · Chuột · Phím · Tai", icon: "pi pi-desktop", tone: "night" },
-                { label: "Laptop", value: scope.laptop, sub: `${scope.devices.laptop_standard} chuẩn · ${scope.devices.laptop_bag} kèm túi`, icon: "pi pi-briefcase", tone: "green" },
-                { label: "Cabin Agent", value: scope.cabins, sub: `${scope.fullCabins} Full · ${scope.emptyCabins} Trống`, icon: "pi pi-users", tone: "red" },
-              ].map((tile) => (
-                <article className={`tile tile-${tile.tone}`} key={tile.label}>
-                  <span className="tile-icon" aria-hidden="true"><i className={tile.icon} /></span>
-                  <strong className="tile-value">{tile.value}</strong>
-                  <span className="tile-label">{tile.label}</span>
-                  <small className="tile-sub">{tile.sub}</small>
-                </article>
-              ))}
-            </div>
-
-            <article className="card card-total" id="device-total">
-              <header className="card-head">
-                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-box" /></span>
-                <h3>Tổng số lượng thiết bị</h3>
-                <span className="card-head-note">{scopeLabel}</span>
-              </header>
-              <div className="total-groups">
-                {DASH_ROW_GROUPS.map((group) => {
-                  const groupTotal = group.rows.reduce((sum, row) => sum + row.get(scope), 0);
-                  return (
-                    <section className="total-group" key={group.title} aria-label={group.title}>
-                      <header className="total-group-head">
-                        <span>{group.title}</span>
-                        <b>{groupTotal} thiết bị</b>
-                      </header>
-                      <dl className="total-cells">
-                        {group.rows.map((row) => {
-                          const val = row.get(scope);
-                          return (
-                            <div className={`total-cell ${val === 0 ? "is-zero" : ""}`} key={row.label}>
-                              <dt>{row.label}</dt>
-                              <dd>{val}</dd>
-                            </div>
-                          );
-                        })}
-                      </dl>
-                    </section>
-                  );
-                })}
-              </div>
-            </article>
-
+          <section className="floor-section-grid" id="floor-tables" aria-labelledby="floor-devices-heading">
+            <h2 id="floor-devices-heading" className="sr-only">Thiết bị theo lầu</h2>
             {floorBreakdown
               .filter((item) => selectedFloor === "Tất cả" || selectedFloor === item.name)
-              .map((item, index) => {
-                const deviceRows = DASH_ROW_GROUPS[0].rows.concat(DASH_ROW_GROUPS[1].rows);
-                const total = deviceRows.reduce((sum, row) => sum + row.get(item), 0);
-                const tableId = `floor-table-${item.name.replace(/\s+/g, "-")}`;
+              .map((item) => {
+                const total = DEVICE_GROUPS.flatMap((group) => group.items).reduce((sum, d) => sum + item.devices[d.key], 0);
+                const headingId = `floor-devices-${item.name.replace(/\s+/g, "-")}`;
                 return (
-                  <article className={`card card-floor-table ${selectedFloor !== "Tất cả" ? "is-wide" : ""}`} key={item.name} id={index === 0 ? "floor-tables" : undefined} aria-labelledby={tableId}>
+                  <article className={`card floor-devices ${selectedFloor !== "Tất cả" ? "is-wide" : ""}`} key={item.name} aria-labelledby={headingId}>
                     <header className="card-head">
                       <span className="card-head-icon" aria-hidden="true"><HeroIcon name="building" size={16} /></span>
-                      <h3 id={tableId}>{item.name}</h3>
-                      <span className="card-head-note">{pct(item.completeSeats, item.totalSeats)}% cabin đủ bộ</span>
+                      <h3 id={headingId}>{item.name}</h3>
+                      <span className="card-head-note">{total} thiết bị · {pct(item.completeSeats, item.totalSeats)}% cabin đủ bộ</span>
                     </header>
 
                     <div className="floor-cabins" aria-label={`Tóm tắt cabin ${item.name}`}>
@@ -2141,37 +2187,23 @@ export default function App() {
                       <span className="is-empty"><b>{item.emptyCabins}</b><small>Trống</small></span>
                     </div>
 
-                    <table className="floor-table">
-                      <caption className="sr-only">Thiết bị {item.name}</caption>
-                      <thead>
-                        <tr>
-                          <th scope="col">Thiết bị</th>
-                          <th scope="col" className="num">Số lượng</th>
-                        </tr>
-                      </thead>
-                      {DASH_ROW_GROUPS.map((group) => (
-                        <tbody key={group.title}>
-                          <tr className="group-row">
-                            <th scope="rowgroup" colSpan={2}>{group.title}</th>
-                          </tr>
-                          {group.rows.map((row) => {
-                            const val = row.get(item);
+                    {DEVICE_GROUPS.map((group) => (
+                      <section className="mini-group" key={group.title} aria-label={`${group.title} · ${item.name}`}>
+                        <span className="mini-group-title">{group.title}</span>
+                        <div className={`mini-cards ${group.items.length <= 2 ? "is-pair" : ""}`}>
+                          {group.items.map((d) => {
+                            const val = item.devices[d.key];
                             return (
-                              <tr key={row.label}>
-                                <th scope="row">{row.label}</th>
-                                <td className={`num ${val === 0 ? "is-zero" : ""}`}>{val}</td>
-                              </tr>
+                              <div className={`mini-card ${val === 0 ? "is-zero" : ""}`} key={d.key} style={{ "--tone": d.tone }}>
+                                <span className="mini-card-icon"><DeviceIcon name={d.key} size={18} /></span>
+                                <span className="mini-card-label">{d.label}</span>
+                                <b className="mini-card-value">{val}</b>
+                              </div>
                             );
                           })}
-                        </tbody>
-                      ))}
-                      <tfoot>
-                        <tr>
-                          <th scope="row">Tổng thiết bị · {item.leadCabins} cabin Lead + {item.cabins} cabin Agent</th>
-                          <td className="num">{total}</td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                        </div>
+                      </section>
+                    ))}
                   </article>
                 );
               })}
