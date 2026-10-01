@@ -1,6 +1,6 @@
 import { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
-import 'primereact/resources/themes/lara-dark-indigo/theme.css'
+import 'primereact/resources/themes/lara-light-indigo/theme.css'
 import './index.css'
 import App from './App.jsx'
 
@@ -21,9 +21,9 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '30px', fontFamily: 'sans-serif', textAlign: 'center', background: '#0e0f11', color: '#ececee', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ padding: '30px', fontFamily: 'sans-serif', textAlign: 'center', background: '#eef1f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <h1 style={{ color: '#ef4444', marginBottom: '10px' }}>⚠️ Có lỗi xảy ra khi tải ứng dụng</h1>
-          <p style={{ color: '#a8aab2', maxWidth: '500px', marginBottom: '20px' }}>
+          <p style={{ color: '#64748b', maxWidth: '500px', marginBottom: '20px' }}>
             {this.state.error?.toString() || 'Vui lòng kiểm tra lại kết nối mạng hoặc thử làm mới trang.'}
           </p>
           <button

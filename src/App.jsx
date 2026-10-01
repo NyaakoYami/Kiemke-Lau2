@@ -1675,6 +1675,19 @@ export default function App() {
     const agentCabins = Math.max(agents.length - fullCabins - emptyCabins, 0);
     // Đếm thiết bị trên cả cabin Lead lẫn Agent (Laptop / Màn 24" chỉ có ở Lead).
     const { devices, leadCabins } = summarizeFloor(floor, appState?.inventory || {});
+    const leads = (floor?.lanes || []).flatMap((lane) => Array.isArray(lane?.leads) ? lane.leads : []);
+    let completeSeats = 0;
+    let checkedSeats = 0;
+    [...leads.map((seat) => [seat, true]), ...agents.map((seat) => [seat, false])].forEach(([seat, isLead]) => {
+      const progress = getSeatProgress(appState?.inventory?.[seat?.id], isLead);
+      if (progress.complete) completeSeats += 1;
+      if (progress.checked > 0) checkedSeats += 1;
+    });
+    const teams = {};
+    agents.forEach((seat) => {
+      const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
+      teams[colorId] = (teams[colorId] || 0) + 1;
+    });
     return {
       name: floor?.floorName || "Sàn chưa đặt tên",
       cabins: agents.length,
@@ -1682,6 +1695,11 @@ export default function App() {
       fullCabins,
       emptyCabins,
       leadCabins,
+      totalSeats: leads.length + agents.length,
+      completeSeats,
+      checkedSeats,
+      leadsWithLaptop: devices.laptop_standard + devices.laptop_bag,
+      teams,
       devices,
     };
   });
@@ -1700,7 +1718,18 @@ export default function App() {
     agentCabins: sumBy("agentCabins"),
     fullCabins: sumBy("fullCabins"),
     emptyCabins: sumBy("emptyCabins"),
+    totalSeats: sumBy("totalSeats"),
+    completeSeats: sumBy("completeSeats"),
+    checkedSeats: sumBy("checkedSeats"),
+    leadsWithLaptop: sumBy("leadsWithLaptop"),
   };
+  const scopeLabel = selectedFloor === "Tất cả" ? "Tất cả các lầu" : selectedFloor;
+  const pct = (num, den) => (den > 0 ? Math.round((num / den) * 100) : 0);
+  const scopeTeams = safeTeams
+    .map((team) => ({ team, count: scopeFloors.reduce((sum, item) => sum + (item.teams[team.id] || 0), 0) }))
+    .filter((row) => row.count > 0)
+    .sort((a, b) => b.count - a.count);
+  const maxTeamCount = Math.max(1, ...scopeTeams.map((row) => row.count));
 
   return (
     <div className="app-shell" onClick={closeMenu}>
@@ -1742,283 +1771,236 @@ export default function App() {
         document.body,
       )}
 
-      <header className="app-header">
-        <div className="header-main">
-          <div className="header-copy">
-            <div className="eyebrow">
-              <span className="eyebrow-mark" aria-hidden="true">02</span>
-              <span>OPERATIONS / ASSET CONTROL</span>
-            </div>
-            <h1>Kiểm kê tài sản</h1>
-            <p>Sàn Lầu 2 & Lầu 3 · ShopeeFood</p>
-          </div>
-
-          <div className="header-meta">
-            <div className={`mode-pill ${isAdmin ? "is-admin" : "is-readonly"}`}>
-              <HeroIcon name={isAdmin ? "lock" : "eye"} size={16} />
-              <span>{isAdmin ? "Admin · Chỉnh sửa" : "Chế độ xem"}</span>
-              {isAdmin ? <small>{adminEmail}</small> : null}
-            </div>
-            <div className="header-date">
-              <span className="meta-label">Ngày kiểm kê</span>
-              <strong>
-                {new Date().toLocaleDateString("vi-VN", {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </strong>
-            </div>
-            <StatusDot connectionStatus={connectionStatus} syncStatus={syncStatus} />
-            {isAdmin ? (
-              <button type="button" className="header-auth-btn" onClick={handleAdminLogout}>
-                <HeroIcon name="logout" size={16} />
-                <span>Thoát Admin</span>
-              </button>
-            ) : (
-              <button type="button" className="header-auth-btn primary" onClick={() => { setLoginError(""); setShowLogin(true); }}>
-                <HeroIcon name="login" size={16} />
-                <span>Đăng nhập</span>
-              </button>
-            )}
-          </div>
+      <header className="topbar">
+        <div className="topbar-brand">
+          <button
+            type="button"
+            className="topbar-burger"
+            onClick={(e) => { e.stopPropagation(); setShowTeamSheet((v) => !v); }}
+            aria-label="Mở menu"
+            aria-expanded={showTeamSheet}
+          >
+            <i className="pi pi-bars" aria-hidden="true" />
+          </button>
+          <span className="brand-mark" aria-hidden="true"><HeroIcon name="building" size={18} /></span>
+          <span className="brand-name">Kiểm kê <b>Tài sản</b></span>
         </div>
-
-        <div className="header-rule" aria-hidden="true" />
-        <div className="header-summary">
-          <span><strong>{safeTeams.length}</strong> team đang quản lý</span>
-          <span className="summary-separator" aria-hidden="true">/</span>
-          <span>
-            {syncStatus === "synced" ? "Cloud đã đồng bộ" : "Có thay đổi chưa đồng bộ"}
-            {lastSyncedAt ? ` · lần cuối ${new Date(lastSyncedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}
-          </span>
-        </div>
-
-        {connectionStatus === "error" && syncError && (
-          <div className="sync-alert" role="alert">
-            <i className="pi pi-exclamation-triangle" aria-hidden="true" />
-            <div>
-              <strong>Không kết nối được Cloud</strong>
-              <span>{syncError} Dữ liệu vẫn được lưu tạm trên máy này{isAdmin ? " và sẽ tự đồng bộ khi kết nối lại" : ""}.</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => (isAdmin && syncStatus !== "synced" ? syncOnline() : loadOnline())}
-            >
-              <i className="pi pi-refresh" aria-hidden="true" /> Thử lại
+        <div className="topbar-right">
+          <StatusDot connectionStatus={connectionStatus} syncStatus={syncStatus} />
+          <div className={`mode-pill ${isAdmin ? "is-admin" : "is-readonly"}`}>
+            <HeroIcon name={isAdmin ? "lock" : "eye"} size={16} />
+            <span>{isAdmin ? "Admin" : "Chế độ xem"}</span>
+            {isAdmin ? <small>{adminEmail}</small> : null}
+          </div>
+          {isAdmin ? (
+            <button type="button" className="header-auth-btn" onClick={handleAdminLogout}>
+              <HeroIcon name="logout" size={16} />
+              <span>Thoát</span>
             </button>
-          </div>
-        )}
+          ) : (
+            <button type="button" className="header-auth-btn primary" onClick={() => { setLoginError(""); setShowLogin(true); }}>
+              <HeroIcon name="login" size={16} />
+              <span>Đăng nhập</span>
+            </button>
+          )}
+        </div>
       </header>
 
-      <section className="dash" aria-labelledby="overview-heading">
-        <header className="dash-head">
-          <div>
-            <span className="section-kicker">Tổng quan</span>
-            <h2 id="overview-heading">Tài sản đang kiểm soát</h2>
+      <div className="admin-body">
+        {showTeamSheet && <div className="sidebar-backdrop" onClick={() => setShowTeamSheet(false)} aria-hidden="true" />}
+        <aside className={`sidebar team-manager-panel ${showTeamSheet ? "team-sheet-open" : ""}`}>
+          <div className="sidebar-section">
+            <span className="sidebar-label">Menu</span>
+            <a className="sidebar-link" href="#overview" onClick={() => setShowTeamSheet(false)}><HeroIcon name="chart" size={17} /><span>Tổng quan</span></a>
+            <a className="sidebar-link" href="#floor-table" onClick={() => setShowTeamSheet(false)}><HeroIcon name="filter" size={17} /><span>Bảng theo lầu</span></a>
+            <a className="sidebar-link" href="#cabin-map" onClick={() => setShowTeamSheet(false)}><HeroIcon name="users" size={17} /><span>Sơ đồ cabin</span></a>
           </div>
-          <nav className="seg" role="tablist" aria-label="Phạm vi số liệu">
+          <div className="sidebar-section">
+            <span className="sidebar-label">Phạm vi lầu</span>
             {["Tất cả", ...floorBreakdown.map((item) => item.name)].map((name) => (
               <button
                 key={name}
                 type="button"
-                role="tab"
-                className={`seg-btn ${selectedFloor === name ? "active" : ""}`}
-                aria-selected={selectedFloor === name}
-                onClick={() => setSelectedFloor(name)}
+                className={`sidebar-link ${selectedFloor === name ? "active" : ""}`}
+                onClick={() => { setSelectedFloor(name); setShowTeamSheet(false); }}
+                aria-pressed={selectedFloor === name}
               >
-                {name.replace("Sàn ", "")}
+                <HeroIcon name="building" size={17} />
+                <span>{name}</span>
               </button>
             ))}
-          </nav>
-        </header>
-
-        <div className="kpi-row">
-          <article className="kpi kpi-hero">
-            <span className="kpi-label">Tổng thiết bị</span>
-            <strong className="kpi-value">{scope.fixed + scope.laptop}</strong>
-            <span className="kpi-sub">{scope.leadCabins} cabin Lead · {scope.cabins} cabin Agent</span>
-          </article>
-          <article className="kpi">
-            <span className="kpi-label">Thiết bị bàn làm việc</span>
-            <strong className="kpi-value">{scope.fixed}</strong>
-            <span className="kpi-sub">Thùng · Màn · Chuột · Phím · Tai</span>
-          </article>
-          <article className="kpi">
-            <span className="kpi-label">Laptop</span>
-            <strong className="kpi-value">{scope.laptop}</strong>
-            <span className="kpi-sub">{scope.devices.laptop_standard} bộ chuẩn · {scope.devices.laptop_bag} kèm túi</span>
-          </article>
-          <article className="kpi">
-            <span className="kpi-label">Cabin Agent</span>
-            <strong className="kpi-value">{scope.cabins}</strong>
-            <span className="kpi-sub">{scope.agentCabins} có người · {scope.fullCabins} Full · {scope.emptyCabins} Trống</span>
-          </article>
-        </div>
-
-        <div className="dash-table-wrap">
-          <table className="dash-table">
-            <caption className="sr-only">Số lượng thiết bị và cabin theo từng lầu</caption>
-            <thead>
-              <tr>
-                <th scope="col">Hạng mục</th>
-                {floorBreakdown.map((item) => (
-                  <th scope="col" key={item.name} className={`num ${selectedFloor === item.name ? "is-selected" : ""}`}>
-                    {item.name.replace("Sàn ", "")}
-                  </th>
-                ))}
-                <th scope="col" className={`num is-total ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>Tổng</th>
-              </tr>
-            </thead>
-            {DASH_ROW_GROUPS.map((group) => (
-              <tbody key={group.title}>
-                <tr className="group-row">
-                  <th scope="rowgroup" colSpan={floorBreakdown.length + 2}>{group.title}</th>
-                </tr>
-                {group.rows.map((row) => {
-                  const total = floorBreakdown.reduce((sum, item) => sum + row.get(item), 0);
-                  return (
-                    <tr key={row.label}>
-                      <th scope="row">{row.label}</th>
-                      {floorBreakdown.map((item) => {
-                        const val = row.get(item);
-                        return (
-                          <td key={item.name} className={`num ${val === 0 ? "is-zero" : ""} ${selectedFloor === item.name ? "is-selected" : ""}`}>{val}</td>
-                        );
-                      })}
-                      <td className={`num is-total ${total === 0 ? "is-zero" : ""} ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>{total}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            ))}
-          </table>
-        </div>
-      </section>
-
-      <div className="workspace-layout">
-        <aside className={`team-manager-panel ${showTeamSheet ? "team-sheet-open" : ""}`}>
-          <div className="team-sheet-mobile-handle" aria-hidden="true" />
-          <div className="panel-heading">
-            <div>
-              <span className="section-kicker">Bộ lọc</span>
-              <h2>Team</h2>
-            </div>
-            <button
-              type="button"
-              className="icon-btn team-sheet-close"
-              onClick={() => setShowTeamSheet(false)}
-              aria-label="Đóng quản lý Team"
-              title="Đóng"
-            >
-              <i className="pi pi-times" aria-hidden="true" />
-            </button>
           </div>
+          <div className="sidebar-section sidebar-teams">
+            <div className="team-sheet-mobile-handle" aria-hidden="true" />
+            <div className="panel-heading">
+              <div>
+                <span className="section-kicker">Bộ lọc</span>
+                <h2>Team</h2>
+              </div>
+              <button
+                type="button"
+                className="icon-btn team-sheet-close"
+                onClick={() => setShowTeamSheet(false)}
+                aria-label="Đóng quản lý Team"
+                title="Đóng"
+              >
+                <i className="pi pi-times" aria-hidden="true" />
+              </button>
+            </div>
 
-          <div className="panel-actions">
-            {selectedTeamId && (
+            <div className="panel-actions">
+              {selectedTeamId && (
+                <Button
+                  label="Bỏ lọc"
+                  icon="pi pi-filter-slash"
+                  size="small"
+                  text
+                  severity="secondary"
+                  className="compact-button"
+                  onClick={() => {
+                    setSelectedTeamId(null);
+                    setShowTeamSheet(false);
+                  }}
+                />
+              )}
               <Button
-                label="Bỏ lọc"
-                icon="pi pi-filter-slash"
+                label="Thêm Team"
+                disabled={!isAdmin}
+                icon="pi pi-plus"
                 size="small"
-                text
-                severity="secondary"
+                severity="success"
                 className="compact-button"
+                onClick={() => setShowAddTeam((v) => !v)}
+              />
+            </div>
+
+            <div className="team-list" role="list" aria-label="Danh sách Team">
+              <button
+                type="button"
+                className={`team-bar-item ${selectedTeamId === null ? "active" : ""}`}
                 onClick={() => {
                   setSelectedTeamId(null);
                   setShowTeamSheet(false);
                 }}
-              />
-            )}
-            <Button
-              label="Thêm Team"
-              disabled={!isAdmin}
-              icon="pi pi-plus"
-              size="small"
-              severity="success"
-              className="compact-button"
-              onClick={() => setShowAddTeam((v) => !v)}
-            />
-          </div>
+              >
+                <span className="team-list-swatch all" aria-hidden="true"><i className="pi pi-th-large" /></span>
+                <span>Tất cả</span>
+                <span className="team-count">{teamCounts.total}</span>
+              </button>
 
-          <div className="team-list" role="list" aria-label="Danh sách Team">
-            <button
-              type="button"
-              className={`team-bar-item ${selectedTeamId === null ? "active" : ""}`}
-              onClick={() => {
-                setSelectedTeamId(null);
-                setShowTeamSheet(false);
-              }}
-            >
-              <span className="team-list-swatch all" aria-hidden="true"><i className="pi pi-th-large" /></span>
-              <span>Tất cả</span>
-              <span className="team-count">{teamCounts.total}</span>
-            </button>
+              {safeTeams.map((team) => {
+                const isSelected = selectedTeamId === team.id;
+                const count = teamCounts[team.id] || 0;
+                return (
+                  <div
+                    key={team.id}
+                    className={`team-bar-item-wrap ${isSelected ? "active" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className={`team-bar-item ${isSelected ? "active" : ""}`}
+                      onClick={() => {
+                        setSelectedTeamId(team.id);
+                        setShowTeamSheet(false);
+                      }}
+                      title={`Lọc Team ${team.name}`}
+                    >
+                      <span className="team-list-swatch" style={{ backgroundColor: team.dotColor }} aria-hidden="true" />
+                      <span className="team-item-name">{team.name}</span>
+                      <span className="team-count">{count}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="team-icon-action"
+                      disabled={!isAdmin}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingTeamId((prev) => (prev === team.id ? null : team.id));
+                        setShowAddTeam(false);
+                      }}
+                      aria-label={`Đổi màu Team ${team.name}`}
+                      title="Đổi màu"
+                    >
+                      <i className="pi pi-palette" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="team-icon-action danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTeam(team.id);
+                      }}
+                      disabled={!isAdmin || team.id === "fill-grey"}
+                      aria-label={team.id === "fill-grey" ? "Team Trống không thể xoá" : `Xoá Team ${team.name}`}
+                      title={team.id === "fill-grey" ? "Team Trống không thể xoá" : "Xoá Team"}
+                    >
+                      <i className="pi pi-trash" aria-hidden="true" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
 
-            {safeTeams.map((team) => {
-              const isSelected = selectedTeamId === team.id;
-              const count = teamCounts[team.id] || 0;
-              return (
-                <div
-                  key={team.id}
-                  className={`team-bar-item-wrap ${isSelected ? "active" : ""}`}
-                >
-                  <button
-                    type="button"
-                    className={`team-bar-item ${isSelected ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedTeamId(team.id);
-                      setShowTeamSheet(false);
-                    }}
-                    title={`Lọc Team ${team.name}`}
-                  >
-                    <span className="team-list-swatch" style={{ backgroundColor: team.dotColor }} aria-hidden="true" />
-                    <span className="team-item-name">{team.name}</span>
-                    <span className="team-count">{count}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="team-icon-action"
-                    disabled={!isAdmin}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingTeamId((prev) => (prev === team.id ? null : team.id));
-                      setShowAddTeam(false);
-                    }}
-                    aria-label={`Đổi màu Team ${team.name}`}
-                    title="Đổi màu"
-                  >
-                    <i className="pi pi-palette" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className="team-icon-action danger"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteTeam(team.id);
-                    }}
-                    disabled={!isAdmin || team.id === "fill-grey"}
-                    aria-label={team.id === "fill-grey" ? "Team Trống không thể xoá" : `Xoá Team ${team.name}`}
-                    title={team.id === "fill-grey" ? "Team Trống không thể xoá" : "Xoá Team"}
-                  >
-                    <i className="pi pi-trash" aria-hidden="true" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {editingTeam && (
-              <div className="team-inline-form">
-                <div className="form-title">
-                  <span>Đổi màu</span>
-                  <InlineEdit
-                    value={editingTeam?.name || ""}
-                    onChange={(val) => renameTeam(editingTeamId, val)}
-                    className="font-extrabold"
-                    readOnly={!isAdmin}
+            {editingTeam && (
+                <div className="team-inline-form">
+                  <div className="form-title">
+                    <span>Đổi màu</span>
+                    <InlineEdit
+                      value={editingTeam?.name || ""}
+                      onChange={(val) => renameTeam(editingTeamId, val)}
+                      className="font-extrabold"
+                      readOnly={!isAdmin}
+                    />
+                  </div>
+                  <div className="color-palette-grouped">
+                    {COLOR_PALETTE_GROUPS.map((group) => (
+                      <div key={group.label} className="color-palette-row">
+                        <span className="color-palette-row-label">{group.label}</span>
+                        <div className="color-palette-row-swatches">
+                          {group.shades.map((hex) => (
+                            <button
+                              key={hex}
+                              type="button"
+                              className={`color-swatch ${editingTeam?.dotColor === hex ? "selected" : ""}`}
+                              style={{ backgroundColor: hex }}
+                              disabled={!isAdmin}
+                              onClick={() => updateTeamColor(editingTeamId, hex)}
+                              aria-label={`Chọn màu ${hex}`}
+                              title={hex}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    label="Đóng"
+                    size="small"
+                    text
+                    severity="secondary"
+                    className="compact-button"
+                    onClick={() => setEditingTeamId(null)}
                   />
+                </div>
+            )}
+
+            {showAddTeam && (
+              <div className="team-inline-form">
+                <div className="form-title">Thêm Team mới</div>
+                <div className="new-team-row">
+                  <label className="sr-only" htmlFor="new-team-name">Tên Team mới</label>
+                  <InputText
+                    id="new-team-name"
+                    placeholder="Tên Team mới..."
+                    value={newTeamName}
+                    onChange={(e) => setNewTeamName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addTeam(newTeamName, newTeamColor)}
+                    className="new-team-input"
+                    disabled={!isAdmin}
+                    autoFocus
+                    aria-label="Tên Team mới"
+                  />
+                  <span className="new-team-preview" style={{ backgroundColor: newTeamColor }} aria-hidden="true" />
                 </div>
                 <div className="color-palette-grouped">
                   {COLOR_PALETTE_GROUPS.map((group) => (
@@ -2029,10 +2011,10 @@ export default function App() {
                           <button
                             key={hex}
                             type="button"
-                            className={`color-swatch ${editingTeam?.dotColor === hex ? "selected" : ""}`}
+                            className={`color-swatch ${newTeamColor === hex ? "selected" : ""}`}
                             style={{ backgroundColor: hex }}
                             disabled={!isAdmin}
-                            onClick={() => updateTeamColor(editingTeamId, hex)}
+                            onClick={() => setNewTeamColor(hex)}
                             aria-label={`Chọn màu ${hex}`}
                             title={hex}
                           />
@@ -2041,494 +2023,659 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  label="Đóng"
-                  size="small"
-                  text
-                  severity="secondary"
-                  className="compact-button"
-                  onClick={() => setEditingTeamId(null)}
-                />
+                <div className="form-actions">
+                  <Button
+                    label="Thêm Team"
+                    icon="pi pi-check"
+                    size="small"
+                    severity="success"
+                    className="compact-button"
+                    onClick={() => addTeam(newTeamName, newTeamColor)}
+                  />
+                  <Button
+                    label="Hủy"
+                    size="small"
+                    text
+                    severity="secondary"
+                    className="compact-button"
+                    onClick={() => {
+                      setShowAddTeam(false);
+                      setNewTeamName("");
+                    }}
+                  />
+                </div>
               </div>
-          )}
-
-          {showAddTeam && (
-            <div className="team-inline-form">
-              <div className="form-title">Thêm Team mới</div>
-              <div className="new-team-row">
-                <label className="sr-only" htmlFor="new-team-name">Tên Team mới</label>
-                <InputText
-                  id="new-team-name"
-                  placeholder="Tên Team mới..."
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addTeam(newTeamName, newTeamColor)}
-                  className="new-team-input"
-                  disabled={!isAdmin}
-                  autoFocus
-                  aria-label="Tên Team mới"
-                />
-                <span className="new-team-preview" style={{ backgroundColor: newTeamColor }} aria-hidden="true" />
-              </div>
-              <div className="color-palette-grouped">
-                {COLOR_PALETTE_GROUPS.map((group) => (
-                  <div key={group.label} className="color-palette-row">
-                    <span className="color-palette-row-label">{group.label}</span>
-                    <div className="color-palette-row-swatches">
-                      {group.shades.map((hex) => (
-                        <button
-                          key={hex}
-                          type="button"
-                          className={`color-swatch ${newTeamColor === hex ? "selected" : ""}`}
-                          style={{ backgroundColor: hex }}
-                          disabled={!isAdmin}
-                          onClick={() => setNewTeamColor(hex)}
-                          aria-label={`Chọn màu ${hex}`}
-                          title={hex}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="form-actions">
-                <Button
-                  label="Thêm Team"
-                  icon="pi pi-check"
-                  size="small"
-                  severity="success"
-                  className="compact-button"
-                  onClick={() => addTeam(newTeamName, newTeamColor)}
-                />
-                <Button
-                  label="Hủy"
-                  size="small"
-                  text
-                  severity="secondary"
-                  className="compact-button"
-                  onClick={() => {
-                    setShowAddTeam(false);
-                    setNewTeamName("");
-                  }}
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </aside>
 
-        <main className="workspace-main">
-          <div className="control-bar">
-            <section className="filter-panel" aria-labelledby="filter-panel-heading">
-              <header className="filter-panel-head">
-                <div>
-                  <span className="section-kicker">Bộ lọc dữ liệu</span>
-                  <h2 id="filter-panel-heading">Tìm kiếm & phạm vi</h2>
-                </div>
-                {selectedTeam && (
-                  <button type="button" className="active-filter" onClick={() => setSelectedTeamId(null)} aria-label={`Bỏ lọc Team ${selectedTeam.name}`}>
-                    <span className="team-tag-dot" style={{ backgroundColor: selectedTeam.dotColor }} aria-hidden="true" />
-                    <span>{selectedTeam.name}</span>
-                    <i className="pi pi-times" aria-hidden="true" />
+        <main className="admin-main">
+          <div className="page-title">
+            <span className="page-title-icon" aria-hidden="true"><HeroIcon name="chart" size={26} /></span>
+            <div className="page-title-copy">
+              <h1>Kiểm kê tài sản</h1>
+              <p>
+                Sàn Lầu 2 & Lầu 3 · ShopeeFood · {safeTeams.length} team ·{" "}
+                {syncStatus === "synced" ? "Cloud đã đồng bộ" : "Có thay đổi chưa đồng bộ"}
+                {lastSyncedAt ? ` (lần cuối ${new Date(lastSyncedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })})` : ""}
+              </p>
+            </div>
+            <div className="page-title-actions">
+              <span className="date-chip">
+                <i className="pi pi-calendar" aria-hidden="true" />
+                {new Date().toLocaleDateString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })}
+              </span>
+              <nav className="seg" role="tablist" aria-label="Phạm vi số liệu">
+                {["Tất cả", ...floorBreakdown.map((item) => item.name)].map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    role="tab"
+                    className={`seg-btn ${selectedFloor === name ? "active" : ""}`}
+                    aria-selected={selectedFloor === name}
+                    onClick={() => setSelectedFloor(name)}
+                  >
+                    {name.replace("Sàn ", "")}
                   </button>
-                )}
+                ))}
+              </nav>
+            </div>
+          </div>
+
+          {connectionStatus === "error" && syncError && (
+            <div className="sync-alert" role="alert">
+              <i className="pi pi-exclamation-triangle" aria-hidden="true" />
+              <div>
+                <strong>Không kết nối được Cloud</strong>
+                <span>{syncError} Dữ liệu vẫn được lưu tạm trên máy này{isAdmin ? " và sẽ tự đồng bộ khi kết nối lại" : ""}.</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => (isAdmin && syncStatus !== "synced" ? syncOnline() : loadOnline())}
+              >
+                <i className="pi pi-refresh" aria-hidden="true" /> Thử lại
+              </button>
+            </div>
+          )}
+
+          <section className="dash-grid" id="overview" aria-labelledby="overview-heading">
+            <h2 id="overview-heading" className="sr-only">Tổng quan · {scopeLabel}</h2>
+
+            <article className="card card-progress">
+              <header className="card-head">
+                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-check-square" /></span>
+                <h3>Tiến độ kiểm kê</h3>
+                <span className="card-head-note">{scopeLabel}</span>
               </header>
-              <div className="control-primary">
-                <div className="search-field">
-                  <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
-                  <i className="pi pi-search" aria-hidden="true" />
-                  <InputText
-                    id="asset-search"
-                    placeholder="Tìm tên Agent hoặc STT..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    aria-label="Tìm tên Agent hoặc STT"
-                  />
-                  {search && (
-                    <button
-                      type="button"
-                      className="search-clear"
-                      onClick={() => setSearch("")}
-                      aria-label="Xoá tìm kiếm"
-                      title="Xoá tìm kiếm"
-                    >
+              <div className="progress-grid">
+                {[
+                  { label: "Cabin đủ bộ", num: scope.completeSeats, den: scope.totalSeats, unit: "cabin", tone: "red" },
+                  { label: "Cabin đã kiểm", num: scope.checkedSeats, den: scope.totalSeats, unit: "cabin", tone: "green" },
+                  { label: "Lead có Laptop", num: scope.leadsWithLaptop, den: scope.leadCabins, unit: "Lead", tone: "blue" },
+                  { label: "Cabin Agent có người", num: scope.agentCabins, den: scope.cabins, unit: "cabin", tone: "orange" },
+                ].map((item) => {
+                  const value = pct(item.num, item.den);
+                  return (
+                    <div className={`progress-item tone-${item.tone}`} key={item.label}>
+                      <div className="progress-top">
+                        <strong>{value}%</strong>
+                        <span>{item.label}</span>
+                      </div>
+                      <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value} aria-label={item.label}>
+                        <span style={{ width: `${value}%` }} />
+                      </div>
+                      <small>{item.num} / {item.den} {item.unit}</small>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="progress-foot">
+                <i className="pi pi-info-circle" aria-hidden="true" />
+                Còn <b>{Math.max(scope.totalSeats - scope.completeSeats, 0)}</b> cabin chưa đủ bộ thiết bị
+              </p>
+            </article>
+
+            <div className="kpi-tiles">
+              {[
+                { label: "Tổng thiết bị", value: scope.fixed + scope.laptop, sub: `${scope.totalSeats} cabin`, icon: "pi pi-box", tone: "cyan" },
+                { label: "Thiết bị bàn làm việc", value: scope.fixed, sub: "Thùng · Màn · Chuột · Phím · Tai", icon: "pi pi-desktop", tone: "night" },
+                { label: "Laptop", value: scope.laptop, sub: `${scope.devices.laptop_standard} chuẩn · ${scope.devices.laptop_bag} kèm túi`, icon: "pi pi-briefcase", tone: "green" },
+                { label: "Cabin Agent", value: scope.cabins, sub: `${scope.fullCabins} Full · ${scope.emptyCabins} Trống`, icon: "pi pi-users", tone: "red" },
+              ].map((tile) => (
+                <article className={`tile tile-${tile.tone}`} key={tile.label}>
+                  <span className="tile-icon" aria-hidden="true"><i className={tile.icon} /></span>
+                  <strong className="tile-value">{tile.value}</strong>
+                  <span className="tile-label">{tile.label}</span>
+                  <small className="tile-sub">{tile.sub}</small>
+                </article>
+              ))}
+            </div>
+
+            {floorBreakdown.map((item) => {
+              const bars = [
+                ["Thùng", item.devices.thung],
+                ["M20", item.devices.man20],
+                ["M24", item.devices.man24],
+                ["Chuột", item.devices.chuot],
+                ["Phím", item.devices.phim],
+                ["Tai", item.devices.tai],
+                ["LT", item.devices.laptop_standard],
+                ["LT+T", item.devices.laptop_bag],
+              ];
+              const total = bars.reduce((sum, [, v]) => sum + v, 0);
+              const max = Math.max(1, ...bars.map(([, v]) => v));
+              const done = pct(item.completeSeats, item.totalSeats);
+              return (
+                <button
+                  type="button"
+                  key={item.name}
+                  className={`card card-floor ${selectedFloor === item.name ? "is-selected" : ""}`}
+                  onClick={() => setSelectedFloor(selectedFloor === item.name ? "Tất cả" : item.name)}
+                  aria-pressed={selectedFloor === item.name}
+                  title={`Xem số liệu ${item.name}`}
+                >
+                  <span className="floor-icon" aria-hidden="true"><HeroIcon name="building" size={20} /></span>
+                  <strong className="floor-value">{total}</strong>
+                  <span className="floor-name">Thiết bị · {item.name}</span>
+                  <span className={`floor-delta ${done >= 100 ? "is-good" : "is-warn"}`}>
+                    <i className={done >= 100 ? "pi pi-check" : "pi pi-chart-line"} aria-hidden="true" /> {done}% cabin đủ bộ
+                  </span>
+                  <span className="mini-bars" aria-hidden="true">
+                    {bars.map(([label, v]) => (
+                      <span className="mini-bar" key={label} title={`${label}: ${v}`}>
+                        <span className="mini-bar-track">
+                          <span className="mini-bar-fill" style={{ height: `${v > 0 ? Math.max((v / max) * 100, 6) : 2}%` }} />
+                        </span>
+                        <span className="mini-bar-label">{label}</span>
+                      </span>
+                    ))}
+                  </span>
+                </button>
+              );
+            })}
+
+            <article className="card card-teams">
+              <header className="card-head">
+                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-users" /></span>
+                <h3>Cabin Agent theo Team</h3>
+                <span className="card-head-note">{scopeLabel}</span>
+              </header>
+              {scopeTeams.length === 0 ? (
+                <p className="card-empty">Chưa có cabin Agent.</p>
+              ) : (
+                <ul className="team-bars">
+                  {scopeTeams.map(({ team, count }) => (
+                    <li key={team.id}>
+                      <span className="team-bars-name"><span className="team-tag-dot" style={{ backgroundColor: team.dotColor }} aria-hidden="true" />{team.name}</span>
+                      <span className="team-bars-track"><span style={{ width: `${(count / maxTeamCount) * 100}%`, backgroundColor: team.dotColor }} /></span>
+                      <b>{count}</b>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+
+            <article className="card card-table" id="floor-table">
+              <header className="card-head">
+                <span className="card-head-icon" aria-hidden="true"><i className="pi pi-table" /></span>
+                <h3>Phân rã theo từng lầu</h3>
+                <span className="card-head-note">Đếm trên cả cabin Lead và Agent</span>
+              </header>
+              <div className="dash-table-wrap">
+                <table className="dash-table">
+                  <caption className="sr-only">Số lượng thiết bị và cabin theo từng lầu</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Hạng mục</th>
+                      {floorBreakdown.map((item) => (
+                        <th scope="col" key={item.name} className={`num ${selectedFloor === item.name ? "is-selected" : ""}`}>
+                          {item.name.replace("Sàn ", "")}
+                        </th>
+                      ))}
+                      <th scope="col" className={`num is-total ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>Tổng</th>
+                    </tr>
+                  </thead>
+                  {DASH_ROW_GROUPS.map((group) => (
+                    <tbody key={group.title}>
+                      <tr className="group-row">
+                        <th scope="rowgroup" colSpan={floorBreakdown.length + 2}>{group.title}</th>
+                      </tr>
+                      {group.rows.map((row) => {
+                        const total = floorBreakdown.reduce((sum, item) => sum + row.get(item), 0);
+                        return (
+                          <tr key={row.label}>
+                            <th scope="row">{row.label}</th>
+                            {floorBreakdown.map((item) => {
+                              const val = row.get(item);
+                              return (
+                                <td key={item.name} className={`num ${val === 0 ? "is-zero" : ""} ${selectedFloor === item.name ? "is-selected" : ""}`}>{val}</td>
+                              );
+                            })}
+                            <td className={`num is-total ${total === 0 ? "is-zero" : ""} ${selectedFloor === "Tất cả" ? "is-selected" : ""}`}>{total}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  ))}
+                </table>
+              </div>
+            </article>
+          </section>
+
+          <div className="workspace-main" id="cabin-map">
+            <div className="control-bar">
+              <section className="filter-panel" aria-labelledby="filter-panel-heading">
+                <header className="filter-panel-head">
+                  <div>
+                    <span className="section-kicker">Bộ lọc dữ liệu</span>
+                    <h2 id="filter-panel-heading">Tìm kiếm & phạm vi</h2>
+                  </div>
+                  {selectedTeam && (
+                    <button type="button" className="active-filter" onClick={() => setSelectedTeamId(null)} aria-label={`Bỏ lọc Team ${selectedTeam.name}`}>
+                      <span className="team-tag-dot" style={{ backgroundColor: selectedTeam.dotColor }} aria-hidden="true" />
+                      <span>{selectedTeam.name}</span>
                       <i className="pi pi-times" aria-hidden="true" />
                     </button>
                   )}
-                </div>
+                </header>
+                <div className="control-primary">
+                  <div className="search-field">
+                    <label className="sr-only" htmlFor="asset-search">Tìm tên Agent hoặc STT</label>
+                    <i className="pi pi-search" aria-hidden="true" />
+                    <InputText
+                      id="asset-search"
+                      placeholder="Tìm tên Agent hoặc STT..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      aria-label="Tìm tên Agent hoặc STT"
+                    />
+                    {search && (
+                      <button
+                        type="button"
+                        className="search-clear"
+                        onClick={() => setSearch("")}
+                        aria-label="Xoá tìm kiếm"
+                        title="Xoá tìm kiếm"
+                      >
+                        <i className="pi pi-times" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
 
-                <div className="floor-filter" role="tablist" aria-label="Lọc sàn">
-                  {[
-                    { label: "Tất cả", icon: "pi pi-th-large" },
-                    { label: "Sàn Lầu 2", icon: "pi pi-building" },
-                    { label: "Sàn Lầu 3", icon: "pi pi-building" },
-                  ].map((option) => (
-                    <button
-                      key={option.label}
-                      type="button"
-                      className={`floor-filter-btn ${selectedFloor === option.label ? "active" : ""}`}
-                      onClick={() => setSelectedFloor(option.label)}
-                      role="tab"
-                      aria-selected={selectedFloor === option.label}
-                    >
-                      <i className={option.icon} aria-hidden="true" />
-                      <span>{option.label.replace("Sàn ", "")}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <aside className="control-actions" aria-label="Hành động hệ thống">
-              <div className="action-panel-label">
-                <span className="section-kicker">Hệ thống</span>
-                <strong>Thao tác dữ liệu</strong>
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={importFromJson}
-                accept=".json"
-                hidden
-              />
-              <Button
-                disabled={!isAdmin}
-                label="Reset kiểm kê"
-                icon="pi pi-refresh"
-                severity="danger"
-                outlined
-                className="toolbar-button reset-button"
-                onClick={resetAllInventory}
-                title="Xoá toàn bộ checkbox và số lượng thiết bị, giữ nguyên cabin và bố cục"
-              />
-              <Button
-                label="Xuất JSON"
-                icon="pi pi-download"
-                severity="secondary"
-                outlined
-                className="toolbar-button"
-                onClick={exportToJson}
-                title="Xuất dữ liệu dự phòng ra file JSON"
-              />
-              <Button
-                disabled={!isAdmin}
-                label="Nhập JSON"
-                icon="pi pi-upload"
-                severity="secondary"
-                outlined
-                className="toolbar-button"
-                onClick={() => fileInputRef.current?.click()}
-                title="Nhập dữ liệu từ file JSON"
-              />
-              <Button
-                disabled={!isAdmin || isSyncing}
-                label={isSyncing ? "Đang lưu..." : "Lưu Cloud"}
-                icon="pi pi-cloud-upload"
-                severity="success"
-                className="toolbar-button primary"
-                onClick={syncOnline}
-              />
-            </aside>
-          </div>
-
-          {safeFloors.length === 0 && (
-            <div className="empty-state">
-              <i className="pi pi-inbox" aria-hidden="true" />
-              <strong>Chưa có dữ liệu sàn</strong>
-              <span>Hãy nhập JSON hoặc tải dữ liệu từ Cloud để bắt đầu.</span>
-            </div>
-          )}
-
-          {safeFloors.map((floor, fIdx) => {
-            if (selectedFloor !== "Tất cả" && floor?.floorName !== selectedFloor) return null;
-
-            return (
-              <section key={`${floor?.floorName || "floor"}-${fIdx}`} className="floor-section">
-                <div className="floor-heading">
-                  <div>
-                    <span className="section-kicker">Sàn</span>
-                    <h2>{floor?.floorName || "Sàn chưa đặt tên"}</h2>
+                  <div className="floor-filter" role="tablist" aria-label="Lọc sàn">
+                    {[
+                      { label: "Tất cả", icon: "pi pi-th-large" },
+                      { label: "Sàn Lầu 2", icon: "pi pi-building" },
+                      { label: "Sàn Lầu 3", icon: "pi pi-building" },
+                    ].map((option) => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        className={`floor-filter-btn ${selectedFloor === option.label ? "active" : ""}`}
+                        onClick={() => setSelectedFloor(option.label)}
+                        role="tab"
+                        aria-selected={selectedFloor === option.label}
+                      >
+                        <i className={option.icon} aria-hidden="true" />
+                        <span>{option.label.replace("Sàn ", "")}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
+              </section>
 
-                {(Array.isArray(floor?.lanes) ? floor.lanes : []).map((lane, lIdx) => {
-                  const leads = Array.isArray(lane?.leads) ? lane.leads : [];
-                  const agents = Array.isArray(lane?.agents) ? lane.agents : [];
+              <aside className="control-actions" aria-label="Hành động hệ thống">
+                <div className="action-panel-label">
+                  <span className="section-kicker">Hệ thống</span>
+                  <strong>Thao tác dữ liệu</strong>
+                </div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={importFromJson}
+                  accept=".json"
+                  hidden
+                />
+                <Button
+                  disabled={!isAdmin}
+                  label="Reset kiểm kê"
+                  icon="pi pi-refresh"
+                  severity="danger"
+                  outlined
+                  className="toolbar-button reset-button"
+                  onClick={resetAllInventory}
+                  title="Xoá toàn bộ checkbox và số lượng thiết bị, giữ nguyên cabin và bố cục"
+                />
+                <Button
+                  label="Xuất JSON"
+                  icon="pi pi-download"
+                  severity="secondary"
+                  outlined
+                  className="toolbar-button"
+                  onClick={exportToJson}
+                  title="Xuất dữ liệu dự phòng ra file JSON"
+                />
+                <Button
+                  disabled={!isAdmin}
+                  label="Nhập JSON"
+                  icon="pi pi-upload"
+                  severity="secondary"
+                  outlined
+                  className="toolbar-button"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Nhập dữ liệu từ file JSON"
+                />
+                <Button
+                  disabled={!isAdmin || isSyncing}
+                  label={isSyncing ? "Đang lưu..." : "Lưu Cloud"}
+                  icon="pi pi-cloud-upload"
+                  severity="success"
+                  className="toolbar-button primary"
+                  onClick={syncOnline}
+                />
+              </aside>
+            </div>
 
-                  const renderSeatCard = (seat, type, sIdx) => {
-                    const isLead = type === "lead";
-                    const colorId = appState?.colors?.[seat?.id] || (isLead ? "fill-lead" : autoColor(seat?.name));
-                    const team = getTeam(safeTeams, colorId);
-                    const inv = appState?.inventory?.[seat?.id] || {};
-                    const progress = getSeatProgress(inv, isLead);
-                    const statusClass = progress.complete ? "complete" : progress.checked > 0 ? "partial" : "empty";
-                    const collection = isLead ? leads : agents;
-                    const originalIndex = collection.findIndex((item) => item?.id === seat?.id);
-                    const currentIndex = originalIndex >= 0 ? originalIndex : sIdx;
-                    const isDragging = draggedItem?.id === seat?.id;
-                    const dropSide = dragOverTarget?.targetId && dragOverTarget.targetId === seat?.id && !isDragging
-                      ? dragOverTarget.side
-                      : null;
-                    const deviceItems = isLead ? LEAD_DEVICE_ITEMS : AGENT_DEVICE_ITEMS;
-                    const seatLabel = seat?.name || (isLead ? "Lead" : "Agent");
+            {safeFloors.length === 0 && (
+              <div className="empty-state">
+                <i className="pi pi-inbox" aria-hidden="true" />
+                <strong>Chưa có dữ liệu sàn</strong>
+                <span>Hãy nhập JSON hoặc tải dữ liệu từ Cloud để bắt đầu.</span>
+              </div>
+            )}
 
-                    return (
-                      <article
-                        key={seat?.id || `${type}-${currentIndex}`}
-                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass}${isDragging ? " is-dragging" : ""}${dropSide ? ` drop-${dropSide}` : ""}`}
-                        style={teamCardStyle(team?.dotColor)}
-                        data-seat-id={seat?.id || ""}
-                        data-floor-index={fIdx}
-                        data-lane-index={lIdx}
-                        data-seat-type={type}
-                        data-seat-index={currentIndex}
-                        onPointerDown={(e) => handleSeatPointerDown(e, { fIdx, lIdx, type, sIdx: currentIndex, id: seat?.id })}
-                        aria-label={`${isLead ? "Lead" : "Agent"} ${seat?.name || "chưa đặt tên"}${!isLead ? `, STT ${seat?.stt ?? "—"}` : ""}`}
-                      >
-                        <header className="seat-head">
-                          {isAdmin && (
-                            <span className="drag-handle" title="Kéo để di chuyển cabin" aria-label="Kéo để di chuyển cabin" role="img">
-                              <GripIcon />
-                            </span>
-                          )}
-                          <span className={`seat-pos ${isLead ? "is-lead" : ""}`}>
-                            {isLead ? (
-                              <><i className="pi pi-star-fill" aria-hidden="true" /> Lead · {lane?.laneLetter || "—"}</>
-                            ) : (
-                              <>#{seat?.stt ?? "—"}</>
-                            )}
-                          </span>
-                          {isAdmin && (
-                            <div className="seat-actions">
-                              <button
-                                type="button"
-                                className="seat-action seat-action-full"
-                                title="Đánh dấu đủ bộ thiết bị"
-                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seatLabel}`}
-                                onClick={(e) => { e.stopPropagation(); markFull(seat?.id, isLead); }}
-                              >
-                                <i className="pi pi-check" aria-hidden="true" />
-                              </button>
-                              <button
-                                type="button"
-                                className="seat-action"
-                                title="Reset kiểm kê thiết bị"
-                                aria-label={`Reset kiểm kê thiết bị cho ${seatLabel}`}
-                                onClick={(e) => { e.stopPropagation(); markReset(seat?.id); }}
-                              >
-                                <i className="pi pi-refresh" aria-hidden="true" />
-                              </button>
-                              <button
-                                type="button"
-                                className="seat-action seat-action-danger"
-                                title={`Xoá ${isLead ? "Lead" : "Agent"}`}
-                                aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
-                                onClick={(e) => { e.stopPropagation(); removeSeat(fIdx, lIdx, type, currentIndex); }}
-                              >
-                                <i className="pi pi-trash" aria-hidden="true" />
-                              </button>
-                            </div>
-                          )}
-                        </header>
+            {safeFloors.map((floor, fIdx) => {
+              if (selectedFloor !== "Tất cả" && floor?.floorName !== selectedFloor) return null;
 
-                        <InlineEdit
-                          value={seat?.name || ""}
-                          placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
-                          onChange={(val) => updateProp(fIdx, lIdx, type, currentIndex, "name", val.trim())}
-                          className="seat-name"
-                          isName
-                          readOnly={!isAdmin}
-                        />
+              return (
+                <section key={`${floor?.floorName || "floor"}-${fIdx}`} className="floor-section">
+                  <div className="floor-heading">
+                    <div>
+                      <span className="section-kicker">Sàn</span>
+                      <h2>{floor?.floorName || "Sàn chưa đặt tên"}</h2>
+                    </div>
+                  </div>
 
-                        <TeamTag
-                          team={team}
-                          readOnly={!isAdmin}
-                          onOpen={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            setOpenMenu({ type: "seat", seatId: seat.id, x: rect.left, y: rect.bottom + 4 });
-                          }}
-                        />
+                  {(Array.isArray(floor?.lanes) ? floor.lanes : []).map((lane, lIdx) => {
+                    const leads = Array.isArray(lane?.leads) ? lane.leads : [];
+                    const agents = Array.isArray(lane?.agents) ? lane.agents : [];
 
-                        <ul className="device-list" aria-label={`Thiết bị của ${seatLabel}`}>
-                          {deviceItems.map((item) => {
-                            const isLaptopPackage = Boolean(item.packageValue);
-                            const checked = isLaptopPackage
-                              ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
-                              : Boolean(inv?.[item.key]) || Number(inv?.[`${item.key}_qty`]) > 0;
-                            const qty = isLaptopPackage
-                              ? (checked ? 1 : 0)
-                              : Math.max(0, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 0);
+                    const renderSeatCard = (seat, type, sIdx) => {
+                      const isLead = type === "lead";
+                      const colorId = appState?.colors?.[seat?.id] || (isLead ? "fill-lead" : autoColor(seat?.name));
+                      const team = getTeam(safeTeams, colorId);
+                      const inv = appState?.inventory?.[seat?.id] || {};
+                      const progress = getSeatProgress(inv, isLead);
+                      const statusClass = progress.complete ? "complete" : progress.checked > 0 ? "partial" : "empty";
+                      const collection = isLead ? leads : agents;
+                      const originalIndex = collection.findIndex((item) => item?.id === seat?.id);
+                      const currentIndex = originalIndex >= 0 ? originalIndex : sIdx;
+                      const isDragging = draggedItem?.id === seat?.id;
+                      const dropSide = dragOverTarget?.targetId && dragOverTarget.targetId === seat?.id && !isDragging
+                        ? dragOverTarget.side
+                        : null;
+                      const deviceItems = isLead ? LEAD_DEVICE_ITEMS : AGENT_DEVICE_ITEMS;
+                      const seatLabel = seat?.name || (isLead ? "Lead" : "Agent");
 
-                            return (
-                              <li key={item.key} className={`device-row ${checked ? "is-present" : "is-missing"}`}>
-                                <button
-                                  type="button"
-                                  className="device-toggle"
-                                  disabled={!isAdmin}
-                                  title={`${item.label}${checked ? ` · SL ${qty}` : " · Chưa có"}${isAdmin ? " · Chạm để bật/tắt" : ""}`}
-                                  aria-pressed={checked}
-                                  aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa có`}
-                                  onClick={(e) => { e.stopPropagation(); quickToggleEquipment(seat?.id, item.key, e, item.packageValue || null); }}
-                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.packageValue || null)}
-                                >
-                                  <span className="device-check" aria-hidden="true">
-                                    {checked ? <i className="pi pi-check" /> : null}
-                                  </span>
-                                  <i className={`device-icon ${item.icon}`} aria-hidden="true" />
-                                  <span className="device-name">{item.short || item.label}</span>
-                                </button>
-
-                                {isAdmin && !isLaptopPackage ? (
-                                  <div className="device-stepper" role="group" aria-label={`Số lượng ${item.label}`}>
-                                    <button type="button" aria-label={`Giảm ${item.label}`} disabled={qty <= 0} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, -1); }}>−</button>
-                                    <output aria-live="polite">{qty}</output>
-                                    <button type="button" aria-label={`Tăng ${item.label}`} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, 1); }}>+</button>
-                                  </div>
-                                ) : (
-                                  <span className="device-qty">×{qty}</span>
-                                )}
-                              </li>
-                            );
-                          })}
-                        </ul>
-
-                        <footer className="seat-foot">
-                          <span className={`status-badge ${statusClass}`}>
-                            <i className={progress.complete ? "pi pi-check-circle" : progress.checked > 0 ? "pi pi-exclamation-circle" : "pi pi-clock"} aria-hidden="true" />
-                            {progress.complete ? "Đủ bộ" : progress.checked > 0 ? "Thiếu" : "Chưa kiểm"}
-                          </span>
-                          <span className="seat-progress" aria-hidden="true">
-                            <span style={{ width: `${progress.percent}%` }} />
-                          </span>
-                          <span className="progress-count">{progress.checked}/{progress.total}</span>
-                        </footer>
-                      </article>
-                    );
-                  };
-
-                  const query = search.trim().toLowerCase();
-                  const visibleLeads = leads.filter((seat) => {
-                    const q = (seat?.name || "").toLowerCase().includes(query);
-                    const colorId = appState?.colors?.[seat?.id] || "fill-lead";
-                    return q && (!selectedTeamId || colorId === selectedTeamId);
-                  });
-
-                  const visibleAgents = agents.filter((seat) => {
-                    const q = `${seat?.name || ""} ${seat?.stt ?? ""}`.toLowerCase().includes(query);
-                    const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
-                    return q && (!selectedTeamId || colorId === selectedTeamId);
-                  });
-
-                  const zoneDropActive = (zoneType) =>
-                    Boolean(draggedItem) &&
-                    dragOverTarget?.fIdx === fIdx &&
-                    dragOverTarget?.lIdx === lIdx &&
-                    dragOverTarget?.type === zoneType;
-
-                  const renderZone = (zoneType, visible, all) => {
-                    const isLeadZone = zoneType === "lead";
-                    return (
-                      <section className={`role-zone ${isLeadZone ? "lead-zone" : "agent-zone"}`}>
-                        <div className="zone-header">
-                          <h4>
-                            <i className={isLeadZone ? "pi pi-star" : "pi pi-users"} aria-hidden="true" />
-                            {isLeadZone ? "Lead" : "Agents"}
-                            <span className="zone-count">{visible.length}/{all.length}</span>
-                          </h4>
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              className="zone-add"
-                              onClick={() => addSeat(fIdx, lIdx, zoneType)}
-                              aria-label={`Thêm ${isLeadZone ? "Lead" : "Agent"} vào dãy ${lane?.laneLetter || ""}`}
-                            >
-                              <i className="pi pi-plus" aria-hidden="true" />
-                              <span>{isLeadZone ? "Lead" : "Agent"}</span>
-                            </button>
-                          )}
-                        </div>
-
-                        <div
-                          className={`seat-grid ${isLeadZone ? "lead-grid" : "agent-grid"} drop-zone${zoneDropActive(zoneType) ? " is-drop-active" : ""}${zoneDropActive(zoneType) && dragOverTarget?.side === "end" ? " is-drop-end" : ""}`}
+                      return (
+                        <article
+                          key={seat?.id || `${type}-${currentIndex}`}
+                          className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass}${isDragging ? " is-dragging" : ""}${dropSide ? ` drop-${dropSide}` : ""}`}
+                          style={teamCardStyle(team?.dotColor)}
+                          data-seat-id={seat?.id || ""}
                           data-floor-index={fIdx}
                           data-lane-index={lIdx}
-                          data-seat-type={zoneType}
-                          data-count={all.length}
+                          data-seat-type={type}
+                          data-seat-index={currentIndex}
+                          onPointerDown={(e) => handleSeatPointerDown(e, { fIdx, lIdx, type, sIdx: currentIndex, id: seat?.id })}
+                          aria-label={`${isLead ? "Lead" : "Agent"} ${seat?.name || "chưa đặt tên"}${!isLead ? `, STT ${seat?.stt ?? "—"}` : ""}`}
                         >
-                          {visible.map((seat) => {
-                            const idx = all.findIndex((item) => item?.id === seat?.id);
-                            return renderSeatCard(seat, zoneType, idx);
-                          })}
-                          {!visible.length && (
-                            <div className="zone-empty">
-                              <i className={isLeadZone ? "pi pi-user" : "pi pi-users"} aria-hidden="true" />
-                              <span>{draggedItem ? "Thả cabin vào đây" : isLeadZone ? "Chưa có Lead" : "Không có cabin phù hợp"}</span>
+                          <header className="seat-head">
+                            {isAdmin && (
+                              <span className="drag-handle" title="Kéo để di chuyển cabin" aria-label="Kéo để di chuyển cabin" role="img">
+                                <GripIcon />
+                              </span>
+                            )}
+                            <span className={`seat-pos ${isLead ? "is-lead" : ""}`}>
+                              {isLead ? (
+                                <><i className="pi pi-star-fill" aria-hidden="true" /> Lead · {lane?.laneLetter || "—"}</>
+                              ) : (
+                                <>#{seat?.stt ?? "—"}</>
+                              )}
+                            </span>
+                            {isAdmin && (
+                              <div className="seat-actions">
+                                <button
+                                  type="button"
+                                  className="seat-action seat-action-full"
+                                  title="Đánh dấu đủ bộ thiết bị"
+                                  aria-label={`Đánh dấu đủ bộ thiết bị cho ${seatLabel}`}
+                                  onClick={(e) => { e.stopPropagation(); markFull(seat?.id, isLead); }}
+                                >
+                                  <i className="pi pi-check" aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="seat-action"
+                                  title="Reset kiểm kê thiết bị"
+                                  aria-label={`Reset kiểm kê thiết bị cho ${seatLabel}`}
+                                  onClick={(e) => { e.stopPropagation(); markReset(seat?.id); }}
+                                >
+                                  <i className="pi pi-refresh" aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="seat-action seat-action-danger"
+                                  title={`Xoá ${isLead ? "Lead" : "Agent"}`}
+                                  aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
+                                  onClick={(e) => { e.stopPropagation(); removeSeat(fIdx, lIdx, type, currentIndex); }}
+                                >
+                                  <i className="pi pi-trash" aria-hidden="true" />
+                                </button>
+                              </div>
+                            )}
+                          </header>
+
+                          <InlineEdit
+                            value={seat?.name || ""}
+                            placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
+                            onChange={(val) => updateProp(fIdx, lIdx, type, currentIndex, "name", val.trim())}
+                            className="seat-name"
+                            isName
+                            readOnly={!isAdmin}
+                          />
+
+                          <TeamTag
+                            team={team}
+                            readOnly={!isAdmin}
+                            onOpen={(e) => {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setOpenMenu({ type: "seat", seatId: seat.id, x: rect.left, y: rect.bottom + 4 });
+                            }}
+                          />
+
+                          <ul className="device-list" aria-label={`Thiết bị của ${seatLabel}`}>
+                            {deviceItems.map((item) => {
+                              const isLaptopPackage = Boolean(item.packageValue);
+                              const checked = isLaptopPackage
+                                ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
+                                : Boolean(inv?.[item.key]) || Number(inv?.[`${item.key}_qty`]) > 0;
+                              const qty = isLaptopPackage
+                                ? (checked ? 1 : 0)
+                                : Math.max(0, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 0);
+
+                              return (
+                                <li key={item.key} className={`device-row ${checked ? "is-present" : "is-missing"}`}>
+                                  <button
+                                    type="button"
+                                    className="device-toggle"
+                                    disabled={!isAdmin}
+                                    title={`${item.label}${checked ? ` · SL ${qty}` : " · Chưa có"}${isAdmin ? " · Chạm để bật/tắt" : ""}`}
+                                    aria-pressed={checked}
+                                    aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa có`}
+                                    onClick={(e) => { e.stopPropagation(); quickToggleEquipment(seat?.id, item.key, e, item.packageValue || null); }}
+                                    onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.packageValue || null)}
+                                  >
+                                    <span className="device-check" aria-hidden="true">
+                                      {checked ? <i className="pi pi-check" /> : null}
+                                    </span>
+                                    <i className={`device-icon ${item.icon}`} aria-hidden="true" />
+                                    <span className="device-name">{item.short || item.label}</span>
+                                  </button>
+
+                                  {isAdmin && !isLaptopPackage ? (
+                                    <div className="device-stepper" role="group" aria-label={`Số lượng ${item.label}`}>
+                                      <button type="button" aria-label={`Giảm ${item.label}`} disabled={qty <= 0} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, -1); }}>−</button>
+                                      <output aria-live="polite">{qty}</output>
+                                      <button type="button" aria-label={`Tăng ${item.label}`} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, 1); }}>+</button>
+                                    </div>
+                                  ) : (
+                                    <span className="device-qty">×{qty}</span>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
+
+                          <footer className="seat-foot">
+                            <span className={`status-badge ${statusClass}`}>
+                              <i className={progress.complete ? "pi pi-check-circle" : progress.checked > 0 ? "pi pi-exclamation-circle" : "pi pi-clock"} aria-hidden="true" />
+                              {progress.complete ? "Đủ bộ" : progress.checked > 0 ? "Thiếu" : "Chưa kiểm"}
+                            </span>
+                            <span className="seat-progress" aria-hidden="true">
+                              <span style={{ width: `${progress.percent}%` }} />
+                            </span>
+                            <span className="progress-count">{progress.checked}/{progress.total}</span>
+                          </footer>
+                        </article>
+                      );
+                    };
+
+                    const query = search.trim().toLowerCase();
+                    const visibleLeads = leads.filter((seat) => {
+                      const q = (seat?.name || "").toLowerCase().includes(query);
+                      const colorId = appState?.colors?.[seat?.id] || "fill-lead";
+                      return q && (!selectedTeamId || colorId === selectedTeamId);
+                    });
+
+                    const visibleAgents = agents.filter((seat) => {
+                      const q = `${seat?.name || ""} ${seat?.stt ?? ""}`.toLowerCase().includes(query);
+                      const colorId = appState?.colors?.[seat?.id] || autoColor(seat?.name);
+                      return q && (!selectedTeamId || colorId === selectedTeamId);
+                    });
+
+                    const zoneDropActive = (zoneType) =>
+                      Boolean(draggedItem) &&
+                      dragOverTarget?.fIdx === fIdx &&
+                      dragOverTarget?.lIdx === lIdx &&
+                      dragOverTarget?.type === zoneType;
+
+                    const renderZone = (zoneType, visible, all) => {
+                      const isLeadZone = zoneType === "lead";
+                      return (
+                        <section className={`role-zone ${isLeadZone ? "lead-zone" : "agent-zone"}`}>
+                          <div className="zone-header">
+                            <h4>
+                              <i className={isLeadZone ? "pi pi-star" : "pi pi-users"} aria-hidden="true" />
+                              {isLeadZone ? "Lead" : "Agents"}
+                              <span className="zone-count">{visible.length}/{all.length}</span>
+                            </h4>
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                className="zone-add"
+                                onClick={() => addSeat(fIdx, lIdx, zoneType)}
+                                aria-label={`Thêm ${isLeadZone ? "Lead" : "Agent"} vào dãy ${lane?.laneLetter || ""}`}
+                              >
+                                <i className="pi pi-plus" aria-hidden="true" />
+                                <span>{isLeadZone ? "Lead" : "Agent"}</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div
+                            className={`seat-grid ${isLeadZone ? "lead-grid" : "agent-grid"} drop-zone${zoneDropActive(zoneType) ? " is-drop-active" : ""}${zoneDropActive(zoneType) && dragOverTarget?.side === "end" ? " is-drop-end" : ""}`}
+                            data-floor-index={fIdx}
+                            data-lane-index={lIdx}
+                            data-seat-type={zoneType}
+                            data-count={all.length}
+                          >
+                            {visible.map((seat) => {
+                              const idx = all.findIndex((item) => item?.id === seat?.id);
+                              return renderSeatCard(seat, zoneType, idx);
+                            })}
+                            {!visible.length && (
+                              <div className="zone-empty">
+                                <i className={isLeadZone ? "pi pi-user" : "pi pi-users"} aria-hidden="true" />
+                                <span>{draggedItem ? "Thả cabin vào đây" : isLeadZone ? "Chưa có Lead" : "Không có cabin phù hợp"}</span>
+                              </div>
+                            )}
+                          </div>
+                        </section>
+                      );
+                    };
+
+                    return (
+                      <article key={`${floor?.floorName}-${lane?.laneLetter}-${lIdx}`} className="lane-container">
+                        <div className="lane-header">
+                          <div className="lane-title">
+                            <span className="lane-index">{lane?.laneLetter || "—"}</span>
+                            <div>
+                              <h3>Dãy {lane?.laneLetter || "—"}</h3>
+                              <span className="lane-sub">{leads.length} Lead · {agents.length} cabin</span>
+                            </div>
+                          </div>
+
+                          {isAdmin && (
+                            <div className="lane-actions">
+                              <label className="stt-field">
+                                <span>STT từ</span>
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  value={lane?.startStt ?? ""}
+                                  onChange={(e) => updateLaneProp(fIdx, lIdx, "startStt", e.target.value)}
+                                  aria-label={`STT bắt đầu dãy ${lane?.laneLetter || ""}`}
+                                  className="stt-input"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                className="lane-btn"
+                                onClick={() => updateSttGlobal(fIdx, lIdx, lane?.startStt)}
+                                title="Đánh lại STT nối tiếp theo thứ tự cabin hiện tại"
+                              >
+                                <i className="pi pi-sort-numeric-down" aria-hidden="true" />
+                                <span>Đánh lại STT</span>
+                              </button>
+                              <button
+                                type="button"
+                                className="lane-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setActiveLane({ fIdx, lIdx });
+                                  setOpenMenu({ type: "bulk", x: rect.left, y: rect.bottom + 4 });
+                                }}
+                              >
+                                <i className="pi pi-palette" aria-hidden="true" />
+                                <span>Team cả dãy</span>
+                              </button>
                             </div>
                           )}
                         </div>
-                      </section>
-                    );
-                  };
 
-                  return (
-                    <article key={`${floor?.floorName}-${lane?.laneLetter}-${lIdx}`} className="lane-container">
-                      <div className="lane-header">
-                        <div className="lane-title">
-                          <span className="lane-index">{lane?.laneLetter || "—"}</span>
-                          <div>
-                            <h3>Dãy {lane?.laneLetter || "—"}</h3>
-                            <span className="lane-sub">{leads.length} Lead · {agents.length} cabin</span>
-                          </div>
+                        <div className="lane-columns">
+                          {renderZone("lead", visibleLeads, leads)}
+                          {renderZone("agent", visibleAgents, agents)}
                         </div>
-
-                        {isAdmin && (
-                          <div className="lane-actions">
-                            <label className="stt-field">
-                              <span>STT từ</span>
-                              <input
-                                type="number"
-                                inputMode="numeric"
-                                value={lane?.startStt ?? ""}
-                                onChange={(e) => updateLaneProp(fIdx, lIdx, "startStt", e.target.value)}
-                                aria-label={`STT bắt đầu dãy ${lane?.laneLetter || ""}`}
-                                className="stt-input"
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              className="lane-btn"
-                              onClick={() => updateSttGlobal(fIdx, lIdx, lane?.startStt)}
-                              title="Đánh lại STT nối tiếp theo thứ tự cabin hiện tại"
-                            >
-                              <i className="pi pi-sort-numeric-down" aria-hidden="true" />
-                              <span>Đánh lại STT</span>
-                            </button>
-                            <button
-                              type="button"
-                              className="lane-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setActiveLane({ fIdx, lIdx });
-                                setOpenMenu({ type: "bulk", x: rect.left, y: rect.bottom + 4 });
-                              }}
-                            >
-                              <i className="pi pi-palette" aria-hidden="true" />
-                              <span>Team cả dãy</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="lane-columns">
-                        {renderZone("lead", visibleLeads, leads)}
-                        {renderZone("agent", visibleAgents, agents)}
-                      </div>
-                    </article>
-                  );
-                })}
-              </section>
-            );
-          })}
+                      </article>
+                    );
+                  })}
+                </section>
+              );
+            })}
+          </div>
         </main>
       </div>
 
