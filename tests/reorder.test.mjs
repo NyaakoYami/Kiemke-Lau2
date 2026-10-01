@@ -45,3 +45,32 @@ test("cross-array move preserves item and inserts at target index", () => {
   assert.deepEqual(ids(leads), ["B"]);
   assert.deepEqual(ids(agents), ["C", "A", "D"]);
 });
+
+test("resolveInsertIndex: drop after self in same lane is a no-op", async () => {
+  const { resolveInsertIndex } = await import("../shared/reorder.js");
+  const list = ["A", "B", "C", "D"].map(item);
+  // Insert B before C (i.e. right after itself) -> stays at index 1.
+  const to = resolveInsertIndex(true, 1, 2);
+  moveItemBetweenArrays(list, list, 1, to);
+  assert.deepEqual(ids(list), ["A", "B", "C", "D"]);
+});
+
+test("resolveInsertIndex: move forward / backward / to end", async () => {
+  const { resolveInsertIndex } = await import("../shared/reorder.js");
+  let list = ["A", "B", "C", "D"].map(item);
+  moveItemBetweenArrays(list, list, 0, resolveInsertIndex(true, 0, 3)); // A before D
+  assert.deepEqual(ids(list), ["B", "C", "A", "D"]);
+
+  list = ["A", "B", "C", "D"].map(item);
+  moveItemBetweenArrays(list, list, 3, resolveInsertIndex(true, 3, 1)); // D before B
+  assert.deepEqual(ids(list), ["A", "D", "B", "C"]);
+
+  list = ["A", "B", "C", "D"].map(item);
+  moveItemBetweenArrays(list, list, 1, resolveInsertIndex(true, 1, 4)); // B to end
+  assert.deepEqual(ids(list), ["A", "C", "D", "B"]);
+
+  const a = ["A", "B"].map(item);
+  const b = ["X", "Y"].map(item);
+  moveItemBetweenArrays(a, b, 0, resolveInsertIndex(false, 0, 1)); // A before Y
+  assert.deepEqual(ids(b), ["X", "A", "Y"]);
+});

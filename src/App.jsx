@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { isAdminEmail, normalizeAdminEmail } from "../shared/admin.js";
-import { moveItemBetweenArrays } from "../shared/reorder.js";
+import { moveItemBetweenArrays, resolveInsertIndex } from "../shared/reorder.js";
 import { createPortal } from "react-dom";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import "primeicons/primeicons.css";
-import "primeflex/primeflex.css";
 import "./App.css";
 
 const HERO_PATHS = {
@@ -35,16 +34,34 @@ const LAPTOP_PACKAGES = Object.freeze([
   { value: "Laptop + Sạc + Chuột + Túi chống sốc", label: "Laptop + Sạc + Chuột + Túi chống sốc" },
 ]);
 
-const ASSET_REPORT_ITEMS = Object.freeze([
-  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
+const AGENT_DEVICE_ITEMS = Object.freeze([
   { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
-  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop" },
+  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
   { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
   { key: "phim", label: "Phím", icon: "pi pi-table" },
-  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
-  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile" },
-  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-mobile" },
+  { key: "tai", label: "Tai USB", icon: "pi pi-headphones" },
 ]);
+
+const LEAD_DEVICE_ITEMS = Object.freeze([
+  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
+  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop" },
+  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
+  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
+  { key: "phim", label: "Phím", icon: "pi pi-table" },
+  { key: "tai", label: "Tai USB", icon: "pi pi-headphones" },
+  { key: "laptop_standard", label: LAPTOP_PACKAGES[0].label, short: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", packageValue: LAPTOP_PACKAGES[0].value },
+  { key: "laptop_bag", label: LAPTOP_PACKAGES[1].label, short: "Laptop + Túi chống sốc", icon: "pi pi-briefcase", packageValue: LAPTOP_PACKAGES[1].value },
+]);
+
+function GripIcon() {
+  return (
+    <svg viewBox="0 0 12 18" width="10" height="16" fill="currentColor" aria-hidden="true">
+      <circle cx="3" cy="3" r="1.6" /><circle cx="9" cy="3" r="1.6" />
+      <circle cx="3" cy="9" r="1.6" /><circle cx="9" cy="9" r="1.6" />
+      <circle cx="3" cy="15" r="1.6" /><circle cx="9" cy="15" r="1.6" />
+    </svg>
+  );
+}
 
 function HeroIcon({ name, size = 18, className = '', title }) {
   const path = HERO_PATHS[name];
@@ -57,7 +74,7 @@ function HeroIcon({ name, size = 18, className = '', title }) {
   );
 }
 
-function InlineEdit({ value, onChange, placeholder, className, isStt = false, isName = false, readOnly = false }) {
+function InlineEdit({ value, onChange, placeholder, className, isName = false, readOnly = false }) {
   const [isEdit, setIsEdit] = useState(false);
   const [val, setVal] = useState(value);
 
@@ -91,7 +108,7 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
         onPointerDown={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         draggable={false}
-        className={`p-1 text-xs font-bold w-full ${isName ? "compact-cabin-name-input" : ""} ${isStt ? "w-4rem text-center" : ""}`}
+        className={`inline-edit-input ${isName ? "compact-cabin-name-input" : ""}`}
         aria-label={placeholder || "Chỉnh sửa tên"}
       />
     );
@@ -99,7 +116,7 @@ function InlineEdit({ value, onChange, placeholder, className, isStt = false, is
 
   return (
     <div
-      className={`${className || ""} inline-edit-display ${isStt ? "stt-display" : ""} ${isName ? "inline-edit-name" : "text-overflow-ellipsis white-space-nowrap overflow-hidden"} cursor-pointer`}
+      className={`${className || ""} inline-edit-display ${isName ? "inline-edit-name" : "inline-edit-ellipsis"}`}
       onClick={(e) => {
         e.stopPropagation();
         if (!readOnly) {
@@ -159,28 +176,66 @@ function StatusDot({ connectionStatus, syncStatus }) {
 
 const SYNC_ENDPOINT = "/api/sync";
 
-async function syncRequest(options = {}) {
-  const response = await fetch(SYNC_ENDPOINT, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
+const SYNC_TIMEOUT_MS = 15000;
 
-  let payload = null;
+async function syncRequest(options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SYNC_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(SYNC_ENDPOINT, {
+      ...options,
+      cache: "no-store",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+    });
+  } catch (err) {
+    if (err?.name === "AbortError") throw new Error("Máy chủ phản hồi quá lâu (timeout 15 giây).", { cause: err });
+    throw new Error(navigator.onLine === false ? "Thiết bị đang mất mạng." : "Không kết nối được tới máy chủ /api/sync.", { cause: err });
+  } finally {
+    clearTimeout(timer);
+  }
+
+  let payload;
   try {
     payload = await response.json();
   } catch {
     payload = null;
   }
 
-  if (!response.ok || payload?.success === false) {
-    throw new Error(payload?.error || `Sync API returned HTTP ${response.status}`);
+  if (!response.ok || payload?.success === false || payload === null) {
+    throw new Error(
+      payload?.error ||
+        (payload === null
+          ? `API /api/sync không trả về JSON (HTTP ${response.status}). Kiểm tra deploy Vercel.`
+          : `API /api/sync lỗi HTTP ${response.status}`),
+    );
   }
 
   return payload;
 }
+
+const DIRTY_STORAGE_KEY = "kiemke-lau2:dirty";
+
+const readDirtyFlag = () => {
+  try {
+    return localStorage.getItem(DIRTY_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const writeDirtyFlag = (dirty) => {
+  try {
+    if (dirty) localStorage.setItem(DIRTY_STORAGE_KEY, "1");
+    else localStorage.removeItem(DIRTY_STORAGE_KEY);
+  } catch {
+    /* localStorage không khả dụng: bỏ qua */
+  }
+};
 
 const genId = () => "s_" + Math.random().toString(36).substr(2, 9);
 
@@ -371,7 +426,7 @@ const TeamTag = ({ team, onOpen, readOnly = false }) => {
         aria-hidden="true"
       />
       <span className="team-tag-label">{safeTeam.name}</span>
-      <i className="pi pi-chevron-down text-xs opacity-60" aria-hidden="true" />
+      <i className="pi pi-chevron-down team-tag-caret" aria-hidden="true" />
     </button>
   );
 };
@@ -541,8 +596,6 @@ export default function App() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverTarget, setDragOverTarget] = useState(null);
-  const pressTimerRef = useRef(null);
-  const pointerDragRef = useRef(null);
   const [activeLane, setActiveLane] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState("Tất cả");
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -576,11 +629,21 @@ export default function App() {
   }, []);
 
   const [connectionStatus, setConnectionStatus] = useState("checking");
-  const [syncStatus, setSyncStatus] = useState("synced");
+  const [syncStatus, setSyncStatus] = useState(() => (readDirtyFlag() ? "dirty" : "synced"));
+  const [syncError, setSyncError] = useState("");
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
   const hasHydratedRef = useRef(false);
-  const localRevisionRef = useRef(0);
+  // localRevision tăng mỗi lần sửa; syncedRevision = revision đã lưu Cloud thành công.
+  const localRevisionRef = useRef(readDirtyFlag() ? 1 : 0);
+  const syncedRevisionRef = useRef(0);
   const autoSyncTimerRef = useRef(null);
-  const isAutoSyncingRef = useRef(false);
+  const retryTimerRef = useRef(null);
+  const retryDelayRef = useRef(5000);
+  const syncInFlightRef = useRef(false);
+  const appStateRef = useRef(appState);
+  useEffect(() => {
+    appStateRef.current = appState;
+  }, [appState]);
 
   const autoColor = (name) => {
     const n = (name || "").toUpperCase();
@@ -592,7 +655,7 @@ export default function App() {
     return "fill-pink";
   };
 
-  const loadOnline = useCallback(async () => {
+  const loadOnline = useCallback(async ({ silent = false } = {}) => {
     setConnectionStatus("checking");
     const revisionAtStart = localRevisionRef.current;
     try {
@@ -600,29 +663,54 @@ export default function App() {
       const data = payload?.data;
 
       setConnectionStatus("connected");
-      if (data && data.floors) {
-        if (localRevisionRef.current !== revisionAtStart) {
-          // A local edit happened while the cloud request was in flight.
-          // Do not overwrite the user's newer state with a stale response.
+      setSyncError("");
+      if (payload?.updatedAt) setLastSyncedAt(payload.updatedAt);
+
+      const hasUnsyncedLocal = localRevisionRef.current > syncedRevisionRef.current;
+      if (data && Array.isArray(data.floors)) {
+        if (hasUnsyncedLocal || localRevisionRef.current !== revisionAtStart) {
+          // Bản nháp trên máy có thay đổi chưa lưu Cloud (ví dụ lần trước lưu lỗi):
+          // KHÔNG ghi đè, giữ bản local và để auto-sync đẩy lên.
           setSyncStatus("dirty");
+          if (!silent) {
+            toast.current?.show({
+              severity: "warn",
+              summary: "Giữ bản nháp trên máy",
+              detail: "Máy này có thay đổi chưa lưu Cloud. Đăng nhập Admin để đồng bộ lên Cloud.",
+              life: 4500,
+            });
+          }
         } else {
           setAppState(normalizeState(data));
           setSyncStatus("synced");
-          toast.current?.show({
-            severity: "success",
-            summary: "Thành công",
-            detail: "Đã tải dữ liệu mới nhất từ Cloud",
-            life: 3000,
-          });
+          if (!silent) {
+            toast.current?.show({
+              severity: "success",
+              summary: "Đã tải dữ liệu Cloud",
+              detail: "Dữ liệu mới nhất đã được tải về",
+              life: 2500,
+            });
+          }
         }
       } else {
         setAppState((prev) => ensureInventoryState(prev));
-        setSyncStatus("synced");
+        // Cloud trống: đánh dấu cần đẩy bản hiện tại lên.
+        if (localRevisionRef.current === syncedRevisionRef.current) localRevisionRef.current += 1;
+        setSyncStatus("dirty");
       }
     } catch (err) {
       console.error("Supabase load error:", err);
       setConnectionStatus("error");
+      setSyncError(err?.message || "Lỗi mạng");
       setAppState((prev) => ensureInventoryState(prev));
+      if (!silent) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Không tải được Cloud",
+          detail: `${err?.message || "Lỗi mạng"} — Đang dùng dữ liệu lưu trên máy.`,
+          life: 6000,
+        });
+      }
     } finally {
       hasHydratedRef.current = true;
     }
@@ -632,70 +720,97 @@ export default function App() {
     void loadOnline();
   }, [loadOnline]);
 
-  const syncOnline = async () => {
-    if (!isAdmin) { setShowLogin(true); return; }
+  // Đẩy state hiện tại lên Cloud. Dùng chung cho nút "Lưu Cloud" và auto-sync.
+  // pushToCloudRef giúp timer thử lại luôn gọi phiên bản mới nhất (email admin hiện tại).
+  const pushToCloudRef = useRef(null);
+  const pushToCloud = useCallback(async ({ manual = false } = {}) => {
+    if (!isAdmin || syncInFlightRef.current) return false;
     if (autoSyncTimerRef.current) {
       clearTimeout(autoSyncTimerRef.current);
       autoSyncTimerRef.current = null;
     }
-    isAutoSyncingRef.current = true;
-    setIsSyncing(true);
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
+    const revision = localRevisionRef.current;
+    syncInFlightRef.current = true;
+    if (manual) setIsSyncing(true);
     setSyncStatus("syncing");
     try {
-      await syncRequest({
+      const payload = await syncRequest({
         method: "POST",
         headers: { "X-Admin-Email": adminEmail },
-        body: JSON.stringify({ data: appState }),
+        body: JSON.stringify({ data: appStateRef.current }),
       });
 
+      syncedRevisionRef.current = Math.max(syncedRevisionRef.current, revision);
+      retryDelayRef.current = 5000;
       setConnectionStatus("connected");
-      setSyncStatus("synced");
-      toast.current?.show({
-        severity: "success",
-        summary: "Đồng bộ thành công",
-        detail: "Dữ liệu đã được lưu lên Cloud Supabase",
-        life: 3000,
-      });
+      setSyncError("");
+      setLastSyncedAt(payload?.updatedAt || new Date().toISOString());
+      const stillDirty = localRevisionRef.current > syncedRevisionRef.current;
+      setSyncStatus(stillDirty ? "dirty" : "synced");
+      writeDirtyFlag(stillDirty);
+      if (manual) {
+        toast.current?.show({
+          severity: "success",
+          summary: "Đã lưu Cloud",
+          detail: "Dữ liệu đã được lưu lên Supabase",
+          life: 2500,
+        });
+      }
+      return true;
     } catch (err) {
       console.error("Supabase sync error:", err);
+      const message = err?.message || "Lỗi mạng";
       setConnectionStatus("error");
       setSyncStatus("error");
-      toast.current?.show({
-        severity: "error",
-        summary: "Lỗi đồng bộ",
-        detail: "Không thể lưu Cloud: " + (err?.message || "Lỗi mạng"),
-        life: 4000,
-      });
+      setSyncError(message);
+      writeDirtyFlag(true);
+      if (manual) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Không thể lưu Cloud",
+          detail: `${message} Dữ liệu vẫn được lưu tạm trên máy và sẽ tự đồng bộ lại.`,
+          life: 7000,
+        });
+      }
+      // Tự thử lại với backoff 5s → 10s → 20s → … tối đa 60s.
+      const delay = retryDelayRef.current;
+      retryDelayRef.current = Math.min(delay * 2, 60000);
+      retryTimerRef.current = setTimeout(() => {
+        retryTimerRef.current = null;
+        if (localRevisionRef.current > syncedRevisionRef.current) void pushToCloudRef.current?.();
+      }, delay);
+      return false;
     } finally {
-      setIsSyncing(false);
-      isAutoSyncingRef.current = false;
+      syncInFlightRef.current = false;
+      if (manual) setIsSyncing(false);
     }
-  };
+  }, [isAdmin, adminEmail]);
 
   useEffect(() => {
-    if (!hasHydratedRef.current || !isAdmin) return undefined;
-    if (autoSyncTimerRef.current) clearTimeout(autoSyncTimerRef.current);
+    pushToCloudRef.current = pushToCloud;
+  }, [pushToCloud]);
 
-    autoSyncTimerRef.current = setTimeout(async () => {
-      if (isAutoSyncingRef.current || isSyncing) return;
-      isAutoSyncingRef.current = true;
-      setSyncStatus("syncing");
-      try {
-        await syncRequest({
-          method: "POST",
-          headers: { "X-Admin-Email": adminEmail },
-          body: JSON.stringify({ data: appState }),
-        });
-        setConnectionStatus("connected");
-        setSyncStatus("synced");
-      } catch (err) {
-        console.error("Supabase auto-sync error:", err);
-        setConnectionStatus("error");
-        setSyncStatus("error");
-      } finally {
-        isAutoSyncingRef.current = false;
-      }
-    }, 750);
+  const syncOnline = () => {
+    if (!isAdmin) { setShowLogin(true); return; }
+    retryDelayRef.current = 5000;
+    void pushToCloud({ manual: true });
+  };
+
+  // Auto-sync: chỉ gửi khi có thay đổi chưa lưu, gom các thao tác liên tiếp (debounce 1s).
+  useEffect(() => {
+    if (!hasHydratedRef.current || !isAdmin) return undefined;
+    if (localRevisionRef.current <= syncedRevisionRef.current) return undefined;
+    if (retryTimerRef.current) return undefined; // đang chờ thử lại sau lỗi
+
+    autoSyncTimerRef.current = setTimeout(() => {
+      autoSyncTimerRef.current = null;
+      void pushToCloudRef.current?.();
+    }, 1000);
 
     return () => {
       if (autoSyncTimerRef.current) {
@@ -703,15 +818,41 @@ export default function App() {
         autoSyncTimerRef.current = null;
       }
     };
-  }, [appState, isSyncing, isAdmin, adminEmail]);
+  }, [appState, isAdmin]);
+
+  // Có mạng trở lại / quay lại tab: thử đồng bộ ngay.
+  useEffect(() => {
+    const retryNow = () => {
+      if (document.visibilityState === "hidden") return;
+      if (!isAdmin) {
+        if (connectionStatus === "error") void loadOnline({ silent: true });
+        return;
+      }
+      if (localRevisionRef.current > syncedRevisionRef.current) {
+        retryDelayRef.current = 5000;
+        void pushToCloudRef.current?.();
+      }
+    };
+    window.addEventListener("online", retryNow);
+    document.addEventListener("visibilitychange", retryNow);
+    return () => {
+      window.removeEventListener("online", retryNow);
+      document.removeEventListener("visibilitychange", retryNow);
+    };
+  }, [isAdmin, connectionStatus, loadOnline]);
+
+  useEffect(() => () => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+  }, []);
 
   const markDirty = () => {
+    localRevisionRef.current += 1;
+    writeDirtyFlag(true);
     setSyncStatus("dirty");
   };
 
   const updateState = (updater) => {
     if (!isAdmin) { setShowLogin(true); return; }
-    localRevisionRef.current += 1;
     setAppState((prev) => {
       const next = normalizeState(prev);
       updater(next);
@@ -928,22 +1069,6 @@ export default function App() {
     });
   };
 
-  const updateInventory = (id, key, val) =>
-    updateState((st) => {
-      if (!id) return;
-      if (!st.inventory[id] || typeof st.inventory[id] !== "object") {
-        st.inventory[id] = initChecklist(false);
-      }
-      st.inventory[id][key] = Boolean(val);
-      if (key === "laptop" && val) st.inventory[id].laptop_package = st.inventory[id].laptop_package || LAPTOP_PACKAGES[0].value;
-      if (!val && key === "laptop") st.inventory[id].laptop_package = "";
-      if (val) {
-        const qtyKey = `${key}_qty`;
-        const qty = Number(st.inventory[id][qtyKey]);
-        if (!Number.isFinite(qty) || qty < 1) st.inventory[id][qtyKey] = 1;
-      }
-    });
-
   const updateLaptopPackage = (id, packageValue, nextChecked) =>
     updateState((st) => {
       if (!id) return;
@@ -1128,21 +1253,33 @@ export default function App() {
     });
   };
 
-  const clearPressTimer = () => {
-    if (pressTimerRef.current) {
-      window.clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
+  // ───────────────────────── Kéo thả cabin ─────────────────────────
+  // Một cơ chế pointer duy nhất cho chuột + cảm ứng:
+  //  • Chuột: nhấn giữ và kéo (ngưỡng 6px) từ tay nắm hoặc vùng trống của cabin.
+  //  • Cảm ứng: kéo ngay từ tay nắm ⋮⋮, hoặc nhấn giữ 350ms trên thân cabin.
+  // Cabin "bóng" bám theo ngón tay, vạch xanh báo vị trí chèn, gần mép màn hình
+  // thì tự cuộn, thả xong các cabin trượt về vị trí mới (FLIP animation).
+  const dragRef = useRef(null);
+  const flipRef = useRef(null);
+
+  const sameDropTarget = (a, b) =>
+    a === b ||
+    Boolean(a && b && a.fIdx === b.fIdx && a.lIdx === b.lIdx && a.type === b.type &&
+      a.insertBefore === b.insertBefore && a.targetId === b.targetId && a.side === b.side);
+
+  const captureSeatRects = () => {
+    const rects = new Map();
+    document.querySelectorAll(".seat-card[data-seat-id]").forEach((el) => {
+      if (el.dataset.seatId) rects.set(el.dataset.seatId, el.getBoundingClientRect());
+    });
+    return rects;
   };
 
   const commitSeatMove = (source, target) => {
-    if (!isAdmin || !source || !target) return;
-    if (
-      source.fIdx === target.fIdx &&
-      source.lIdx === target.lIdx &&
-      source.type === target.type &&
-      source.sIdx === target.sIdx
-    ) return;
+    if (!isAdmin || !source || !target) return false;
+    const sameArray = source.fIdx === target.fIdx && source.lIdx === target.lIdx && source.type === target.type;
+    const toIndex = resolveInsertIndex(sameArray, source.sIdx, target.insertBefore);
+    if (sameArray && toIndex === source.sIdx) return false;
 
     updateState((st) => {
       const sourceLane = st.floors?.[source.fIdx]?.lanes?.[source.lIdx];
@@ -1152,120 +1289,279 @@ export default function App() {
       if (!Array.isArray(sourceArr) || !Array.isArray(targetArr)) return;
 
       const item = sourceArr[source.sIdx];
-      if (!item) return;
-      if (!moveItemBetweenArrays(sourceArr, targetArr, source.sIdx, target.sIdx)) return;
+      if (!item || item.id !== source.id) return;
+      if (!moveItemBetweenArrays(sourceArr, targetArr, source.sIdx, toIndex)) return;
       if (source.type !== target.type) {
         st.inventory[item.id] = initChecklist(target.type === "lead");
       }
     });
+    return true;
   };
 
-  const finishPointerDrag = (cancelled = false) => {
-    clearPressTimer();
-    const drag = pointerDragRef.current;
-    if (!drag) {
-      setDragOverTarget(null);
-      return;
+  const resolveDropTarget = (clientX, clientY) => {
+    const hit = document.elementFromPoint(clientX, clientY);
+    if (!hit) return null;
+    const card = hit.closest(".seat-card[data-seat-id]");
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      const zone = card.closest(".drop-zone");
+      const zoneWidth = zone?.getBoundingClientRect().width || rect.width;
+      // Lưới nhiều cột: chia trái/phải; lưới 1 cột (Lead, điện thoại): chia trên/dưới.
+      const vertical = rect.width > zoneWidth * 0.6;
+      const before = vertical
+        ? clientY < rect.top + rect.height / 2
+        : clientX < rect.left + rect.width / 2;
+      const sIdx = Number(card.dataset.seatIndex);
+      return {
+        fIdx: Number(card.dataset.floorIndex),
+        lIdx: Number(card.dataset.laneIndex),
+        type: card.dataset.seatType,
+        insertBefore: before ? sIdx : sIdx + 1,
+        targetId: card.dataset.seatId,
+        side: before ? (vertical ? "top" : "left") : (vertical ? "bottom" : "right"),
+      };
     }
-    // Native HTML drag/drop commits in onDrop. A pointer-up event can arrive
-    // first, so it must leave native drag state intact until drop/dragend.
-    if (!cancelled && drag.native) return;
-    if (!cancelled && drag.target) commitSeatMove(drag.source, drag.target);
-    pointerDragRef.current = null;
-    setDraggedItem(null);
-    setDragOverTarget(null);
+    const zone = hit.closest(".drop-zone[data-seat-type]");
+    if (zone) {
+      return {
+        fIdx: Number(zone.dataset.floorIndex),
+        lIdx: Number(zone.dataset.laneIndex),
+        type: zone.dataset.seatType,
+        insertBefore: Number(zone.dataset.count) || 0,
+        targetId: null,
+        side: "end",
+      };
+    }
+    return null;
+  };
+
+  const updateDragOver = (x, y) => {
+    const drag = dragRef.current;
+    if (!drag?.active) return;
+    const over = resolveDropTarget(x, y);
+    if (!sameDropTarget(over, drag.over)) {
+      drag.over = over;
+      setDragOverTarget(over);
+    }
+  };
+
+  const stopAutoScroll = (drag) => {
+    if (drag?.scrollRaf) cancelAnimationFrame(drag.scrollRaf);
+    if (drag) drag.scrollRaf = null;
+  };
+
+  const runAutoScroll = () => {
+    const drag = dragRef.current;
+    if (!drag || !drag.active) return;
+    const edge = Math.min(90, window.innerHeight * 0.14);
+    const y = drag.lastY;
+    let speed = 0;
+    if (y < edge) speed = -Math.ceil(((edge - y) / edge) * 18);
+    else if (y > window.innerHeight - edge) speed = Math.ceil(((y - (window.innerHeight - edge)) / edge) * 18);
+    if (speed !== 0) {
+      window.scrollBy(0, speed);
+      updateDragOver(drag.lastX, drag.lastY);
+    }
+    drag.scrollRaf = requestAnimationFrame(runAutoScroll);
+  };
+
+  const positionGhost = (drag) => {
+    if (!drag.ghost) return;
+    const x = drag.lastX - drag.offsetX;
+    const y = drag.lastY - drag.offsetY;
+    drag.ghost.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(1.5deg) scale(1.03)`;
+  };
+
+  const activateDrag = () => {
+    const drag = dragRef.current;
+    if (!drag || drag.active) return;
+    drag.active = true;
+    window.clearTimeout(drag.pressTimer);
+
+    const rect = drag.cardEl.getBoundingClientRect();
+    drag.offsetX = drag.startX - rect.left;
+    drag.offsetY = drag.startY - rect.top;
+    const ghost = drag.cardEl.cloneNode(true);
+    ghost.classList.add("seat-drag-ghost");
+    ghost.classList.remove("is-dragging", "drop-left", "drop-right", "drop-top", "drop-bottom");
+    ghost.removeAttribute("data-seat-id");
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    document.body.appendChild(ghost);
+    drag.ghost = ghost;
+    positionGhost(drag);
+
+    document.body.classList.add("is-seat-dragging");
+    try { drag.cardEl.setPointerCapture?.(drag.pointerId); } catch { /* không hỗ trợ */ }
+    if (navigator.vibrate && drag.pointerType !== "mouse") navigator.vibrate(15);
+
+    setDraggedItem(drag.source);
+    drag.over = null;
+    updateDragOver(drag.lastX, drag.lastY);
+    drag.scrollRaf = requestAnimationFrame(runAutoScroll);
+  };
+
+  const endDrag = (commit) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    dragRef.current = null;
+    window.clearTimeout(drag.pressTimer);
+    stopAutoScroll(drag);
+    try { drag.cardEl.releasePointerCapture?.(drag.pointerId); } catch { /* bỏ qua */ }
+    document.body.classList.remove("is-seat-dragging");
+
+    let moved = false;
+    if (drag.active && commit && drag.over) {
+      const rects = captureSeatRects();
+      if (drag.ghost) rects.set(drag.source.id, drag.ghost.getBoundingClientRect());
+      flipRef.current = rects;
+      moved = commitSeatMove(drag.source, drag.over);
+      if (!moved) flipRef.current = null;
+    }
+
+    if (drag.ghost) {
+      const ghost = drag.ghost;
+      if (moved) {
+        ghost.remove();
+      } else {
+        // Thả ra ngoài / huỷ: bóng bay về chỗ cũ rồi biến mất.
+        const home = drag.cardEl.getBoundingClientRect();
+        ghost.style.transition = "transform 180ms cubic-bezier(.2,.8,.2,1), opacity 180ms";
+        ghost.style.transform = `translate3d(${home.left}px, ${home.top}px, 0)`;
+        ghost.style.opacity = "0.4";
+        window.setTimeout(() => ghost.remove(), 190);
+      }
+    }
+
+    if (drag.active) {
+      // Chặn cú click "ma" ngay sau khi thả (không mở menu / không sửa tên).
+      const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener("click", swallow, { capture: true, once: true });
+      window.setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 60);
+      setDraggedItem(null);
+      setDragOverTarget(null);
+    }
   };
 
   const handleSeatPointerDown = (e, source) => {
-    if (!isAdmin || pointerDragRef.current) return;
+    if (!isAdmin || dragRef.current) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    if (e.target.closest("button, input, select, textarea, label, a, .team-tag, .inventory-chips, .qa-group, .seat-identity")) return;
+    const fromHandle = Boolean(e.target.closest(".drag-handle"));
+    if (!fromHandle && e.target.closest("button, input, select, textarea, label, a, .inline-edit-display, .p-inputtext, .device-row")) return;
 
-    clearPressTimer();
-    pressTimerRef.current = window.setTimeout(() => {
-      pointerDragRef.current = { source, target: source, pointerId: e.pointerId };
-      setDraggedItem(source);
-      setDragOverTarget(source);
-      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(18);
-    }, 420);
+    dragRef.current = {
+      source,
+      cardEl: e.currentTarget,
+      pointerId: e.pointerId,
+      pointerType: e.pointerType,
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      active: false,
+      over: null,
+      ghost: null,
+      pressTimer: null,
+      scrollRaf: null,
+    };
+
+    if (e.pointerType !== "mouse") {
+      if (fromHandle) {
+        e.preventDefault();
+        activateDrag();
+      } else {
+        dragRef.current.pressTimer = window.setTimeout(activateDrag, 350);
+      }
+    }
   };
 
   useEffect(() => {
-    const handlePointerMove = (event) => {
-      const drag = pointerDragRef.current;
-      if (!drag) return;
+    const onMove = (event) => {
+      const drag = dragRef.current;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      drag.lastX = event.clientX;
+      drag.lastY = event.clientY;
+
+      if (!drag.active) {
+        const dist = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+        if (drag.pointerType === "mouse") {
+          if (dist > 6) activateDrag();
+        } else if (dist > 10) {
+          // Ngón tay di chuyển trước khi đủ thời gian giữ => người dùng đang cuộn trang.
+          window.clearTimeout(drag.pressTimer);
+          dragRef.current = null;
+        }
+        return;
+      }
+
       event.preventDefault();
-      const el = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".seat-card[data-seat-id]");
-      if (!el) return;
-      const target = {
-        fIdx: Number(el.dataset.floorIndex),
-        lIdx: Number(el.dataset.laneIndex),
-        type: el.dataset.seatType,
-        sIdx: Number(el.dataset.seatIndex),
-      };
-      drag.target = target;
-      setDragOverTarget(target);
+      positionGhost(drag);
+      updateDragOver(event.clientX, event.clientY);
     };
 
-    const handlePointerUp = () => {
-      if (pointerDragRef.current) finishPointerDrag(false);
-      else clearPressTimer();
+    const onUp = (event) => {
+      const drag = dragRef.current;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      endDrag(event.type === "pointerup");
     };
 
-    window.addEventListener("pointermove", handlePointerMove, { passive: false });
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointercancel", handlePointerUp);
+    // Trên mobile phải chặn touchmove (passive: false) thì trang mới không cuộn khi đang kéo.
+    const onTouchMove = (event) => {
+      if (dragRef.current?.active) event.preventDefault();
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape" && dragRef.current) endDrag(false);
+    };
+    const onContextMenu = (event) => {
+      if (dragRef.current && dragRef.current.pointerType !== "mouse") event.preventDefault();
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("contextmenu", onContextMenu);
     return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
-      window.removeEventListener("pointercancel", handlePointerUp);
-      clearPressTimer();
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("contextmenu", onContextMenu);
     };
   });
 
-  const onDragStart = (e, fIdx, lIdx, type, sIdx) => {
-    if (!isAdmin) return;
-    clearPressTimer();
-    const source = { fIdx, lIdx, type, sIdx };
-    pointerDragRef.current = { source, target: source, pointerId: null, native: true };
-    setDraggedItem(source);
-    setDragOverTarget(source);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", "kiem-ke-seat");
-  };
+  // Dọn dẹp nếu component unmount giữa lúc kéo.
+  useEffect(() => () => {
+    const drag = dragRef.current;
+    if (drag) {
+      stopAutoScroll(drag);
+      drag.ghost?.remove();
+      document.body.classList.remove("is-seat-dragging");
+    }
+  }, []);
 
-  const onDragOverSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
-    if (!isAdmin) return;
-    const source = pointerDragRef.current?.source || draggedItem;
-    if (!source) return;
-    e.preventDefault();
-    const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx };
-    setDragOverTarget(target);
-    if (pointerDragRef.current) pointerDragRef.current.target = target;
-  };
-
-  const onDropOnSeat = (e, targetFIdx, targetLIdx, targetType, targetSIdx) => {
-    if (!isAdmin) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const source = pointerDragRef.current?.source || draggedItem;
-    if (source) commitSeatMove(source, { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: targetSIdx });
-    pointerDragRef.current = null;
-    setDraggedItem(null);
-    setDragOverTarget(null);
-  };
-
-  const onDrop = (e, targetFIdx, targetLIdx, targetType) => {
-    if (!isAdmin) return;
-    e.preventDefault();
-    const source = pointerDragRef.current?.source || draggedItem;
-    if (!source) return;
-    const target = { fIdx: targetFIdx, lIdx: targetLIdx, type: targetType, sIdx: Number.MAX_SAFE_INTEGER };
-    commitSeatMove(source, target);
-    pointerDragRef.current = null;
-    setDraggedItem(null);
-    setDragOverTarget(null);
-  };
+  // FLIP: sau khi thứ tự cabin đổi, trượt mượt từ vị trí cũ sang vị trí mới.
+  useLayoutEffect(() => {
+    const before = flipRef.current;
+    if (!before) return;
+    flipRef.current = null;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    document.querySelectorAll(".seat-card[data-seat-id]").forEach((el) => {
+      const prev = before.get(el.dataset.seatId);
+      if (!prev || typeof el.animate !== "function") return;
+      const next = el.getBoundingClientRect();
+      const dx = prev.left - next.left;
+      const dy = prev.top - next.top;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+      el.animate(
+        [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }],
+        { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" },
+      );
+    });
+  });
 
   const stats = {
     thung: 0,
@@ -1351,6 +1647,7 @@ export default function App() {
   const safeFloors = Array.isArray(appState?.floors) ? appState.floors : [];
   const safeTeams = Array.isArray(appState?.teams) ? appState.teams : DEFAULT_TEAMS;
   const selectedTeam = selectedTeamId ? getTeam(safeTeams, selectedTeamId) : null;
+  const editingTeam = editingTeamId ? getTeam(safeTeams, editingTeamId) : null;
 
   const isSpecialTeam = (team, kind) => {
     const id = String(team?.id || "").toLowerCase();
@@ -1491,8 +1788,27 @@ export default function App() {
         <div className="header-summary">
           <span><strong>{safeTeams.length}</strong> team đang quản lý</span>
           <span className="summary-separator" aria-hidden="true">/</span>
-          <span>{syncStatus === "synced" ? "Cloud đã đồng bộ" : "Có thay đổi chưa đồng bộ"}</span>
+          <span>
+            {syncStatus === "synced" ? "Cloud đã đồng bộ" : "Có thay đổi chưa đồng bộ"}
+            {lastSyncedAt ? ` · lần cuối ${new Date(lastSyncedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : ""}
+          </span>
         </div>
+
+        {connectionStatus === "error" && syncError && (
+          <div className="sync-alert" role="alert">
+            <i className="pi pi-exclamation-triangle" aria-hidden="true" />
+            <div>
+              <strong>Không kết nối được Cloud</strong>
+              <span>{syncError} Dữ liệu vẫn được lưu tạm trên máy này{isAdmin ? " và sẽ tự đồng bộ khi kết nối lại" : ""}.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => (isAdmin && syncStatus !== "synced" ? syncOnline() : loadOnline())}
+            >
+              <i className="pi pi-refresh" aria-hidden="true" /> Thử lại
+            </button>
+          </div>
+        )}
       </header>
 
       <section className="overview-section" aria-labelledby="overview-heading">
@@ -1730,9 +2046,7 @@ export default function App() {
             })}
           </div>
 
-          {editingTeamId && (() => {
-            const editingTeam = getTeam(safeTeams, editingTeamId);
-            return (
+          {editingTeam && (
               <div className="team-inline-form">
                 <div className="form-title">
                   <span>Đổi màu</span>
@@ -1773,8 +2087,7 @@ export default function App() {
                   onClick={() => setEditingTeamId(null)}
                 />
               </div>
-            );
-          })()}
+          )}
 
           {showAddTeam && (
             <div className="team-inline-form">
@@ -1988,181 +2301,143 @@ export default function App() {
                     const collection = isLead ? leads : agents;
                     const originalIndex = collection.findIndex((item) => item?.id === seat?.id);
                     const currentIndex = originalIndex >= 0 ? originalIndex : sIdx;
+                    const isDragging = draggedItem?.id === seat?.id;
+                    const dropSide = dragOverTarget?.targetId && dragOverTarget.targetId === seat?.id && !isDragging
+                      ? dragOverTarget.side
+                      : null;
+                    const deviceItems = isLead ? LEAD_DEVICE_ITEMS : AGENT_DEVICE_ITEMS;
+                    const seatLabel = seat?.name || (isLead ? "Lead" : "Agent");
 
                     return (
                       <article
                         key={seat?.id || `${type}-${currentIndex}`}
-                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent compact-agent-card"} status-${statusClass} ${draggedItem?.fIdx === fIdx && draggedItem?.lIdx === lIdx && draggedItem?.type === type && draggedItem?.sIdx === currentIndex ? "is-dragging" : ""} ${dragOverTarget?.fIdx === fIdx && dragOverTarget?.lIdx === lIdx && dragOverTarget?.type === type && dragOverTarget?.sIdx === currentIndex ? "is-drop-target" : ""}`}
+                        className={`seat-card ${isLead ? "seat-card-lead" : "seat-card-agent"} status-${statusClass}${isDragging ? " is-dragging" : ""}${dropSide ? ` drop-${dropSide}` : ""}`}
                         style={teamCardStyle(team?.dotColor)}
                         data-seat-id={seat?.id || ""}
                         data-floor-index={fIdx}
                         data-lane-index={lIdx}
                         data-seat-type={type}
                         data-seat-index={currentIndex}
-                        draggable={isAdmin}
-                        onPointerDown={(e) => handleSeatPointerDown(e, { fIdx, lIdx, type, sIdx: currentIndex })}
-                        onDragStart={(e) => onDragStart(e, fIdx, lIdx, type, currentIndex)}
-                        onDragOver={(e) => onDragOverSeat(e, fIdx, lIdx, type, currentIndex)}
-                        onDrop={(e) => onDropOnSeat(e, fIdx, lIdx, type, currentIndex)}
-                        onDragEnd={() => finishPointerDrag(true)}
+                        onPointerDown={(e) => handleSeatPointerDown(e, { fIdx, lIdx, type, sIdx: currentIndex, id: seat?.id })}
+                        aria-label={`${isLead ? "Lead" : "Agent"} ${seat?.name || "chưa đặt tên"}${!isLead ? `, STT ${seat?.stt ?? "—"}` : ""}`}
                       >
-                        <div className="seat-card-accent" aria-hidden="true" />
-                        <div
-                          className="compact-cabin-open"
-                          aria-label={`Cabin ${seat?.name || "chưa đặt tên"}`}
-                        >
-                          <div className="compact-cabin-head">
-                            <span className={`seat-type ${isLead ? "lead" : "agent"}`}>
-                              <i className={isLead ? "pi pi-star-fill" : "pi pi-user"} aria-hidden="true" />
-                              {isLead ? "LEAD" : "AGENT"}
-                            </span>
-                            <span className={`compact-cabin-pos ${!isLead ? "stt-badge" : ""}`}>
-                              {isLead ? `Dãy ${lane?.laneLetter || "—"}` : `STT #${seat?.stt ?? "—"}`}
-                            </span>
-                          </div>
-                          <InlineEdit
-                            value={seat?.name || ""}
-                            placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
-                            onChange={(val) => updateProp(fIdx, lIdx, type, currentIndex, "name", val.trim())}
-                            className="compact-cabin-name"
-                            isName
-                            readOnly={!isAdmin}
-                          />
-                          
-                          <TeamTag
-                            team={team}
-                            readOnly={!isAdmin}
-                            onOpen={(e) => {
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              setOpenMenu({
-                                type: "seat",
-                                seatId: seat.id,
-                                x: rect.left,
-                                y: rect.bottom + 4,
-                              });
-                            }}
-                          />
-
+                        <header className="seat-head">
                           {isAdmin && (
-                            <div className="compact-cabin-quickactions" aria-label={`Thao tác ${isLead ? "Lead" : "Agent"}`}>
+                            <span className="drag-handle" title="Kéo để di chuyển cabin" aria-label="Kéo để di chuyển cabin" role="img">
+                              <GripIcon />
+                            </span>
+                          )}
+                          <span className={`seat-pos ${isLead ? "is-lead" : ""}`}>
+                            {isLead ? (
+                              <><i className="pi pi-star-fill" aria-hidden="true" /> Lead · {lane?.laneLetter || "—"}</>
+                            ) : (
+                              <>#{seat?.stt ?? "—"}</>
+                            )}
+                          </span>
+                          {isAdmin && (
+                            <div className="seat-actions">
                               <button
                                 type="button"
-                                className="quickaction-btn quickaction-full"
-                                title={`Đủ bộ · ${progress.checked}/${progress.total}`}
-                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seat?.name || (isLead ? "Lead" : "Agent")}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
+                                className="seat-action seat-action-full"
+                                title="Đánh dấu đủ bộ thiết bị"
+                                aria-label={`Đánh dấu đủ bộ thiết bị cho ${seatLabel}`}
                                 onClick={(e) => { e.stopPropagation(); markFull(seat?.id, isLead); }}
                               >
-                                <i className="pi pi-check-circle" aria-hidden="true" />
-                                <b>{progress.checked}/{progress.total}</b>
+                                <i className="pi pi-check" aria-hidden="true" />
                               </button>
                               <button
                                 type="button"
-                                className="quickaction-btn quickaction-reset"
+                                className="seat-action"
                                 title="Reset kiểm kê thiết bị"
-                                aria-label={`Reset kiểm kê thiết bị cho ${seat?.name || (isLead ? "Lead" : "Agent")}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
+                                aria-label={`Reset kiểm kê thiết bị cho ${seatLabel}`}
                                 onClick={(e) => { e.stopPropagation(); markReset(seat?.id); }}
                               >
                                 <i className="pi pi-refresh" aria-hidden="true" />
                               </button>
                               <button
                                 type="button"
-                                className="quickaction-btn quickaction-delete"
+                                className="seat-action seat-action-danger"
                                 title={`Xoá ${isLead ? "Lead" : "Agent"}`}
                                 aria-label={`Xoá ${isLead ? "Lead" : "Agent"} ${seat?.name || ""}`}
-                                onPointerDown={(e) => e.stopPropagation()}
-                                onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => { e.stopPropagation(); removeSeat(fIdx, lIdx, type, currentIndex); }}
                               >
                                 <i className="pi pi-trash" aria-hidden="true" />
                               </button>
                             </div>
                           )}
+                        </header>
 
-                          <div className={`equipment-preview ${isLead ? "lead-preview" : "agent-preview"}`} aria-label={`Danh sách thiết bị ${seat?.name || ""}`}>
-                            {(isLead
-                              ? [
-                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
-                                  { key: "man24", label: 'Màn 24"', icon: "pi pi-desktop" },
-                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
-                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
-                                  { key: "phim", label: "Phím", icon: "pi pi-table" },
-                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
-                                  { key: "laptop_standard", label: "Laptop + Sạc + Chuột", icon: "pi pi-mobile", packageValue: LAPTOP_PACKAGES[0].value },
-                                  { key: "laptop_bag", label: "Laptop + Sạc + Chuột + Túi chống sốc", icon: "pi pi-briefcase", packageValue: LAPTOP_PACKAGES[1].value },
-                                ]
-                              : [
-                                  { key: "man20", label: 'Màn 20"', icon: "pi pi-desktop" },
-                                  { key: "thung", label: "Thùng máy", icon: "pi pi-box" },
-                                  { key: "chuot", label: "Chuột", icon: "pi pi-circle" },
-                                  { key: "phim", label: "Phím", icon: "pi pi-table" },
-                                  { key: "tai", label: "Tai USB", icon: "pi pi-volume-up" },
-                                ]
-                            ).map((item) => {
-                              const isLaptopPackage = Boolean(item.packageValue);
-                              const checked = isLaptopPackage
-                                ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
-                                : Boolean(inv?.[item.key]) || Number(inv?.[`${item.key}_qty`]) > 0;
-                              const qty = isLaptopPackage
-                                ? (checked ? 1 : 0)
-                                : Math.max(0, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 0);
-                              const packageValue = item.packageValue || null;
+                        <InlineEdit
+                          value={seat?.name || ""}
+                          placeholder={isLead ? "Chưa có Lead" : "Chưa có nhân sự"}
+                          onChange={(val) => updateProp(fIdx, lIdx, type, currentIndex, "name", val.trim())}
+                          className="seat-name"
+                          isName
+                          readOnly={!isAdmin}
+                        />
 
-                              return (
-                                <div key={item.key} className="device-row">
-                                  <button
-                                    type="button"
-                                    className={`device-card-btn ${checked ? "is-present" : "is-missing"} ${isAdmin ? "is-interactive" : ""}`}
-                                    title={checked
-                                      ? `${item.label} · SL ${qty}${isAdmin && !isLaptopPackage ? " · Click tăng · Shift-click/chuột phải giảm" : isAdmin ? " · Click để bật/tắt" : ""}`
-                                      : `${item.label} · Chưa có${isAdmin ? " · Click để thêm" : ""}`}
-                                    aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa chọn`}
-                                    onPointerDown={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => { e.stopPropagation(); quickToggleEquipment(seat?.id, item.key, e, packageValue); }}
-                                    onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, packageValue)}
-                                  >
-                                    <div className="device-info">
-                                      <i className={item.icon} aria-hidden="true" />
-                                      <span className="device-name">{item.label}</span>
-                                    </div>
-                                    <b className="device-qty">×{qty}</b>
-                                  </button>
+                        <TeamTag
+                          team={team}
+                          readOnly={!isAdmin}
+                          onOpen={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setOpenMenu({ type: "seat", seatId: seat.id, x: rect.left, y: rect.bottom + 4 });
+                          }}
+                        />
 
-                                  {isAdmin && !isLaptopPackage && (
-                                    <div className="device-qty-controls" role="group" aria-label={`Điều chỉnh số lượng ${item.label}`}>
-                                      <button type="button" className="device-qty-btn" title="Giảm 1" aria-label={`Giảm ${item.label}`} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, -1); }}>−</button>
-                                      <input
-                                        className="device-qty-input"
-                                        type="number"
-                                        min="0"
-                                        step="1"
-                                        value={qty}
-                                        aria-label={`Số lượng ${item.label}`}
-                                        onPointerDown={(e) => e.stopPropagation()}
-                                        onClick={(e) => e.stopPropagation()}
-                                        onChange={(e) => setEquipmentQuantity(seat?.id, item.key, e.target.value)}
-                                      />
-                                      <button type="button" className="device-qty-btn" title="Tăng 1" aria-label={`Tăng ${item.label}`} onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, 1); }}>+</button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
+                        <ul className="device-list" aria-label={`Thiết bị của ${seatLabel}`}>
+                          {deviceItems.map((item) => {
+                            const isLaptopPackage = Boolean(item.packageValue);
+                            const checked = isLaptopPackage
+                              ? Boolean(inv?.laptop) && inv?.laptop_package === item.packageValue
+                              : Boolean(inv?.[item.key]) || Number(inv?.[`${item.key}_qty`]) > 0;
+                            const qty = isLaptopPackage
+                              ? (checked ? 1 : 0)
+                              : Math.max(0, Number.parseInt(inv?.[`${item.key}_qty`], 10) || 0);
 
-                          <div className="compact-cabin-footer">
-                            <span className={`status-badge ${statusClass}`}>
-                              <i className={progress.complete ? "pi pi-check-circle" : progress.checked > 0 ? "pi pi-exclamation-circle" : "pi pi-clock"} aria-hidden="true" />
-                              {progress.complete ? "ĐỦ BỘ" : progress.checked > 0 ? "THIẾU THIẾT BỊ" : "CHƯA KIỂM"}
-                            </span>
-                            <span className="progress-count">{progress.checked}/{progress.total}</span>
-                          </div>
+                            return (
+                              <li key={item.key} className={`device-row ${checked ? "is-present" : "is-missing"}`}>
+                                <button
+                                  type="button"
+                                  className="device-toggle"
+                                  disabled={!isAdmin}
+                                  title={`${item.label}${checked ? ` · SL ${qty}` : " · Chưa có"}${isAdmin ? " · Chạm để bật/tắt" : ""}`}
+                                  aria-pressed={checked}
+                                  aria-label={checked ? `${item.label}, số lượng ${qty}` : `${item.label}, chưa có`}
+                                  onClick={(e) => { e.stopPropagation(); quickToggleEquipment(seat?.id, item.key, e, item.packageValue || null); }}
+                                  onContextMenu={(e) => handleEquipmentContextMenu(seat?.id, item.key, e, item.packageValue || null)}
+                                >
+                                  <span className="device-check" aria-hidden="true">
+                                    {checked ? <i className="pi pi-check" /> : null}
+                                  </span>
+                                  <i className={`device-icon ${item.icon}`} aria-hidden="true" />
+                                  <span className="device-name">{item.short || item.label}</span>
+                                </button>
 
-                        </div>
+                                {isAdmin && !isLaptopPackage ? (
+                                  <div className="device-stepper" role="group" aria-label={`Số lượng ${item.label}`}>
+                                    <button type="button" aria-label={`Giảm ${item.label}`} disabled={qty <= 0} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, -1); }}>−</button>
+                                    <output aria-live="polite">{qty}</output>
+                                    <button type="button" aria-label={`Tăng ${item.label}`} onClick={(e) => { e.stopPropagation(); adjustEquipmentQuantity(seat?.id, item.key, 1); }}>+</button>
+                                  </div>
+                                ) : (
+                                  <span className="device-qty">×{qty}</span>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+
+                        <footer className="seat-foot">
+                          <span className={`status-badge ${statusClass}`}>
+                            <i className={progress.complete ? "pi pi-check-circle" : progress.checked > 0 ? "pi pi-exclamation-circle" : "pi pi-clock"} aria-hidden="true" />
+                            {progress.complete ? "Đủ bộ" : progress.checked > 0 ? "Thiếu" : "Chưa kiểm"}
+                          </span>
+                          <span className="seat-progress" aria-hidden="true">
+                            <span style={{ width: `${progress.percent}%` }} />
+                          </span>
+                          <span className="progress-count">{progress.checked}/{progress.total}</span>
+                        </footer>
                       </article>
                     );
                   };
@@ -2180,142 +2455,110 @@ export default function App() {
                     return q && (!selectedTeamId || colorId === selectedTeamId);
                   });
 
+                  const zoneDropActive = (zoneType) =>
+                    Boolean(draggedItem) &&
+                    dragOverTarget?.fIdx === fIdx &&
+                    dragOverTarget?.lIdx === lIdx &&
+                    dragOverTarget?.type === zoneType;
+
+                  const renderZone = (zoneType, visible, all) => {
+                    const isLeadZone = zoneType === "lead";
+                    return (
+                      <section className={`role-zone ${isLeadZone ? "lead-zone" : "agent-zone"}`}>
+                        <div className="zone-header">
+                          <h4>
+                            <i className={isLeadZone ? "pi pi-star" : "pi pi-users"} aria-hidden="true" />
+                            {isLeadZone ? "Lead" : "Agents"}
+                            <span className="zone-count">{visible.length}/{all.length}</span>
+                          </h4>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              className="zone-add"
+                              onClick={() => addSeat(fIdx, lIdx, zoneType)}
+                              aria-label={`Thêm ${isLeadZone ? "Lead" : "Agent"} vào dãy ${lane?.laneLetter || ""}`}
+                            >
+                              <i className="pi pi-plus" aria-hidden="true" />
+                              <span>{isLeadZone ? "Lead" : "Agent"}</span>
+                            </button>
+                          )}
+                        </div>
+
+                        <div
+                          className={`seat-grid ${isLeadZone ? "lead-grid" : "agent-grid"} drop-zone${zoneDropActive(zoneType) ? " is-drop-active" : ""}${zoneDropActive(zoneType) && dragOverTarget?.side === "end" ? " is-drop-end" : ""}`}
+                          data-floor-index={fIdx}
+                          data-lane-index={lIdx}
+                          data-seat-type={zoneType}
+                          data-count={all.length}
+                        >
+                          {visible.map((seat) => {
+                            const idx = all.findIndex((item) => item?.id === seat?.id);
+                            return renderSeatCard(seat, zoneType, idx);
+                          })}
+                          {!visible.length && (
+                            <div className="zone-empty">
+                              <i className={isLeadZone ? "pi pi-user" : "pi pi-users"} aria-hidden="true" />
+                              <span>{draggedItem ? "Thả cabin vào đây" : isLeadZone ? "Chưa có Lead" : "Không có cabin phù hợp"}</span>
+                            </div>
+                          )}
+                        </div>
+                      </section>
+                    );
+                  };
+
                   return (
                     <article key={`${floor?.floorName}-${lane?.laneLetter}-${lIdx}`} className="lane-container">
                       <div className="lane-header">
                         <div className="lane-title">
                           <span className="lane-index">{lane?.laneLetter || "—"}</span>
                           <div>
-                            <span className="section-kicker">Dãy</span>
                             <h3>Dãy {lane?.laneLetter || "—"}</h3>
+                            <span className="lane-sub">{leads.length} Lead · {agents.length} cabin</span>
                           </div>
                         </div>
 
-                        <div className="lane-actions">
-                          <label className="stt-field">
-                            <span>STT bắt đầu</span>
-                            <InputText
-                              value={lane?.startStt ?? ""}
-                              readOnly={!isAdmin}
-                              onChange={(e) => updateLaneProp(fIdx, lIdx, "startStt", e.target.value)}
-                              aria-label={`STT bắt đầu dãy ${lane?.laneLetter || ""}`}
-                              className="stt-input"
-                            />
-                          </label>
-                          <Button
-                            icon="pi pi-bolt"
-                            label="Áp dụng STT"
-                            disabled={!isAdmin}
-                            size="small"
-                            severity="info"
-                            className="compact-button"
-                            onClick={() => updateSttGlobal(fIdx, lIdx, lane?.startStt)}
-                            title="Tự động đánh số nối tiếp"
-                          />
-                          <Button
-                            icon="pi pi-palette"
-                            label="Đổi màu dãy"
-                            disabled={!isAdmin}
-                            size="small"
-                            outlined
-                            severity="secondary"
-                            className="compact-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveLane({ fIdx, lIdx });
-                              setOpenMenu({ type: "bulk", x: e.clientX, y: e.clientY });
-                            }}
-                          />
-                        </div>
+                        {isAdmin && (
+                          <div className="lane-actions">
+                            <label className="stt-field">
+                              <span>STT từ</span>
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                value={lane?.startStt ?? ""}
+                                onChange={(e) => updateLaneProp(fIdx, lIdx, "startStt", e.target.value)}
+                                aria-label={`STT bắt đầu dãy ${lane?.laneLetter || ""}`}
+                                className="stt-input"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              className="lane-btn"
+                              onClick={() => updateSttGlobal(fIdx, lIdx, lane?.startStt)}
+                              title="Đánh lại STT nối tiếp theo thứ tự cabin hiện tại"
+                            >
+                              <i className="pi pi-sort-numeric-down" aria-hidden="true" />
+                              <span>Đánh lại STT</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="lane-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setActiveLane({ fIdx, lIdx });
+                                setOpenMenu({ type: "bulk", x: rect.left, y: rect.bottom + 4 });
+                              }}
+                            >
+                              <i className="pi pi-palette" aria-hidden="true" />
+                              <span>Team cả dãy</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="lane-columns">
-                        <section className="role-zone lead-zone">
-                          <div className="zone-header">
-                            <div>
-                              <span className="zone-kicker">01 · QUẢN LÝ</span>
-                              <h4>Lead</h4>
-                            </div>
-                            <div className="zone-tools">
-                              <span className="zone-count">{visibleLeads.length}/{leads.length}</span>
-                              <Button
-                                icon="pi pi-plus"
-                                rounded
-                                text
-                                severity="success"
-                                className="zone-add"
-                                disabled={!isAdmin}
-                                title="Thêm Lead"
-                                aria-label={`Thêm Lead vào dãy ${lane?.laneLetter || ""}`}
-                                onClick={() => addSeat(fIdx, lIdx, "lead")}
-                              />
-                            </div>
-                          </div>
-
-                          <div
-                            className="seat-grid lead-grid drop-zone"
-                            onDragOver={(e) => {
-                              if (draggedItem) e.preventDefault();
-                            }}
-                            onDrop={(e) => onDrop(e, fIdx, lIdx, "lead")}
-                          >
-                            {visibleLeads.map((seat) => {
-                              const idx = leads.findIndex((item) => item?.id === seat?.id);
-                              return renderSeatCard(seat, "lead", idx);
-                            })}
-                            {!visibleLeads.length && (
-                              <div className="zone-empty">
-                                <i className="pi pi-user" aria-hidden="true" />
-                                <span>Chưa có Lead phù hợp</span>
-                              </div>
-                            )}
-                          </div>
-                        </section>
-
-                        <div className="lane-divider" aria-hidden="true">
-                          <span>{lane?.laneLetter || "—"}</span>
-                        </div>
-
-                        <section className="role-zone agent-zone">
-                          <div className="zone-header">
-                            <div>
-                              <span className="zone-kicker">02 · NHÂN VIÊN</span>
-                              <h4>Agents</h4>
-                            </div>
-                            <div className="zone-tools">
-                              <span className="zone-count">{visibleAgents.length}/{agents.length}</span>
-                              <Button
-                                icon="pi pi-plus"
-                                label="Thêm Agent"
-                                disabled={!isAdmin}
-                                size="small"
-                                outlined
-                                severity="success"
-                                className="compact-button"
-                                onClick={() => addSeat(fIdx, lIdx, "agent")}
-                              />
-                            </div>
-                          </div>
-
-                          <div
-                            className="seat-grid agent-grid compact-agent-grid drop-zone"
-                            onDragOver={(e) => {
-                              if (draggedItem) e.preventDefault();
-                            }}
-                            onDrop={(e) => onDrop(e, fIdx, lIdx, "agent")}
-                          >
-                            {visibleAgents.map((seat) => {
-                              const idx = agents.findIndex((item) => item?.id === seat?.id);
-                              return renderSeatCard(seat, "agent", idx);
-                            })}
-                            {!visibleAgents.length && (
-                              <div className="zone-empty">
-                                <i className="pi pi-users" aria-hidden="true" />
-                                <span>Không có cabin phù hợp bộ lọc</span>
-                              </div>
-                            )}
-                          </div>
-                        </section>
+                        {renderZone("lead", visibleLeads, leads)}
+                        {renderZone("agent", visibleAgents, agents)}
                       </div>
                     </article>
                   );

@@ -48,3 +48,21 @@ flow. The email modal is therefore an authorization gate, not proof of identity.
 For production-grade identity verification, connect the UI to Supabase Auth
 (Google/OTP/password) and validate the resulting JWT on the server before
 applying the same four-email whitelist.
+
+## Lỗi "Không thể lưu Cloud: TypeError: fetch failed" (10/2026)
+
+Nguyên nhân: tên miền `josvegctuwnxfpjynlxn.supabase.co` không còn tồn tại (DNS trả về
+NXDOMAIN) — project Supabase đã bị xoá hoặc bị tạm dừng quá lâu, hoặc `SUPABASE_URL`
+trên Vercel trỏ sai. Code không thể tự sửa lỗi này; cần:
+
+1. Vào https://supabase.com/dashboard → nếu project còn và đang **Paused** thì bấm **Restore**.
+   Nếu project đã mất: tạo project mới.
+2. Với project mới: mở **SQL Editor** và chạy `supabase/inventory_sync.sql`.
+3. Lấy **Project URL** và **Secret key** (Settings → API Keys) và cập nhật trên Vercel
+   (Project → Settings → Environment Variables): `SUPABASE_URL`, `SUPABASE_SECRET_KEY`.
+4. **Redeploy** trên Vercel. Mở `https://<app>/api/sync` — phải thấy `{"success":true,...}`.
+5. Nếu dùng workflow keepalive, cập nhật luôn secrets `SUPABASE_URL` / `SUPABASE_SECRET_KEY`
+   trong GitHub để project không bị pause lại.
+
+Từ bản này, `/api/sync` trả về thông báo lỗi tiếng Việt cụ thể (sai URL, project bị xoá/pause,
+sai key, thiếu bảng), còn app giữ bản nháp trên máy và tự đồng bộ lại khi kết nối được.

@@ -1,32 +1,87 @@
+/* global process */
 import { createClient } from "@supabase/supabase-js";
 import { getAdminAuthFromRequest } from "../shared/admin.js";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+// Khởi tạo client "lười": nếu thiếu biến môi trường, trước đây module throw ngay
+// khi import -> Vercel trả về trang lỗi 500 không phải JSON và frontend chỉ thấy
+// "HTTP 500". Giờ mọi lỗi cấu hình đều trả JSON có thông báo rõ ràng.
+let cachedClient = null;
 
-if (!supabaseUrl) {
-  throw new Error("Missing SUPABASE_URL");
+function getSupabase() {
+  const url = (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const key = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+
+  if (!url) throw new ConfigError("Thiếu biến môi trường SUPABASE_URL trên Vercel.");
+  if (!key) throw new ConfigError("Thiếu biến môi trường SUPABASE_SECRET_KEY trên Vercel.");
+  if (!/^https:\/\/.+/i.test(url)) {
+    throw new ConfigError(`SUPABASE_URL không hợp lệ ("${url}"). Phải có dạng https://<project-ref>.supabase.co`);
+  }
+
+  if (!cachedClient) {
+    cachedClient = createClient(url, key, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+  }
+  return cachedClient;
 }
 
-if (!supabaseSecretKey) {
-  throw new Error("Missing SUPABASE_SECRET_KEY");
+class ConfigError extends Error {}
+
+function supabaseHost() {
+  try {
+    return new URL((process.env.SUPABASE_URL || "").trim()).host;
+  } catch {
+    return "(không đọc được SUPABASE_URL)";
+  }
 }
 
-const supabase = createClient(supabaseUrl, supabaseSecretKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+// supabase-js không throw khi mất mạng mà trả về { error: { message: "TypeError: fetch failed" } }.
+// Dịch các lỗi đó sang thông báo người dùng hiểu được.
+function describeSupabaseError(error) {
+  const raw = `${error?.message || ""} ${error?.details || ""} ${error?.hint || ""}`;
+
+  if (/ENOTFOUND|EAI_AGAIN|getaddrinfo/i.test(raw)) {
+    return {
+      status: 502,
+      message: `Không tìm thấy máy chủ Supabase "${supabaseHost()}". Project Supabase có thể đã bị xoá/tạm dừng hoặc SUPABASE_URL sai.`,
+    };
+  }
+  if (/fetch failed|ECONNREFUSED|ECONNRESET|ETIMEDOUT|network/i.test(raw)) {
+    return {
+      status: 502,
+      message: `Không kết nối được tới Supabase "${supabaseHost()}". Kiểm tra project Supabase còn hoạt động (không bị Paused) và SUPABASE_URL đúng.`,
+    };
+  }
+  if (/Invalid API key|JWT|apikey/i.test(raw)) {
+    return { status: 500, message: "SUPABASE_SECRET_KEY không hợp lệ hoặc đã bị thu hồi." };
+  }
+  if (error?.code === "42P01" || /relation .* does not exist|Could not find the table/i.test(raw)) {
+    return {
+      status: 500,
+      message: "Chưa có bảng inventory_sync. Hãy chạy file supabase/inventory_sync.sql trong Supabase SQL Editor.",
+    };
+  }
+  return { status: 500, message: error?.message || "Lỗi Supabase không xác định" };
+}
+
+function sendError(res, status, message) {
+  return res.status(status).json({ success: false, error: message });
+}
 
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+
+  let supabase;
+  try {
+    supabase = getSupabase();
+  } catch (error) {
+    console.error("Supabase config error:", error);
+    return sendError(res, 500, error.message);
+  }
+
   try {
     if (req.method === "GET") {
       // Bảng inventory_sync chỉ có đúng 1 dòng (id = 1) chứa toàn bộ state.
-      // Trước đây code select("*") toàn bảng và order theo cột "created_at"
-      // (cột này KHÔNG tồn tại trong schema, chỉ có "updated_at") -> Supabase
-      // trả lỗi hoặc trả về một MẢNG nhiều dòng thay vì 1 object, khiến
-      // frontend không bao giờ đọc được data.floors và luôn rơi về dữ liệu mặc định.
       const { data: row, error } = await supabase
         .from("inventory_sync")
         .select("data, updated_at")
@@ -35,11 +90,8 @@ export default async function handler(req, res) {
 
       if (error) {
         console.error("Supabase GET error:", error);
-
-        return res.status(500).json({
-          success: false,
-          error: error.message,
-        });
+        const { status, message } = describeSupabaseError(error);
+        return sendError(res, status, message);
       }
 
       return res.status(200).json({
@@ -51,78 +103,46 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
       const { isAdmin } = getAdminAuthFromRequest(req);
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: "Admin authorization required",
-        });
-      }
+      if (!isAdmin) return sendError(res, 403, "Cần quyền Admin để lưu Cloud.");
 
       let payload = req.body;
-
       if (typeof payload === "string") {
         try {
           payload = JSON.parse(payload);
         } catch {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid JSON body",
-          });
+          return sendError(res, 400, "Body JSON không hợp lệ");
         }
       }
 
-      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
-        return res.status(400).json({
-          success: false,
-          error: "Invalid request body",
-        });
+      const state = payload?.data;
+      if (!state || typeof state !== "object" || Array.isArray(state) || !Array.isArray(state.floors)) {
+        return sendError(res, 400, "Dữ liệu gửi lên không đúng định dạng kiểm kê (thiếu floors).");
       }
 
-      // payload = { data: appState }. Trước đây code dùng .insert() nên MỖI LẦN
-      // bấm "Lưu Cloud" lại tạo thêm 1 dòng mới trong bảng, không bao giờ ghi đè
-      // dòng cũ -> dữ liệu cũ/mới lẫn lộn và không đồng bộ 2 chiều được.
-      // Dùng .upsert() với id cố định = 1 để luôn cập nhật đúng 1 dòng duy nhất.
+      // upsert id = 1: luôn ghi đè đúng 1 dòng duy nhất.
       const { data, error } = await supabase
         .from("inventory_sync")
         .upsert(
-          {
-            id: 1,
-            data: payload.data ?? payload,
-            updated_at: new Date().toISOString(),
-          },
+          { id: 1, data: state, updated_at: new Date().toISOString() },
           { onConflict: "id" },
         )
-        .select("data, updated_at")
+        .select("updated_at")
         .single();
 
       if (error) {
         console.error("Supabase POST error:", error);
-
-        return res.status(500).json({
-          success: false,
-          error: error.message,
-        });
+        const { status, message } = describeSupabaseError(error);
+        return sendError(res, status, message);
       }
 
-      return res.status(200).json({
-        success: true,
-        data: data.data,
-        updatedAt: data.updated_at,
-      });
+      return res.status(200).json({ success: true, updatedAt: data.updated_at });
     }
 
     res.setHeader("Allow", ["GET", "POST"]);
-
-    return res.status(405).json({
-      success: false,
-      error: "Method not allowed",
-    });
+    return sendError(res, 405, "Method not allowed");
   } catch (error) {
     console.error("API error:", error);
-
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : "Internal server error",
-    });
+    const { status, message } = describeSupabaseError(error);
+    return sendError(res, status, message);
   }
 }

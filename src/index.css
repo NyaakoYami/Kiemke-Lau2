@@ -7,7 +7,7 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: only light;
   overflow-x: clip; /* gate 34: no horizontal scroll */
   scroll-behavior: smooth;
 }
